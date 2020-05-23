@@ -8,7 +8,34 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - 8000:8000
+    env_file:
+      - .env
+    depends_on:
+      - db
     tty: true
     stdin_open: true
     volumes:
-      - ./:/server
+      - ./:/go/src/server
+
+  db:
+    container_name: db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    ports:
+      - 13306:3306
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASS}
+      TZ: ${TZ}
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./db/mysql/init:/docker-entrypoint-initdb.d
+      - ./log:/var/log/mysql
+
+volumes:
+  db-data:
+    driver: local
