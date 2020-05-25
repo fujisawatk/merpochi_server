@@ -17,7 +17,7 @@ type Route struct {
 
 // Load ルーティング値の読込
 func Load() []Route {
-	routes := testsRoutes
+	routes := usersRoutes
 	return routes
 }
 

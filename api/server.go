@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"log"
+	"merpochi_server/api/auto"
 	"merpochi_server/api/router"
 	"merpochi_server/config"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 // Run サーバ起動
 func Run() {
 	config.EnvLoad()
+	auto.TestLoad()
 	fmt.Printf("\n\tListening [::]:%d\n", config.APIPORT)
 	listen(config.APIPORT)
 }
