@@ -14,3 +14,16 @@ func JSON(w http.ResponseWriter, statusCode int, data interface{}) {
 		fmt.Fprintf(w, "%s", err.Error())
 	}
 }
+
+// ERROR エラー時のレスポンス
+func ERROR(w http.ResponseWriter, statusCode int, err error) {
+	if err != nil {
+		JSON(w, statusCode, struct {
+			Error string `json:"error"`
+		}{
+			Error: err.Error(),
+		})
+		return
+	}
+	JSON(w, http.StatusBadRequest, nil)
+}
