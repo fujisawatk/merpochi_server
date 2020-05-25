@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"merpochi_server/domain/models"
+	"merpochi_server/domain/repository"
 	"merpochi_server/infrastructure/database"
+	"merpochi_server/infrastructure/persistence"
 	"merpochi_server/interfaces/responses"
 	"net/http"
 )
@@ -32,10 +34,14 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	err = db.Debug().Model(&models.User{}).Create(&user).Error
-	if err != nil {
-		responses.ERROR(w, http.StatusUnprocessableEntity, err)
-		return
-	}
-	responses.JSON(w, http.StatusCreated, user)
+	repo := persistence.NewUserPersistence(db)
+
+	func(usersRepository repository.UserRepository) {
+		user, err = usersRepository.Save(user)
+		if err != nil {
+			responses.ERROR(w, http.StatusUnprocessableEntity, err)
+			return
+		}
+		responses.JSON(w, http.StatusCreated, user)
+	}(repo)
 }
