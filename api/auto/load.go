@@ -2,8 +2,8 @@ package auto
 
 import (
 	"log"
-	"merpochi_server/api/database"
-	"merpochi_server/api/models"
+	"merpochi_server/domain/models"
+	"merpochi_server/infrastructure/database"
 )
 
 // TestLoad テストデータの読込

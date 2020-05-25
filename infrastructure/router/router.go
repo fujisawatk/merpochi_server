@@ -1,7 +1,7 @@
 package router
 
 import (
-	"merpochi_server/api/router/routes"
+	"merpochi_server/infrastructure/router/routes"
 
 	"github.com/gorilla/mux"
 )

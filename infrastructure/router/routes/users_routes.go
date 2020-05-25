@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"merpochi_server/api/controllers"
+	"merpochi_server/interfaces/controllers"
 	"net/http"
 )
 

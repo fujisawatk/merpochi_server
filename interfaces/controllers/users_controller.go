@@ -3,9 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"io/ioutil"
-	"merpochi_server/api/database"
-	"merpochi_server/api/models"
-	"merpochi_server/api/responses"
+	"merpochi_server/domain/models"
+	"merpochi_server/infrastructure/database"
+	"merpochi_server/interfaces/responses"
 	"net/http"
 )
 
