@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"merpochi_server/api/database"
 	"merpochi_server/api/models"
+	"merpochi_server/api/responses"
 	"net/http"
 )
 
@@ -35,6 +36,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	responses.JSON(w, http.StatusCreated, user)
 	// 保存後の処理
 	fmt.Println("成功")
 }
