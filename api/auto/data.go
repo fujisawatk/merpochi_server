@@ -1,6 +1,6 @@
 package auto
 
-import "merpochi_server/api/models"
+import "merpochi_server/domain/models"
 
 var users = []models.User{
 	{

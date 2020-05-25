@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"merpochi_server/api/auto"
-	"merpochi_server/api/router"
 	"merpochi_server/config"
+	"merpochi_server/infrastructure/router"
 	"net/http"
 )
 
