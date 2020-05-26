@@ -8,6 +8,11 @@ import (
 var usersRoutes = []Route{
 	{
 		URI:     "/users",
+		Method:  http.MethodGet,
+		Handler: controllers.GetUsers,
+	},
+	{
+		URI:     "/users",
 		Method:  http.MethodPost,
 		Handler: controllers.CreateUser,
 	},

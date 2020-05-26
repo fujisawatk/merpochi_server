@@ -38,3 +38,25 @@ func (up *userPersistence) Save(user models.User) (models.User, error) {
 	}
 	return models.User{}, err
 }
+
+// 全てのユーザー情報のレコードを取得するトランザクション
+func (up *userPersistence) FindAll() ([]models.User, error) {
+	var err error
+
+	users := []models.User{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = up.db.Debug().Model(&models.User{}).Find(&users).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return users, nil
+	}
+	return nil, err
+}
