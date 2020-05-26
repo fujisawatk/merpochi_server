@@ -16,4 +16,9 @@ var usersRoutes = []Route{
 		Method:  http.MethodPost,
 		Handler: controllers.CreateUser,
 	},
+	{
+		URI:     "/users/{id}",
+		Method:  http.MethodGet,
+		Handler: controllers.GetUser,
+	},
 }
