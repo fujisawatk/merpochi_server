@@ -4,6 +4,7 @@ import (
 	"errors"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
+	"time"
 
 	"merpochi_server/util/channels.go"
 
@@ -86,4 +87,31 @@ func (up *userPersistence) FindByID(uid uint32) (models.User, error) {
 		return models.User{}, errors.New("指定したユーザーは登録されていません")
 	}
 	return models.User{}, err
+}
+
+// 指定したユーザー情報のレコードを1件更新
+func (up *userPersistence) Update(uid uint32, user models.User) (int64, error) {
+	var rs *gorm.DB
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = up.db.Debug().Model(&models.User{}).Where("id = ?", uid).Take(&models.User{}).UpdateColumns(
+			map[string]interface{}{
+				"nickname":   user.Nickname,
+				"email":      user.Email,
+				"updated_at": time.Now(),
+			},
+		)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		if rs.Error != nil {
+			return 0, rs.Error
+		}
+		// RowsAffected→更新したレコード数を取得
+		return rs.RowsAffected, nil
+	}
+	return 0, rs.Error
 }
