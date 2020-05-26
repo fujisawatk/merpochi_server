@@ -41,7 +41,7 @@ func SignIn(email, password string) (string, error) {
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return "認証しました", nil
+		return CreateToken(user.ID)
 	}
 	return "", err
 }
