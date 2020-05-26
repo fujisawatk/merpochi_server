@@ -98,3 +98,46 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		responses.JSON(w, http.StatusOK, user)
 	}(repo)
 }
+
+// UpdateUser ユーザー情報を1件更新
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	uid, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	user := models.User{}
+
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	db, err := database.Connect()
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repo := persistence.NewUserPersistence(db)
+
+	func(usersRepository repository.UserRepository) {
+		rows, err := usersRepository.Update(uint32(uid), user)
+		if err != nil {
+			responses.ERROR(w, http.StatusBadRequest, err)
+			return
+		}
+		responses.JSON(w, http.StatusOK, rows)
+	}(repo)
+}
