@@ -115,3 +115,24 @@ func (up *userPersistence) Update(uid uint32, user models.User) (int64, error) {
 	}
 	return 0, rs.Error
 }
+
+// 指定したユーザー情報のレコードを1件削除
+func (up *userPersistence) Delete(uid uint32) (int64, error) {
+	var rs *gorm.DB
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = up.db.Debug().Model(&models.User{}).Where("id = ?", uid).Take(&models.User{}).Delete(&models.User{})
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		if rs.Error != nil {
+			return 0, rs.Error
+		}
+		// RowsAffected→削除したレコード数を取得
+		return rs.RowsAffected, nil
+	}
+	return 0, rs.Error
+}
