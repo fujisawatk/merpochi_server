@@ -59,3 +59,29 @@ func UserUpdateValidate(user *models.User) []string {
 	}
 	return nil
 }
+
+// UserLoginValidate ユーザー新規登録時のサーバー側バリデーション処理
+func UserLoginValidate(user *models.User) []string {
+	var errorMessages []string
+
+	validate := validator.New()
+	err := validate.Struct(user)
+
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+
+			var errorMessage string
+			fieldName := err.Field()
+
+			switch fieldName {
+			case "Email":
+				errorMessage = "メールアドレスが不正です"
+			case "Password":
+				errorMessage = "パスワードが不正です"
+			}
+			errorMessages = append(errorMessages, errorMessage)
+		}
+		return errorMessages
+	}
+	return nil
+}
