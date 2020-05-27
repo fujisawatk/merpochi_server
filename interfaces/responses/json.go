@@ -27,3 +27,12 @@ func ERROR(w http.ResponseWriter, statusCode int, err error) {
 	}
 	JSON(w, http.StatusBadRequest, nil)
 }
+
+// ERRORS バリデーションエラー時のレスポンス
+func ERRORS(w http.ResponseWriter, statusCode int, errs []string) {
+	if errs != nil {
+		JSON(w, statusCode, errs)
+		return
+	}
+	JSON(w, http.StatusBadRequest, nil)
+}

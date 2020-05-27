@@ -9,6 +9,7 @@ import (
 	"merpochi_server/infrastructure/database"
 	"merpochi_server/infrastructure/persistence"
 	"merpochi_server/interfaces/responses"
+	"merpochi_server/interfaces/validations"
 	"net/http"
 	"strconv"
 
@@ -49,6 +50,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	errs := validations.UserCreateValidate(&user)
+	if errs != nil {
+		responses.ERRORS(w, http.StatusUnprocessableEntity, errs)
 		return
 	}
 
