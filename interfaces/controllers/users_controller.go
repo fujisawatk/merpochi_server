@@ -55,7 +55,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	errs := validations.UserCreateValidate(&user)
 	if errs != nil {
-		responses.ERRORS(w, http.StatusUnprocessableEntity, errs)
+		responses.ERRORS(w, http.StatusBadRequest, errs)
 		return
 	}
 
@@ -128,6 +128,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	errs := validations.UserUpdateValidate(&user)
+	if errs != nil {
+		responses.ERRORS(w, http.StatusBadRequest, errs)
 		return
 	}
 
