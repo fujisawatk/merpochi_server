@@ -2,6 +2,7 @@ package routes
 
 import (
 	"merpochi_server/config"
+	"merpochi_server/interfaces/middlewares"
 	"net/http"
 
 	"github.com/gorilla/handlers"
@@ -10,9 +11,10 @@ import (
 
 // Route ルーティング値の保管
 type Route struct {
-	URI     string
-	Method  string
-	Handler func(http.ResponseWriter, *http.Request)
+	URI          string
+	Method       string
+	Handler      func(http.ResponseWriter, *http.Request)
+	AuthRequired bool
 }
 
 // Load ルーティング値の読込
@@ -30,7 +32,13 @@ func SetupRoutes(r *mux.Router) *mux.Router {
 		handlers.AllowedHeaders([]string{"Authorization"}),
 	)
 	for _, route := range Load() {
-		r.HandleFunc(route.URI, route.Handler).Methods(route.Method)
+		if route.AuthRequired {
+			r.HandleFunc(route.URI,
+				middlewares.SetMiddlewareAuthentication(route.Handler),
+			).Methods(route.Method)
+		} else {
+			r.HandleFunc(route.URI, route.Handler).Methods(route.Method)
+		}
 	}
 	r.Use(cors)
 	return r
