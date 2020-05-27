@@ -9,11 +9,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// グローバル変数
 var (
 	APIPORT   = 0
 	CLIENTURL = ""
 	DBDRIVER  = ""
 	DBURL     = ""
+	SECRETKEY []byte
 )
 
 // EnvLoad 環境変数の読み込み
@@ -35,4 +37,6 @@ func EnvLoad() {
 	DBDRIVER = os.Getenv("DB_DRIVER")
 	DBURL = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DB_USER"),
 		os.Getenv("DB_PASS"), os.Getenv("DB_PROT"), os.Getenv("DB_NAME"))
+
+	SECRETKEY = []byte(os.Getenv("API_SECRET"))
 }
