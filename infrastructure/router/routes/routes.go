@@ -2,7 +2,7 @@ package routes
 
 import (
 	"merpochi_server/config"
-	"merpochi_server/interfaces/middlewares"
+	"merpochi_server/infrastructure/middlewares"
 	"net/http"
 
 	"github.com/gorilla/handlers"
