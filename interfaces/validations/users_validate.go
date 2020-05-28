@@ -34,7 +34,7 @@ func UserCreateValidate(user *models.User) []string {
 	return nil
 }
 
-// UserUpdateValidate ユーザー新規登録時のサーバー側バリデーション処理
+// UserUpdateValidate ユーザー情報更新時のサーバー側バリデーション処理
 func UserUpdateValidate(user *models.User) []string {
 	var errorMessages []string
 
@@ -60,7 +60,7 @@ func UserUpdateValidate(user *models.User) []string {
 	return nil
 }
 
-// UserLoginValidate ユーザー新規登録時のサーバー側バリデーション処理
+// UserLoginValidate ログイン時のサーバー側バリデーション処理
 func UserLoginValidate(user *models.User) []string {
 	var errorMessages []string
 
