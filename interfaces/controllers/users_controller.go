@@ -69,6 +69,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	repo := persistence.NewUserPersistence(db)
 
 	func(usersRepository repository.UserRepository) {
+		// メールアドレスが登録されていないか検証
+		err = usersRepository.SearchUser(user.Email)
+		if err != nil {
+			responses.ERROR(w, http.StatusBadRequest, err)
+			return
+		}
 		user, err = usersRepository.Save(user)
 		if err != nil {
 			responses.ERROR(w, http.StatusUnprocessableEntity, err)

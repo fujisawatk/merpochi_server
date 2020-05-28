@@ -28,6 +28,14 @@ func (up *userPersistence) Save(user models.User) (models.User, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
+
+		// 登録メールアドレスの重複検証
+		err = up.db.Debug().Model(models.User{}).Where("email = ?", user.Email).Take(&user).Error
+		if err == nil {
+			ch <- false
+			return
+		}
+
 		err = up.db.Debug().Model(&models.User{}).Create(&user).Error
 		if err != nil {
 			ch <- false
@@ -135,4 +143,26 @@ func (up *userPersistence) Delete(uid uint32) (int64, error) {
 		return rs.RowsAffected, nil
 	}
 	return 0, rs.Error
+}
+
+// SearchUser 指定メールアドレスのユーザーを検索(無い場合にtrue)
+func (up *userPersistence) SearchUser(email string) error {
+	var err error
+
+	user := models.User{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = up.db.Debug().Model(&models.User{}).Where("email = ?", email).Take(&user).Error
+		if err != nil {
+			ch <- true
+			return
+		}
+		ch <- false
+	}(done)
+	if channels.OK(done) {
+		return nil
+	}
+	return errors.New("このメールアドレスは既に使用されています")
 }
