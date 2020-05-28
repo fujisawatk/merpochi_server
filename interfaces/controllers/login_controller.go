@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"merpochi_server/domain/models"
-	"merpochi_server/interfaces/auth"
+	"merpochi_server/infrastructure/auth"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/interfaces/validations"
 	"net/http"
