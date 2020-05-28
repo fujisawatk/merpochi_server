@@ -132,7 +132,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	errs := validations.UserUpdateValidate(&user)
-	if errs != nil {
+	if len(errs) > 1 {
 		responses.ERRORS(w, http.StatusBadRequest, errs)
 		return
 	}
