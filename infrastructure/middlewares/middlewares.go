@@ -27,3 +27,11 @@ func SetMiddlewareLogger(next http.HandlerFunc) http.HandlerFunc {
 		next(w, r)
 	}
 }
+
+// SetMiddlewareJSON レスポンスをjson形式で返却
+func SetMiddlewareJSON(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		next(w, r)
+	}
+}
