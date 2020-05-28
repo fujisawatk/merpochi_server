@@ -34,10 +34,15 @@ func SetupRoutes(r *mux.Router) *mux.Router {
 	for _, route := range Load() {
 		if route.AuthRequired {
 			r.HandleFunc(route.URI,
-				middlewares.SetMiddlewareAuthentication(route.Handler),
+				middlewares.SetMiddlewareLogger(
+					middlewares.SetMiddlewareJSON(
+						middlewares.SetMiddlewareAuthentication(route.Handler))),
 			).Methods(route.Method)
 		} else {
-			r.HandleFunc(route.URI, route.Handler).Methods(route.Method)
+			r.HandleFunc(route.URI,
+				middlewares.SetMiddlewareLogger(
+					middlewares.SetMiddlewareJSON(route.Handler)),
+			).Methods(route.Method)
 		}
 	}
 	r.Use(cors)
