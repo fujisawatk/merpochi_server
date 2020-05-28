@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log"
 	"merpochi_server/infrastructure/auth"
 	"merpochi_server/interfaces/responses"
 	"net/http"
@@ -14,6 +15,15 @@ func SetMiddlewareAuthentication(next http.HandlerFunc) http.HandlerFunc {
 			responses.ERROR(w, http.StatusUnauthorized, err)
 			return
 		}
+		next(w, r)
+	}
+}
+
+// SetMiddlewareLogger ルーティングのログ表示
+func SetMiddlewareLogger(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// 形式を設定してログ表示（例：GET localhost:9000/users HTTP/1.1）
+		log.Printf("%s %s%s %s", r.Method, r.Host, r.RequestURI, r.Proto)
 		next(w, r)
 	}
 }
