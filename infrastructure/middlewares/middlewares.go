@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"merpochi_server/interfaces/auth"
+	"merpochi_server/infrastructure/auth"
 	"merpochi_server/interfaces/responses"
 	"net/http"
 )
