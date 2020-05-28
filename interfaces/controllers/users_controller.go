@@ -9,6 +9,7 @@ import (
 	"merpochi_server/infrastructure/database"
 	"merpochi_server/infrastructure/persistence"
 	"merpochi_server/interfaces/responses"
+	"merpochi_server/interfaces/validations"
 	"net/http"
 	"strconv"
 
@@ -52,6 +53,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	errs := validations.UserCreateValidate(&user)
+	if errs != nil {
+		responses.ERRORS(w, http.StatusBadRequest, errs)
+		return
+	}
+
 	db, err := database.Connect()
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
@@ -62,6 +69,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	repo := persistence.NewUserPersistence(db)
 
 	func(usersRepository repository.UserRepository) {
+		// メールアドレスが登録されていないか検証
+		err = usersRepository.SearchUser(user.Email)
+		if err != nil {
+			responses.ERROR(w, http.StatusBadRequest, err)
+			return
+		}
 		user, err = usersRepository.Save(user)
 		if err != nil {
 			responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -121,6 +134,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	errs := validations.UserUpdateValidate(&user)
+	if len(errs) > 1 {
+		responses.ERRORS(w, http.StatusBadRequest, errs)
 		return
 	}
 
