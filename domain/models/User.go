@@ -1,7 +1,7 @@
 package models
 
 import (
-	"merpochi_server/interfaces/security"
+	"merpochi_server/domain/security"
 	"time"
 )
 
