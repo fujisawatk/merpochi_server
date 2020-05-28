@@ -2,8 +2,8 @@ package auth
 
 import (
 	"merpochi_server/domain/models"
+	"merpochi_server/domain/security"
 	"merpochi_server/infrastructure/database"
-	"merpochi_server/interfaces/security"
 
 	"github.com/jinzhu/gorm"
 	"merpochi_server/util/channels.go"
