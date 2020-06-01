@@ -224,3 +224,37 @@ func TestDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestSearchUser(t *testing.T) {
+	type args struct {
+		email string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "指定したメールアドレスの重複が無いこと",
+			args: args{
+				email: "enako@email.com",
+			},
+			wantErr: false,
+		},
+		{
+			name: "指定したメールアドレスが重複していること",
+			args: args{
+				email: "fuji@email.com",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			up := NewUserPersistence(db)
+			if err := up.SearchUser(tt.args.email); (err != nil) != tt.wantErr {
+				t.Errorf("userPersistence.SearchUser() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
