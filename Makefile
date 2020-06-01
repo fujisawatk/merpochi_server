@@ -15,3 +15,7 @@ rollback:
 # Mysqlに作業ユーザーで接続
 mysql:
 	docker-compose exec db bash -c 'mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE'
+
+# テスト実行
+test:
+	go test -v ./infrastructure/persistence

@@ -1,3 +1,7 @@
 development:
   driver: mymysql
   open: $MYSQL_URI
+
+test:
+  driver: mymysql
+  open: tcp:0.0.0.0:3307*mysql/root/password
