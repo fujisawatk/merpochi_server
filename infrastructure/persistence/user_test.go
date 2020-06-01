@@ -180,3 +180,47 @@ func TestUpdate(t *testing.T) {
 		})
 	}
 }
+
+func TestDelete(t *testing.T) {
+	type args struct {
+		uid uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{
+			name: "指定したユーザー情報を削除出来ること",
+			args: args{
+				uid: 1,
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "指定したユーザー情報がない時は削除出来ないこと",
+			args: args{
+				uid: 3,
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			up := NewUserPersistence(db)
+			got, err := up.Delete(tt.args.uid)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("userPersistence.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// 返り値が期待しない値の場合
+			if got != tt.want {
+				t.Errorf("userPersistence.Delete() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
