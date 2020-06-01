@@ -81,3 +81,51 @@ func TestFindAll(t *testing.T) {
 		})
 	}
 }
+
+func TestFindByID(t *testing.T) {
+	type args struct {
+		uid uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    models.User
+		wantErr bool
+	}{
+		{
+			name: "指定したユーザー情報を取得出来ること",
+			args: args{
+				uid: 1,
+			},
+			want: models.User{
+				Email: "miku@email.com",
+			},
+			wantErr: false,
+		},
+		{
+			name: "指定したユーザー情報がない時にエラーを返すこと",
+			args: args{
+				uid: 3,
+			},
+			want: models.User{
+				Email: "",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			up := NewUserPersistence(db)
+			got, err := up.FindByID(tt.args.uid)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("userPersistence.FindByID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// 返り値が期待しない値の場合
+			if !reflect.DeepEqual(got.Email, tt.want.Email) {
+				t.Errorf("userPersistence.Save() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
