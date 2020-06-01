@@ -124,7 +124,58 @@ func TestFindByID(t *testing.T) {
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got.Email, tt.want.Email) {
-				t.Errorf("userPersistence.Save() = %v, want %v", got, tt.want)
+				t.Errorf("userPersistence.FindByID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type args struct {
+		uid  uint32
+		user models.User
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{
+			name: "指定したユーザー情報を更新出来ること",
+			args: args{
+				uid: 1,
+				user: models.User{
+					Email: "mikumiku@email.com",
+				},
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "指定したユーザー情報がない時は更新出来ないこと",
+			args: args{
+				uid: 3,
+				user: models.User{
+					Email: "mikumiku@email.com",
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			up := NewUserPersistence(db)
+			got, err := up.Update(tt.args.uid, tt.args.user)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("userPersistence.Update() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// 返り値が期待しない値の場合
+			if got != tt.want {
+				t.Errorf("userPersistence.Update() = %v, want %v", got, tt.want)
 			}
 		})
 	}
