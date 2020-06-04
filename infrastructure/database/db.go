@@ -7,11 +7,16 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+var (
+	DB    *gorm.DB
+	DbErr error
+)
+
 // Connect DB接続
 func Connect() (*gorm.DB, error) {
-	db, err := gorm.Open(config.DBDRIVER, config.DBURL)
-	if err != nil {
-		return nil, err
+	DB, DbErr = gorm.Open(config.DBDRIVER, config.DBURL)
+	if DbErr != nil {
+		return nil, DbErr
 	}
-	return db, nil
+	return DB, nil
 }
