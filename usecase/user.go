@@ -11,6 +11,7 @@ import (
 type UserUsecase interface {
 	GetUsers() ([]models.User, error)
 	CreateUser(nickname, email, password string) (models.User, error)
+	GetUser(uint32) (models.User, error)
 }
 
 type userUsecase struct {
@@ -47,6 +48,14 @@ func (uu userUsecase) CreateUser(nickname, email, password string) (models.User,
 	}
 
 	user, err = uu.userRepository.Save(user)
+	if err != nil {
+		return models.User{}, err
+	}
+	return user, nil
+}
+
+func (uu userUsecase) GetUser(uid uint32) (models.User, error) {
+	user, err := uu.userRepository.FindByID(uid)
 	if err != nil {
 		return models.User{}, err
 	}

@@ -6,12 +6,16 @@ import (
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 // UserHandler Userに対するHandlerのインターフェイス
 type UserHandler interface {
 	HandleUsersGet(w http.ResponseWriter, r *http.Request)
 	HandleUserCreate(w http.ResponseWriter, r *http.Request)
+	HandleUserGet(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -56,6 +60,23 @@ func (uh userHandler) HandleUserCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusCreated, user)
+}
+
+func (uh userHandler) HandleUserGet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	uid, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := uh.userUsecase.GetUser(uint32(uid))
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, user)
 }
 
 type userCreateRequest struct {
