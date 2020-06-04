@@ -33,12 +33,12 @@ func iniUserRoutes() []Route {
 			Handler:      userHandler.HandleUserGet,
 			AuthRequired: false,
 		},
-		// {
-		// 	URI:          "/users/{id}",
-		// 	Method:       http.MethodPut,
-		// 	Handler:      controllers.UpdateUser,
-		// 	AuthRequired: true,
-		// },
+		{
+			URI:          "/users/{id}",
+			Method:       http.MethodPut,
+			Handler:      userHandler.HandleUserUpdate,
+			AuthRequired: false,
+		},
 		// {
 		// 	URI:          "/users/{id}",
 		// 	Method:       http.MethodDelete,

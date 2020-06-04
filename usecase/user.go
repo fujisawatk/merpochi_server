@@ -12,6 +12,7 @@ type UserUsecase interface {
 	GetUsers() ([]models.User, error)
 	CreateUser(nickname, email, password string) (models.User, error)
 	GetUser(uint32) (models.User, error)
+	UpdateUser(uint32, string, string) (int64, error)
 }
 
 type userUsecase struct {
@@ -60,4 +61,22 @@ func (uu userUsecase) GetUser(uid uint32) (models.User, error) {
 		return models.User{}, err
 	}
 	return user, nil
+}
+
+func (uu userUsecase) UpdateUser(uid uint32, nickname, email string) (int64, error) {
+	user := models.User{
+		Nickname: nickname,
+		Email:    email,
+	}
+
+	// errs := validations.UserUpdateValidate(&user)
+	// if errs != nil {
+	// 	return 0, errors.New("validation error")
+	// }
+
+	rows, err := uu.userRepository.Update(uid, user)
+	if err != nil {
+		return 0, err
+	}
+	return rows, nil
 }

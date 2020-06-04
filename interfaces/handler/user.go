@@ -16,6 +16,7 @@ type UserHandler interface {
 	HandleUsersGet(w http.ResponseWriter, r *http.Request)
 	HandleUserCreate(w http.ResponseWriter, r *http.Request)
 	HandleUserGet(w http.ResponseWriter, r *http.Request)
+	HandleUserUpdate(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -62,6 +63,7 @@ func (uh userHandler) HandleUserCreate(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusCreated, user)
 }
 
+// HandleUserGet ユーザー情報を1件取得
 func (uh userHandler) HandleUserGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -79,8 +81,44 @@ func (uh userHandler) HandleUserGet(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, user)
 }
 
+// HandleUserUpdate ユーザー情報を1件更新
+func (uh userHandler) HandleUserUpdate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	uid, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	var requestBody userUpdateRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	rows, err := uh.userUsecase.UpdateUser(uint32(uid), requestBody.Nickname, requestBody.Email)
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, rows)
+}
+
 type userCreateRequest struct {
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type userUpdateRequest struct {
+	Nickname string `json:"nickname"`
+	Email    string `json:"email"`
 }
