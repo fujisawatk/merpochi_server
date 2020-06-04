@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
 	"net/http"
@@ -9,6 +11,7 @@ import (
 // UserHandler Userに対するHandlerのインターフェイス
 type UserHandler interface {
 	HandleUsersGet(w http.ResponseWriter, r *http.Request)
+	HandleUserCreate(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -30,4 +33,33 @@ func (uh userHandler) HandleUsersGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusOK, users)
+}
+
+// HandleUserCreate ユーザー情報を登録
+func (uh userHandler) HandleUserCreate(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	var requestBody userCreateRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	user, err := uh.userUsecase.CreateUser(requestBody.Nickname, requestBody.Email, requestBody.Password)
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusCreated, user)
+}
+
+type userCreateRequest struct {
+	Nickname string `json:"nickname"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

@@ -21,12 +21,12 @@ func iniUserRoutes() []Route {
 			Handler:      userHandler.HandleUsersGet,
 			AuthRequired: false,
 		},
-		// {
-		// 	URI:          "/users",
-		// 	Method:       http.MethodPost,
-		// 	Handler:      controllers.CreateUser,
-		// 	AuthRequired: true,
-		// },
+		{
+			URI:          "/users",
+			Method:       http.MethodPost,
+			Handler:      userHandler.HandleUserCreate,
+			AuthRequired: false,
+		},
 		// {
 		// 	URI:          "/users/{id}",
 		// 	Method:       http.MethodGet,
