@@ -39,12 +39,12 @@ func iniUserRoutes() []Route {
 			Handler:      userHandler.HandleUserUpdate,
 			AuthRequired: false,
 		},
-		// {
-		// 	URI:          "/users/{id}",
-		// 	Method:       http.MethodDelete,
-		// 	Handler:      controllers.DeleteUser,
-		// 	AuthRequired: true,
-		// },
+		{
+			URI:          "/users/{id}",
+			Method:       http.MethodDelete,
+			Handler:      userHandler.HandleUserDelete,
+			AuthRequired: false,
+		},
 	}
 	return usersRoutes
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
@@ -17,6 +18,7 @@ type UserHandler interface {
 	HandleUserCreate(w http.ResponseWriter, r *http.Request)
 	HandleUserGet(w http.ResponseWriter, r *http.Request)
 	HandleUserUpdate(w http.ResponseWriter, r *http.Request)
+	HandleUserDelete(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -110,6 +112,25 @@ func (uh userHandler) HandleUserUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusOK, rows)
+}
+
+// HandleUserDelete ユーザー情報を1件削除
+func (uh userHandler) HandleUserDelete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	uid, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	err = uh.userUsecase.DeleteUser(uint32(uid))
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	w.Header().Set("Entity", fmt.Sprintf("%d", uid))
+	responses.JSON(w, http.StatusNoContent, "")
 }
 
 type userCreateRequest struct {

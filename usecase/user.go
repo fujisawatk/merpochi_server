@@ -13,6 +13,7 @@ type UserUsecase interface {
 	CreateUser(nickname, email, password string) (models.User, error)
 	GetUser(uint32) (models.User, error)
 	UpdateUser(uint32, string, string) (int64, error)
+	DeleteUser(uint32) error
 }
 
 type userUsecase struct {
@@ -79,4 +80,12 @@ func (uu userUsecase) UpdateUser(uid uint32, nickname, email string) (int64, err
 		return 0, err
 	}
 	return rows, nil
+}
+
+func (uu userUsecase) DeleteUser(uid uint32) error {
+	_, err := uu.userRepository.Delete(uid)
+	if err != nil {
+		return err
+	}
+	return nil
 }
