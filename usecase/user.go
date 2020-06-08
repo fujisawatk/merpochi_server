@@ -1,10 +1,9 @@
 package usecase
 
 import (
-	"errors"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
-	"merpochi_server/interfaces/validations"
+	"merpochi_server/usecase/validations"
 )
 
 // UserUsecase Userに対するUsecaseのインターフェイス
@@ -36,17 +35,15 @@ func (uu userUsecase) GetUsers() ([]models.User, error) {
 }
 
 func (uu userUsecase) CreateUser(nickname, email, password string) (models.User, error) {
-	var err error
-
 	user := models.User{
 		Nickname: nickname,
 		Email:    email,
 		Password: password,
 	}
 
-	errs := validations.UserCreateValidate(&user)
-	if errs != nil {
-		return models.User{}, errors.New("validation error")
+	err := validations.UserCreateValidate(&user)
+	if err != nil {
+		return models.User{}, err
 	}
 
 	user, err = uu.userRepository.Save(user)
@@ -70,10 +67,10 @@ func (uu userUsecase) UpdateUser(uid uint32, nickname, email string) (int64, err
 		Email:    email,
 	}
 
-	// errs := validations.UserUpdateValidate(&user)
-	// if errs != nil {
-	// 	return 0, errors.New("validation error")
-	// }
+	err := validations.UserUpdateValidate(&user)
+	if err != nil {
+		return 0, err
+	}
 
 	rows, err := uu.userRepository.Update(uid, user)
 	if err != nil {

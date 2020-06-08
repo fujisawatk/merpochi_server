@@ -8,9 +8,9 @@ import (
 // User ユーザー値の保管
 type User struct {
 	ID        uint32    `json:"id"`
-	Nickname  string    `json:"nickname" validate:"required,min=1,max=20"`
-	Email     string    `json:"email" validate:"required,email"`
-	Password  string    `json:"password" validate:"required,min=6,max=20"`
+	Nickname  string    `json:"nickname"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

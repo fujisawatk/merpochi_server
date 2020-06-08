@@ -3,6 +3,7 @@ package usecase
 import (
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
+	"merpochi_server/usecase/validations"
 )
 
 // AuthUsecase ユーザー認証に対するUsecaseのインターフェイス
@@ -25,6 +26,11 @@ func (au authUsecase) LoginUser(email, password string) (string, error) {
 	user := models.User{
 		Email:    email,
 		Password: password,
+	}
+
+	err := validations.UserLoginValidate(&user)
+	if err != nil {
+		return "", err
 	}
 
 	token, err := au.authRepository.SignIn(user.Email, user.Password)
