@@ -25,7 +25,7 @@ func iniUserRoutes() []Route {
 			URI:          "/users",
 			Method:       http.MethodPost,
 			Handler:      userHandler.HandleUserCreate,
-			AuthRequired: false,
+			AuthRequired: true,
 		},
 		{
 			URI:          "/users/{id}",
@@ -37,13 +37,13 @@ func iniUserRoutes() []Route {
 			URI:          "/users/{id}",
 			Method:       http.MethodPut,
 			Handler:      userHandler.HandleUserUpdate,
-			AuthRequired: false,
+			AuthRequired: true,
 		},
 		{
 			URI:          "/users/{id}",
 			Method:       http.MethodDelete,
 			Handler:      userHandler.HandleUserDelete,
-			AuthRequired: false,
+			AuthRequired: true,
 		},
 	}
 	return usersRoutes

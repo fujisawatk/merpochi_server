@@ -1,15 +1,26 @@
 package routes
 
 import (
-	"merpochi_server/interfaces/controllers"
+	"merpochi_server/infrastructure/auth"
+	"merpochi_server/infrastructure/database"
+	"merpochi_server/interfaces/handler"
+	"merpochi_server/usecase"
 	"net/http"
 )
 
-var loginRoutes = []Route{
-	{
-		URI:          "/login",
-		Method:       http.MethodPost,
-		Handler:      controllers.Login,
-		AuthRequired: false,
-	},
+func iniLoginRoutes() []Route {
+	// 依存関係を注入
+	authPersistence := auth.NewAuthPersistence(database.DB)
+	authUsecase := usecase.NewAuthUsecase(authPersistence)
+	authHandler := handler.NewAuthHandler(authUsecase)
+
+	loginRoutes := []Route{
+		{
+			URI:          "/login",
+			Method:       http.MethodPost,
+			Handler:      authHandler.HandleLogin,
+			AuthRequired: false,
+		},
+	}
+	return loginRoutes
 }
