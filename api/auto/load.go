@@ -4,6 +4,7 @@ import (
 	"log"
 	"merpochi_server/domain/models"
 	"merpochi_server/infrastructure/database"
+	"merpochi_server/util/security"
 )
 
 // TestLoad テストデータの読込
@@ -19,8 +20,15 @@ func TestLoad() {
 		log.Fatal(err)
 	}
 
-	for _, users := range users {
-		err = db.Debug().Model(&models.User{}).Create(&users).Error
+	for _, user := range users {
+		var hashedPassword []byte
+		hashedPassword, err = security.Hash(user.Password)
+		if err != nil {
+			log.Fatal(err)
+		}
+		user.Password = string(hashedPassword)
+
+		err = db.Debug().Model(&models.User{}).Create(&user).Error
 		if err != nil {
 			log.Fatal(err)
 		}
