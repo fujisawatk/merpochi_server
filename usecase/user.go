@@ -4,6 +4,7 @@ import (
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 	"merpochi_server/usecase/validations"
+	"merpochi_server/util/security"
 )
 
 // UserUsecase Userに対するUsecaseのインターフェイス
@@ -45,6 +46,14 @@ func (uu userUsecase) CreateUser(nickname, email, password string) (models.User,
 	if err != nil {
 		return models.User{}, err
 	}
+
+	// パスワードのハッシュ化
+	var hashedPassword []byte
+	hashedPassword, err = security.Hash(user.Password)
+	if err != nil {
+		return models.User{}, err
+	}
+	user.Password = string(hashedPassword)
 
 	user, err = uu.userRepository.Save(user)
 	if err != nil {
