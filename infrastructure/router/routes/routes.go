@@ -19,8 +19,9 @@ type Route struct {
 
 // Load ルーティング値の読込
 func Load() []Route {
-	routes := iniUserRoutes()
+	routes := iniUsersRoutes()
 	routes = append(routes, iniLoginRoutes()...)
+	routes = append(routes, iniShopsRoutes()...)
 	return routes
 }
 
