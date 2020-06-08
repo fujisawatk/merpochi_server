@@ -9,3 +9,9 @@ var users = []models.User{
 		Password: "mikumiku",
 	},
 }
+
+var shops = []models.Shop{
+	{
+		Code: "a00000",
+	},
+}
