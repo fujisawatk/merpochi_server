@@ -39,3 +39,25 @@ func (sp *shopPersistence) FindAll() ([]models.Shop, error) {
 	}
 	return nil, err
 }
+
+// 店舗情報を保存
+func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
+	var err error
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+
+		err = sp.db.Debug().Model(&models.Shop{}).Create(&shop).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return shop, nil
+	}
+	return models.Shop{}, err
+}

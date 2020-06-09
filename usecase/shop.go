@@ -8,6 +8,7 @@ import (
 // ShopUsecase Shopに対するUsecaseのインターフェイス
 type ShopUsecase interface {
 	GetShops() ([]models.Shop, error)
+	CreateShop(string) (models.Shop, error)
 }
 
 type shopUsecase struct {
@@ -27,4 +28,18 @@ func (su shopUsecase) GetShops() ([]models.Shop, error) {
 		return nil, err
 	}
 	return shops, nil
+}
+
+func (su shopUsecase) CreateShop(code string) (models.Shop, error) {
+	var err error
+
+	shop := models.Shop{
+		Code: code,
+	}
+
+	shop, err = su.shopRepository.Save(shop)
+	if err != nil {
+		return models.Shop{}, err
+	}
+	return shop, nil
 }
