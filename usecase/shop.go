@@ -9,6 +9,7 @@ import (
 type ShopUsecase interface {
 	GetShops() ([]models.Shop, error)
 	CreateShop(string) (models.Shop, error)
+	GetShop(uint32) (models.Shop, error)
 }
 
 type shopUsecase struct {
@@ -38,6 +39,14 @@ func (su shopUsecase) CreateShop(code string) (models.Shop, error) {
 	}
 
 	shop, err = su.shopRepository.Save(shop)
+	if err != nil {
+		return models.Shop{}, err
+	}
+	return shop, nil
+}
+
+func (su shopUsecase) GetShop(uid uint32) (models.Shop, error) {
+	shop, err := su.shopRepository.FindByID(uid)
 	if err != nil {
 		return models.Shop{}, err
 	}
