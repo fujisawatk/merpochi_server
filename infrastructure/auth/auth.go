@@ -5,8 +5,9 @@ import (
 	"merpochi_server/domain/repository"
 	"merpochi_server/util/security"
 
+	"merpochi_server/util/channels"
+
 	"github.com/jinzhu/gorm"
-	"merpochi_server/util/channels.go"
 )
 
 type authPersistence struct {

@@ -6,7 +6,7 @@ import (
 	"merpochi_server/domain/repository"
 	"time"
 
-	"merpochi_server/util/channels.go"
+	"merpochi_server/util/channels"
 
 	"github.com/jinzhu/gorm"
 )

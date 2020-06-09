@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func iniUserRoutes() []Route {
+func iniUsersRoutes() []Route {
 	// 依存関係を注入
 	userPersistence := persistence.NewUserPersistence(database.DB)
 	userUsecase := usecase.NewUserUsecase(userPersistence)
