@@ -61,3 +61,24 @@ func (fp *favoritePersistence) Search(sid uint32) (uint32, error) {
 	}
 	return 0, err
 }
+
+// Delete お気に入り解除
+func (fp *favoritePersistence) Delete(sid uint32, uid uint32) error {
+	var err error
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? and shop_id = ?", uid, sid).Delete(&models.Favorite{}).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return nil
+	}
+	return err
+}

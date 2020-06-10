@@ -21,6 +21,12 @@ func iniFavoritesRoutes() []Route {
 			Handler:      favoriteHandler.HandleFavoriteCreate,
 			AuthRequired: false,
 		},
+		{
+			URI:          "/favorites/{id}",
+			Method:       http.MethodDelete,
+			Handler:      favoriteHandler.HandleFavoriteDelete,
+			AuthRequired: false,
+		},
 	}
 	return favoritesRoutes
 }

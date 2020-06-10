@@ -14,7 +14,7 @@ import (
 // FavoriteHandler Userに対するHandlerのインターフェイス
 type FavoriteHandler interface {
 	HandleFavoriteCreate(w http.ResponseWriter, r *http.Request)
-	// HandleFavoriteDelete(w http.ResponseWriter, r *http.Request)
+	HandleFavoriteDelete(w http.ResponseWriter, r *http.Request)
 }
 
 type favoriteHandler struct {
@@ -60,6 +60,37 @@ func (fh favoriteHandler) HandleFavoriteCreate(w http.ResponseWriter, r *http.Re
 		return
 	}
 	responses.JSON(w, http.StatusCreated, count)
+}
+
+// HandleFavoriteDelete お気に入りを解除
+func (fh favoriteHandler) HandleFavoriteDelete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	sid, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	var requestBody favoriteRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	count, err := fh.favoriteUsecase.DeleteFavorite(uint32(sid), requestBody.UserID)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	responses.JSON(w, http.StatusNoContent, count)
 }
 
 type favoriteRequest struct {
