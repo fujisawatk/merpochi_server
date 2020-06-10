@@ -15,3 +15,10 @@ var shops = []models.Shop{
 		Code: "a00000",
 	},
 }
+
+var favorites = []models.Favorite{
+	{
+		UserID: 1,
+		ShopID: 1,
+	},
+}
