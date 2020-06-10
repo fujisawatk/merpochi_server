@@ -22,6 +22,7 @@ func Load() []Route {
 	routes := iniUsersRoutes()
 	routes = append(routes, iniLoginRoutes()...)
 	routes = append(routes, iniShopsRoutes()...)
+	routes = append(routes, iniFavoritesRoutes()...)
 	return routes
 }
 
