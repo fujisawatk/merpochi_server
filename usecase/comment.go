@@ -8,6 +8,7 @@ import (
 // CommentUsecase Commentに対するUsecaseのインターフェイス
 type CommentUsecase interface {
 	CreateComment(string, uint32) (models.Comment, error)
+	UpdateComment(uint32, string) (int64, error)
 }
 
 type commentUsecase struct {
@@ -33,4 +34,16 @@ func (cu commentUsecase) CreateComment(text string, sid uint32) (models.Comment,
 		return models.Comment{}, err
 	}
 	return comment, nil
+}
+
+func (cu commentUsecase) UpdateComment(cid uint32, text string) (int64, error) {
+	comment := models.Comment{
+		Text: text,
+	}
+
+	rows, err := cu.commentRepository.Update(cid, comment)
+	if err != nil {
+		return 0, err
+	}
+	return rows, nil
 }

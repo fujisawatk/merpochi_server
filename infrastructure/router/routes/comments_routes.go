@@ -16,9 +16,15 @@ func iniCommentsRoutes() []Route {
 
 	commentRoutes := []Route{
 		{
-			URI:          "/comment",
+			URI:          "/comments",
 			Method:       http.MethodPost,
 			Handler:      commentHandler.HandleCommentCreate,
+			AuthRequired: false,
+		},
+		{
+			URI:          "/comments/{id}",
+			Method:       http.MethodPut,
+			Handler:      commentHandler.HandleCommentUpdate,
 			AuthRequired: false,
 		},
 	}
