@@ -3,6 +3,7 @@ package usecase
 import (
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
+	"merpochi_server/usecase/validations"
 )
 
 // CommentUsecase Commentに対するUsecaseのインターフェイス
@@ -24,10 +25,14 @@ func NewCommentUsecase(cr repository.CommentRepository) CommentUsecase {
 }
 
 func (cu commentUsecase) CreateComment(text string, sid uint32) (models.Comment, error) {
-	var err error
 	comment := models.Comment{
 		Text:   text,
 		ShopID: sid,
+	}
+
+	err := validations.CommentValidate(&comment)
+	if err != nil {
+		return models.Comment{}, err
 	}
 
 	comment, err = cu.commentRepository.Save(comment)
@@ -40,6 +45,11 @@ func (cu commentUsecase) CreateComment(text string, sid uint32) (models.Comment,
 func (cu commentUsecase) UpdateComment(cid uint32, text string) (int64, error) {
 	comment := models.Comment{
 		Text: text,
+	}
+
+	err := validations.CommentValidate(&comment)
+	if err != nil {
+		return 0, err
 	}
 
 	rows, err := cu.commentRepository.Update(cid, comment)
