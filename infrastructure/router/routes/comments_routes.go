@@ -27,6 +27,12 @@ func iniCommentsRoutes() []Route {
 			Handler:      commentHandler.HandleCommentUpdate,
 			AuthRequired: false,
 		},
+		{
+			URI:          "/comments/{id}",
+			Method:       http.MethodDelete,
+			Handler:      commentHandler.HandleCommentDelete,
+			AuthRequired: false,
+		},
 	}
 	return commentRoutes
 }

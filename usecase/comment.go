@@ -9,6 +9,7 @@ import (
 type CommentUsecase interface {
 	CreateComment(string, uint32) (models.Comment, error)
 	UpdateComment(uint32, string) (int64, error)
+	DeleteComment(uint32) error
 }
 
 type commentUsecase struct {
@@ -46,4 +47,12 @@ func (cu commentUsecase) UpdateComment(cid uint32, text string) (int64, error) {
 		return 0, err
 	}
 	return rows, nil
+}
+
+func (cu commentUsecase) DeleteComment(cid uint32) error {
+	_, err := cu.commentRepository.Delete(cid)
+	if err != nil {
+		return err
+	}
+	return nil
 }

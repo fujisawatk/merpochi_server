@@ -66,3 +66,24 @@ func (cp *commentPersistence) Update(cid uint32, comment models.Comment) (int64,
 	}
 	return 0, rs.Error
 }
+
+// 指定したコメントのレコードを1件削除
+func (cp *commentPersistence) Delete(cid uint32) (int64, error) {
+	var rs *gorm.DB
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = cp.db.Debug().Model(&models.Comment{}).Where("id = ?", cid).Take(&models.Comment{}).Delete(&models.Comment{})
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		if rs.Error != nil {
+			return 0, rs.Error
+		}
+		// RowsAffected→削除したレコード数を取得
+		return rs.RowsAffected, nil
+	}
+	return 0, rs.Error
+}
