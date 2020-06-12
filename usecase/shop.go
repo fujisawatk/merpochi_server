@@ -9,7 +9,7 @@ import (
 type ShopUsecase interface {
 	GetShops() ([]models.Shop, error)
 	CreateShop(string) (models.Shop, error)
-	GetShop(uint32) (models.Shop, error)
+	GetShop(uint32) ([]models.Comment, error)
 }
 
 type shopUsecase struct {
@@ -45,10 +45,10 @@ func (su shopUsecase) CreateShop(code string) (models.Shop, error) {
 	return shop, nil
 }
 
-func (su shopUsecase) GetShop(uid uint32) (models.Shop, error) {
-	shop, err := su.shopRepository.FindByID(uid)
+func (su shopUsecase) GetShop(sid uint32) ([]models.Comment, error) {
+	comment, err := su.shopRepository.FindByID(sid)
 	if err != nil {
-		return models.Shop{}, err
+		return []models.Comment{}, err
 	}
-	return shop, nil
+	return comment, nil
 }

@@ -66,18 +66,18 @@ func (sh shopHandler) HandleShopCreate(w http.ResponseWriter, r *http.Request) {
 func (sh shopHandler) HandleShopGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	uid, err := strconv.ParseUint(vars["id"], 10, 32)
+	sid, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
 
-	shop, err := sh.shopUsecase.GetShop(uint32(uid))
+	comment, err := sh.shopUsecase.GetShop(uint32(sid))
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, shop)
+	responses.JSON(w, http.StatusOK, comment)
 }
 
 type shopCreateRequest struct {
