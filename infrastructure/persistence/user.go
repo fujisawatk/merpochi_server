@@ -29,13 +29,6 @@ func (up *userPersistence) Save(user models.User) (models.User, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 
-		// 登録メールアドレスの重複検証
-		err = up.db.Debug().Model(models.User{}).Where("email = ?", user.Email).Take(&user).Error
-		if err == nil {
-			ch <- false
-			return
-		}
-
 		err = up.db.Debug().Model(&models.User{}).Create(&user).Error
 		if err != nil {
 			ch <- false
