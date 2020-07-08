@@ -25,7 +25,7 @@ func iniUsersRoutes() []Route {
 			URI:          "/users",
 			Method:       http.MethodPost,
 			Handler:      userHandler.HandleUserCreate,
-			AuthRequired: true,
+			AuthRequired: false,
 		},
 		{
 			URI:          "/users/{id}",
