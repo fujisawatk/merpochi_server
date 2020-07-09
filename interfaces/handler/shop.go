@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
@@ -29,14 +30,29 @@ func NewShopHandler(us usecase.ShopUsecase) ShopHandler {
 	}
 }
 
-// HandleShopsGet 店舗情報を全件取得
+// HandleShopsGet 外部APIで取得した各店舗に紐付く情報（コメント数）を取得
 func (sh shopHandler) HandleShopsGet(w http.ResponseWriter, r *http.Request) {
-	shops, err := sh.shopUsecase.GetShops()
+	// body形式 → ["XX0000", ...]
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	var requestBody []string
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	counts, err := sh.shopUsecase.GetShops(requestBody)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, shops)
+	fmt.Printf("%v\n", counts)
+	responses.JSON(w, http.StatusOK, counts)
 }
 
 // HandleShopCreate 店舗情報を登録

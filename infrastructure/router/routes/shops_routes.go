@@ -17,7 +17,7 @@ func iniShopsRoutes() []Route {
 	shopsRoutes := []Route{
 		{
 			URI:          "/shops",
-			Method:       http.MethodGet,
+			Method:       http.MethodPost,
 			Handler:      shopHandler.HandleShopsGet,
 			AuthRequired: false,
 		},

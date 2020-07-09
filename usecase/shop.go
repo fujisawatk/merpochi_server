@@ -7,7 +7,7 @@ import (
 
 // ShopUsecase Shopに対するUsecaseのインターフェイス
 type ShopUsecase interface {
-	GetShops() ([]models.Shop, error)
+	GetShops([]string) ([]int, error)
 	CreateShop(string) (models.Shop, error)
 	GetShop(uint32) ([]models.Comment, error)
 }
@@ -23,12 +23,26 @@ func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
 	}
 }
 
-func (su shopUsecase) GetShops() ([]models.Shop, error) {
-	shops, err := su.shopRepository.FindAll()
-	if err != nil {
-		return nil, err
+func (su shopUsecase) GetShops(shopCodes []string) ([]int, error) {
+	var commentsCount []int
+
+	// 取得した店舗IDを1件ずつ登録されているか確認
+	for _, code := range shopCodes {
+		shop, err := su.shopRepository.SearchShop(code)
+		// 登録されていない場合
+		if err != nil {
+			commentsCount = append(commentsCount, 0)
+		} else {
+			// 登録されている場合
+			count, err := su.shopRepository.FindAll(shop.ID)
+			// 登録後にコメントが削除された場合
+			if err != nil {
+				count = 0
+			}
+			commentsCount = append(commentsCount, int(count))
+		}
 	}
-	return shops, nil
+	return commentsCount, nil
 }
 
 func (su shopUsecase) CreateShop(code string) (models.Shop, error) {
