@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
@@ -51,7 +50,6 @@ func (sh shopHandler) HandleShopsGet(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	fmt.Printf("%v\n", counts)
 	responses.JSON(w, http.StatusOK, counts)
 }
 

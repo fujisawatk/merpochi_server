@@ -22,7 +22,7 @@ func iniShopsRoutes() []Route {
 			AuthRequired: false,
 		},
 		{
-			URI:          "/shops",
+			URI:          "/shops/register",
 			Method:       http.MethodPost,
 			Handler:      shopHandler.HandleShopCreate,
 			AuthRequired: false,
