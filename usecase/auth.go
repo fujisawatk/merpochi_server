@@ -12,7 +12,7 @@ import (
 
 // AuthUsecase ユーザー認証に対するUsecaseのインターフェイス
 type AuthUsecase interface {
-	LoginUser(string, string) (string, error)
+	LoginUser(string, string) (authResponse, error)
 	VerifyUser(string) (authResponse, error)
 }
 
@@ -27,7 +27,7 @@ func NewAuthUsecase(ar repository.AuthRepository) AuthUsecase {
 	}
 }
 
-func (au authUsecase) LoginUser(email, password string) (string, error) {
+func (au authUsecase) LoginUser(email, password string) (authResponse, error) {
 	user := models.User{
 		Email:    email,
 		Password: password,
@@ -35,14 +35,20 @@ func (au authUsecase) LoginUser(email, password string) (string, error) {
 
 	err := validations.UserLoginValidate(&user)
 	if err != nil {
-		return "", err
+		return authResponse{}, err
 	}
 
-	token, err := au.authRepository.SignIn(user.Email, user.Password)
+	user, token, err := au.authRepository.SignIn(user.Email, user.Password)
 	if err != nil {
-		return "", err
+		return authResponse{}, err
 	}
-	return token, nil
+	cUser := authResponse{
+		ID:       user.ID,
+		Nickname: user.Nickname,
+		Email:    user.Email,
+		Token:    token,
+	}
+	return cUser, nil
 }
 
 func (au authUsecase) VerifyUser(authToken string) (authResponse, error) {

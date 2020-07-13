@@ -29,8 +29,6 @@ func NewAuthHandler(ua usecase.AuthUsecase) AuthHandler {
 
 // Login ログイン処理
 func (ah authHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	var token string
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -44,12 +42,12 @@ func (ah authHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err = ah.authUsecase.LoginUser(requestBody.Email, requestBody.Password)
+	user, err := ah.authUsecase.LoginUser(requestBody.Email, requestBody.Password)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, token)
+	responses.JSON(w, http.StatusOK, user)
 }
 
 // HandleVerify ユーザー確認（リクエストが来たら、ユーザーデータを返す）

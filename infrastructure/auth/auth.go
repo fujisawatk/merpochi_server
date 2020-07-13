@@ -20,7 +20,7 @@ func NewAuthPersistence(db *gorm.DB) repository.AuthRepository {
 }
 
 // SignIn 既存ユーザーか否か確認
-func (ap *authPersistence) SignIn(email, password string) (string, error) {
+func (ap *authPersistence) SignIn(email, password string) (models.User, string, error) {
 	user := models.User{}
 	var err error
 
@@ -43,9 +43,13 @@ func (ap *authPersistence) SignIn(email, password string) (string, error) {
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return CreateToken(user.ID)
+		token, err := CreateToken(user.ID)
+		if err != nil {
+			return user, "", err
+		}
+		return user, token, nil
 	}
-	return "", err
+	return models.User{}, "", err
 }
 
 func (ap *authPersistence) FindCurrentUser(uid uint32) (models.User, string, error) {
