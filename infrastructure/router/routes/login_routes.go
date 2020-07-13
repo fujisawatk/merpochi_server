@@ -21,6 +21,12 @@ func iniLoginRoutes() []Route {
 			Handler:      authHandler.HandleLogin,
 			AuthRequired: false,
 		},
+		{
+			URI:          "/verify",
+			Method:       http.MethodGet,
+			Handler:      authHandler.HandleVerify,
+			AuthRequired: true,
+		},
 	}
 	return loginRoutes
 }

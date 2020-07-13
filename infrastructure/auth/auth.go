@@ -47,3 +47,28 @@ func (ap *authPersistence) SignIn(email, password string) (string, error) {
 	}
 	return "", err
 }
+
+func (ap *authPersistence) FindCurrentUser(uid uint32) (models.User, string, error) {
+	user := models.User{}
+	var err error
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = ap.db.Debug().Model(&models.User{}).Where("id = ?", uid).Take(&user).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		token, err := CreateToken(user.ID)
+		if err != nil {
+			return user, "", err
+		}
+		return user, token, nil
+	}
+	return models.User{}, "", err
+}

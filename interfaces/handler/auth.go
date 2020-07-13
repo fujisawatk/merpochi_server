@@ -2,15 +2,18 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
 	"net/http"
+	"strings"
 )
 
 // AuthHandler ユーザー認証に対するHandlerのインターフェイス
 type AuthHandler interface {
 	HandleLogin(w http.ResponseWriter, r *http.Request)
+	HandleVerify(w http.ResponseWriter, r *http.Request)
 }
 
 type authHandler struct {
@@ -47,6 +50,25 @@ func (ah authHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusOK, token)
+}
+
+// HandleVerify ユーザー確認（リクエストが来たら、ユーザーデータを返す）
+func (ah authHandler) HandleVerify(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	bearerToken := strings.Split(authHeader, " ")
+
+	if len(bearerToken) == 2 {
+		authToken := bearerToken[1]
+		user, err := ah.authUsecase.VerifyUser(authToken)
+		if err != nil {
+			responses.ERROR(w, http.StatusBadRequest, err)
+			return
+		}
+		responses.JSON(w, http.StatusOK, user)
+	} else {
+		responses.ERROR(w, http.StatusUnauthorized, errors.New("トークンの形式が不正です"))
+		return
+	}
 }
 
 type authRequest struct {
