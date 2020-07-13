@@ -8,13 +8,13 @@ import (
 	"net/http"
 )
 
-func iniLoginRoutes() []Route {
+func iniAuthRoutes() []Route {
 	// 依存関係を注入
 	authPersistence := auth.NewAuthPersistence(database.DB)
 	authUsecase := usecase.NewAuthUsecase(authPersistence)
 	authHandler := handler.NewAuthHandler(authUsecase)
 
-	loginRoutes := []Route{
+	authRoutes := []Route{
 		{
 			URI:          "/login",
 			Method:       http.MethodPost,
@@ -28,5 +28,5 @@ func iniLoginRoutes() []Route {
 			AuthRequired: true,
 		},
 	}
-	return loginRoutes
+	return authRoutes
 }
