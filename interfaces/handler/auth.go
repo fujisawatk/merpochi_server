@@ -2,15 +2,18 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
 	"net/http"
+	"strings"
 )
 
 // AuthHandler ユーザー認証に対するHandlerのインターフェイス
 type AuthHandler interface {
 	HandleLogin(w http.ResponseWriter, r *http.Request)
+	HandleVerify(w http.ResponseWriter, r *http.Request)
 }
 
 type authHandler struct {
@@ -26,8 +29,6 @@ func NewAuthHandler(ua usecase.AuthUsecase) AuthHandler {
 
 // Login ログイン処理
 func (ah authHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	var token string
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -41,12 +42,31 @@ func (ah authHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err = ah.authUsecase.LoginUser(requestBody.Email, requestBody.Password)
+	user, err := ah.authUsecase.LoginUser(requestBody.Email, requestBody.Password)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, token)
+	responses.JSON(w, http.StatusOK, user)
+}
+
+// HandleVerify ユーザー確認（リクエストが来たら、ユーザーデータを返す）
+func (ah authHandler) HandleVerify(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	bearerToken := strings.Split(authHeader, " ")
+
+	if len(bearerToken) == 2 {
+		authToken := bearerToken[1]
+		user, err := ah.authUsecase.VerifyUser(authToken)
+		if err != nil {
+			responses.ERROR(w, http.StatusBadRequest, err)
+			return
+		}
+		responses.JSON(w, http.StatusOK, user)
+	} else {
+		responses.ERROR(w, http.StatusUnauthorized, errors.New("トークンの形式が不正です"))
+		return
+	}
 }
 
 type authRequest struct {
