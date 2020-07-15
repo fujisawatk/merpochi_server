@@ -4,6 +4,7 @@ CREATE TABLE comments (
   id int unsigned NOT NULL AUTO_INCREMENT,
   text varchar(255) NOT NULL,
   shop_id int NOT NULL,
+  user_id int NOT NULL,
   created_at timestamp NULL DEFAULT NULL,
   updated_at timestamp NULL DEFAULT NULL,
   PRIMARY KEY (id)

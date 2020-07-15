@@ -35,15 +35,18 @@ var comments = []models.Comment{
 		ID:     1,
 		Text:   "コメントテストa00000",
 		ShopID: 1,
+		UserID: 1,
 	},
 	{
 		ID:     2,
 		Text:   "コメントテストb11111",
 		ShopID: 2,
+		UserID: 1,
 	},
 	{
 		ID:     3,
 		Text:   "コメントテストa00000-2",
 		ShopID: 1,
+		UserID: 1,
 	},
 }
