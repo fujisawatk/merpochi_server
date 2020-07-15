@@ -72,7 +72,7 @@ func (sp *shopPersistence) FindByID(sid uint32) ([]models.Comment, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 		query := sp.db.Debug().Table("shops").
-			Select("comments.id, comments.text").
+			Select("comments.id, comments.text, comments.user_id").
 			Joins("inner join comments on comments.shop_id = shops.id").
 			Where("shops.id = ?", sid)
 		query.Scan(&results)
@@ -107,4 +107,25 @@ func (sp *shopPersistence) SearchShop(code string) (models.Shop, error) {
 		return shop, nil
 	}
 	return models.Shop{}, err
+}
+
+func (sp *shopPersistence) FindCommentUser(uid uint32) (models.User, error) {
+	var err error
+
+	user := models.User{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = sp.db.Debug().Model(&models.User{}).Where("id = ?", uid).First(&user).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return user, nil
+	}
+	return models.User{}, err
 }
