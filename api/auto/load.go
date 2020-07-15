@@ -86,19 +86,29 @@ func TestLoad() {
 
 	// テーブル結合で指定した店舗IDのコメントを取得
 	type Results struct {
-		ID   uint32
-		Code string
-		Text string
+		ID          uint32
+		Code        string
+		Text        string
+		UserID      uint32
+		CommentUser string
 	}
 
 	var results []Results
 	query := db.Debug().Table("shops").
-		Select("shops.id, shops.code, comments.text").
+		Select("shops.id, shops.code, comments.text, comments.user_id").
 		Joins("left join comments on comments.shop_id = shops.id").
 		Where("shops.code = ?", "a00000")
 	query.Scan(&results)
 
-	for _, result := range results {
-		console.Pretty(result.Text)
+	commentUser := models.User{}
+	// ショップに紐付くコメントからユーザーIDを取得
+	// ユーザーIDに紐付くユーザーを取得
+	for i := 0; i < len(results); i++ {
+		err = db.Debug().Model(&models.User{}).Where("id = ?", results[i].UserID).First(&commentUser).Error
+		if err != nil {
+			log.Fatal(err)
+		}
+		results[i].CommentUser = commentUser.Nickname
 	}
+	console.Pretty(results)
 }

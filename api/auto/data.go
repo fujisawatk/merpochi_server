@@ -9,6 +9,12 @@ var users = []models.User{
 		Email:    "miku@email.com",
 		Password: "mikumiku",
 	},
+	{
+		ID:       2,
+		Nickname: "fuji",
+		Email:    "fuji@email.com",
+		Password: "fujifuji",
+	},
 }
 
 var shops = []models.Shop{
@@ -41,7 +47,7 @@ var comments = []models.Comment{
 		ID:     2,
 		Text:   "コメントテストb11111",
 		ShopID: 2,
-		UserID: 1,
+		UserID: 2,
 	},
 	{
 		ID:     3,
