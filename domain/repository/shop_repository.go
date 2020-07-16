@@ -8,4 +8,5 @@ type ShopRepository interface {
 	Save(models.Shop) (models.Shop, error)
 	FindByID(uint32) ([]models.Comment, error)
 	SearchShop(string) (models.Shop, error)
+	FindCommentUser(uint32) (models.User, error)
 }

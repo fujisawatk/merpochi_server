@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 )
@@ -72,6 +73,18 @@ func (su shopUsecase) GetShop(sid uint32) ([]models.Comment, error) {
 	comment, err := su.shopRepository.FindByID(sid)
 	if err != nil {
 		return []models.Comment{}, err
+	}
+	// コメントが存在する場合
+	if len(comment) > 0 {
+		// 取得した店舗のコメントに紐付くユーザーを取得
+		for i := 0; i < len(comment); i++ {
+			fmt.Println(comment[i])
+			commentUser, err := su.shopRepository.FindCommentUser(comment[i].UserID)
+			if err != nil {
+				return []models.Comment{}, err
+			}
+			comment[i].User = commentUser
+		}
 	}
 	return comment, nil
 }

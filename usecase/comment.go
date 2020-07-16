@@ -8,7 +8,7 @@ import (
 
 // CommentUsecase Commentに対するUsecaseのインターフェイス
 type CommentUsecase interface {
-	CreateComment(string, uint32) (models.Comment, error)
+	CreateComment(string, uint32, uint32) (models.Comment, error)
 	UpdateComment(uint32, string) (int64, error)
 	DeleteComment(uint32) error
 }
@@ -24,10 +24,11 @@ func NewCommentUsecase(cr repository.CommentRepository) CommentUsecase {
 	}
 }
 
-func (cu commentUsecase) CreateComment(text string, sid uint32) (models.Comment, error) {
+func (cu commentUsecase) CreateComment(text string, sid, uid uint32) (models.Comment, error) {
 	comment := models.Comment{
 		Text:   text,
 		ShopID: sid,
+		UserID: uid,
 	}
 
 	err := validations.CommentValidate(&comment)
@@ -39,6 +40,14 @@ func (cu commentUsecase) CreateComment(text string, sid uint32) (models.Comment,
 	if err != nil {
 		return models.Comment{}, err
 	}
+
+	// コメントしたユーザー値を取得
+	commentUser, err := cu.commentRepository.FindCommentUser(comment.UserID)
+	if err != nil {
+		return models.Comment{}, err
+	}
+	comment.User = commentUser
+
 	return comment, nil
 }
 

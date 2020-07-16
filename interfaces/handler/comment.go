@@ -45,7 +45,7 @@ func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, requestBody.ShopID)
+	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, requestBody.ShopID, requestBody.UserID)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -106,6 +106,7 @@ func (ch commentHandler) HandleCommentDelete(w http.ResponseWriter, r *http.Requ
 type commentCreateRequest struct {
 	Text   string `json:"text"`
 	ShopID uint32 `json:"shop_id"`
+	UserID uint32 `json:"user_id"`
 }
 
 type commentUpdateRequest struct {
