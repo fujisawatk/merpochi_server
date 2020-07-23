@@ -3,6 +3,8 @@
 CREATE TABLE shops (
   id int unsigned NOT NULL AUTO_INCREMENT,
   code varchar(64) NOT NULL UNIQUE,
+  name varchar(255) NOT NULL,
+  category varchar(255) NOT NULL,
   created_at timestamp NULL DEFAULT NULL,
   updated_at timestamp NULL DEFAULT NULL,
   PRIMARY KEY(id)

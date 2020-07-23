@@ -19,12 +19,16 @@ var users = []models.User{
 
 var shops = []models.Shop{
 	{
-		ID:   1,
-		Code: "a00000",
+		ID:       1,
+		Code:     "gcrk447",
+		Name:     "焼鳥屋 鳥貴族 鶴見西口店",
+		Category: "焼鳥",
 	},
 	{
-		ID:   2,
-		Code: "b11111",
+		ID:       2,
+		Code:     "gdyd408",
+		Name:     "焼鳥屋 鳥貴族 鶴見東口店",
+		Category: "焼鳥",
 	},
 }
 
@@ -52,7 +56,7 @@ var comments = []models.Comment{
 	{
 		ID:     3,
 		Text:   "コメントテストa00000-2",
-		ShopID: 1,
+		ShopID: 2,
 		UserID: 1,
 	},
 }
