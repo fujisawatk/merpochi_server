@@ -160,7 +160,7 @@ func (up *userPersistence) SearchUser(email string) error {
 	return errors.New("このメールアドレスは既に使用されています")
 }
 
-// FindShops 指定ユーザーがコメントした店舗ID取得
+// FindShops 指定ユーザーがコメントした店舗情報取得
 func (up *userPersistence) FindShops(uid uint32) ([]models.Shop, error) {
 	var shops []models.Shop
 	var err error
@@ -170,7 +170,7 @@ func (up *userPersistence) FindShops(uid uint32) ([]models.Shop, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 		query := up.db.Debug().Table("users").
-			Select("shops.id, shops.code").
+			Select("shops.id, shops.code, shops.name, shops.category").
 			Joins("inner join comments on comments.user_id = users.id").
 			Joins("inner join shops on shops.id = comments.shop_id").
 			Where("users.id = ?", uid)
