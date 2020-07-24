@@ -5,6 +5,7 @@ CREATE TABLE shops (
   code varchar(64) NOT NULL UNIQUE,
   name varchar(255) NOT NULL,
   category varchar(255) NOT NULL,
+  img varchar(255) NOT NULL,
   created_at timestamp NULL DEFAULT NULL,
   updated_at timestamp NULL DEFAULT NULL,
   PRIMARY KEY(id)

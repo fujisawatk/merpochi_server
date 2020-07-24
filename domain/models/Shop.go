@@ -8,6 +8,7 @@ type Shop struct {
 	Code      string    `json:"code"`
 	Name      string    `json:"name"`
 	Category  string    `json:"category"`
+	Img       string    `json:"img"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

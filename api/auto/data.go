@@ -23,12 +23,14 @@ var shops = []models.Shop{
 		Code:     "gcrk447",
 		Name:     "焼鳥屋 鳥貴族 鶴見西口店",
 		Category: "焼鳥",
+		Img:      "https://rimage.gnst.jp/rest/img/b1639pht0000/t_0omo.jpg",
 	},
 	{
 		ID:       2,
 		Code:     "gdyd408",
 		Name:     "焼鳥屋 鳥貴族 鶴見東口店",
 		Category: "焼鳥",
+		Img:      "https://rimage.gnst.jp/rest/img/nnb7n5up0000/t_0oly.jpg",
 	},
 }
 

@@ -170,7 +170,7 @@ func (up *userPersistence) FindShops(uid uint32) ([]models.Shop, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 		query := up.db.Debug().Table("users").
-			Select("shops.id, shops.code, shops.name, shops.category").
+			Select("shops.id, shops.code, shops.name, shops.category, shops.img").
 			Joins("inner join comments on comments.user_id = users.id").
 			Joins("inner join shops on shops.id = comments.shop_id").
 			Where("users.id = ?", uid)
