@@ -68,7 +68,7 @@ func (sh shopHandler) HandleShopCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shop, err := sh.shopUsecase.CreateShop(requestBody.Code)
+	shop, err := sh.shopUsecase.CreateShop(requestBody.Code, requestBody.Name, requestBody.Category, requestBody.Img)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -95,5 +95,8 @@ func (sh shopHandler) HandleShopGet(w http.ResponseWriter, r *http.Request) {
 }
 
 type shopCreateRequest struct {
-	Code string `json:"code"`
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	Category string `json:"category"`
+	Img      string `json:"img"`
 }
