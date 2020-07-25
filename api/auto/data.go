@@ -61,4 +61,10 @@ var comments = []models.Comment{
 		ShopID: 2,
 		UserID: 1,
 	},
+	{
+		ID:     4,
+		Text:   "コメントテストa00000-3",
+		ShopID: 2,
+		UserID: 1,
+	},
 }

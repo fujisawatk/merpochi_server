@@ -108,5 +108,15 @@ func (uu userUsecase) CommentedShops(uid uint32) ([]models.Shop, error) {
 	if err != nil {
 		return []models.Shop{}, err
 	}
-	return shops, nil
+	// 店舗情報重複削除
+	m := make(map[string]bool)
+	uniq := []models.Shop{}
+
+	for _, shop := range shops {
+		if !m[shop.Name] {
+			m[shop.Name] = true
+			uniq = append(uniq, shop)
+		}
+	}
+	return uniq, nil
 }
