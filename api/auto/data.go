@@ -19,18 +19,28 @@ var users = []models.User{
 
 var shops = []models.Shop{
 	{
-		ID:       1,
-		Code:     "gcrk447",
-		Name:     "焼鳥屋 鳥貴族 鶴見西口店",
-		Category: "焼鳥",
-		Img:      "https://rimage.gnst.jp/rest/img/b1639pht0000/t_0omo.jpg",
+		ID:        1,
+		Code:      "gcrk447",
+		Name:      "焼鳥屋 鳥貴族 鶴見西口店",
+		Category:  "焼鳥",
+		Opentime:  "17:00～24:00",
+		Budget:    2000,
+		Img:       "https://rimage.gnst.jp/rest/img/b1639pht0000/t_0omo.jpg",
+		Latitude:  35.509054,
+		Longitude: 139.674982,
+		URL:       "https://r.gnavi.co.jp/b1639pht0000/?ak=uGZLtrurN0Ig0vhqZz1VLGDDPH0WafuFnTh%2Bu4ABpI8%3D",
 	},
 	{
-		ID:       2,
-		Code:     "gdyd408",
-		Name:     "焼鳥屋 鳥貴族 鶴見東口店",
-		Category: "焼鳥",
-		Img:      "https://rimage.gnst.jp/rest/img/nnb7n5up0000/t_0oly.jpg",
+		ID:        2,
+		Code:      "gdyd408",
+		Name:      "焼鳥屋 鳥貴族 鶴見東口店",
+		Category:  "焼鳥",
+		Opentime:  "17:00～24:00",
+		Budget:    2000,
+		Img:       "https://rimage.gnst.jp/rest/img/nnb7n5up0000/t_0oly.jpg",
+		Latitude:  35.508283,
+		Longitude: 139.677655,
+		URL:       "https://r.gnavi.co.jp/nnb7n5up0000/?ak=uGZLtrurN0Ig0vhqZz1VLGDDPH0WafuFnTh%2Bu4ABpI8%3D",
 	},
 }
 

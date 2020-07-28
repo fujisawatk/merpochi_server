@@ -9,7 +9,7 @@ import (
 // ShopUsecase Shopに対するUsecaseのインターフェイス
 type ShopUsecase interface {
 	GetShops([]string) ([]shopResponse, error)
-	CreateShop(string, string, string, string) (models.Shop, error)
+	CreateShop(models.Shop) (models.Shop, error)
 	GetShop(uint32) ([]models.Comment, error)
 }
 
@@ -55,17 +55,8 @@ func (su shopUsecase) GetShops(shopCodes []string) ([]shopResponse, error) {
 	return commentsCount, nil
 }
 
-func (su shopUsecase) CreateShop(code, name, category, img string) (models.Shop, error) {
-	var err error
-
-	shop := models.Shop{
-		Code:     code,
-		Name:     name,
-		Category: category,
-		Img:      img,
-	}
-
-	shop, err = su.shopRepository.Save(shop)
+func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
+	shop, err := su.shopRepository.Save(req)
 	if err != nil {
 		return models.Shop{}, err
 	}
