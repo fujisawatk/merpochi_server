@@ -9,7 +9,7 @@ type Shop struct {
 	Name      string    `json:"name"`
 	Category  string    `json:"category"`
 	Opentime  string    `json:"opentime"`
-	Budget    uint32    `json:"budget"`
+	Budget    int       `json:"budget"`
 	Img       string    `json:"img"`
 	Latitude  float64   `json:"latitude"`
 	Longitude float64   `json:"longitude"`
