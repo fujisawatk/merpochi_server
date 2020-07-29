@@ -45,6 +45,12 @@ func iniUsersRoutes() []Route {
 			Handler:      userHandler.HandleUserDelete,
 			AuthRequired: true,
 		},
+		{
+			URI:          "/users/{id}/commentedshops",
+			Method:       http.MethodGet,
+			Handler:      userHandler.HandleUserCommentedShops,
+			AuthRequired: false,
+		},
 	}
 	return usersRoutes
 }

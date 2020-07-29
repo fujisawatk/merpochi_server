@@ -14,6 +14,7 @@ type UserUsecase interface {
 	GetUser(uint32) (models.User, error)
 	UpdateUser(uint32, string, string) (int64, error)
 	DeleteUser(uint32) error
+	CommentedShops(uint32) ([]models.Shop, error)
 }
 
 type userUsecase struct {
@@ -100,4 +101,22 @@ func (uu userUsecase) DeleteUser(uid uint32) error {
 		return err
 	}
 	return nil
+}
+
+func (uu userUsecase) CommentedShops(uid uint32) ([]models.Shop, error) {
+	shops, err := uu.userRepository.FindShops(uid)
+	if err != nil {
+		return []models.Shop{}, err
+	}
+	// 店舗情報重複削除
+	m := make(map[string]bool)
+	uniq := []models.Shop{}
+
+	for _, shop := range shops {
+		if !m[shop.Name] {
+			m[shop.Name] = true
+			uniq = append(uniq, shop)
+		}
+	}
+	return uniq, nil
 }

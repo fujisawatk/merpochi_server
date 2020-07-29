@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"io/ioutil"
+	"merpochi_server/domain/models"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
 	"net/http"
@@ -60,15 +61,14 @@ func (sh shopHandler) HandleShopCreate(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-
-	var requestBody shopCreateRequest
+	var requestBody models.Shop
 	err = json.Unmarshal(body, &requestBody)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
-	shop, err := sh.shopUsecase.CreateShop(requestBody.Code)
+	shop, err := sh.shopUsecase.CreateShop(requestBody)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -92,8 +92,4 @@ func (sh shopHandler) HandleShopGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusOK, comment)
-}
-
-type shopCreateRequest struct {
-	Code string `json:"code"`
 }
