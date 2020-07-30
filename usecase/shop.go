@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
+	"merpochi_server/util/console"
 )
 
 // ShopUsecase Shopに対するUsecaseのインターフェイス
@@ -25,7 +26,7 @@ func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
 }
 
 func (su shopUsecase) GetShops(shopCodes []string) ([]shopResponse, error) {
-	var commentsCount []shopResponse
+	var counts []shopResponse
 
 	// 取得した店舗IDを1件ずつ登録されているか確認
 	for _, code := range shopCodes {
@@ -34,25 +35,32 @@ func (su shopUsecase) GetShops(shopCodes []string) ([]shopResponse, error) {
 		// 登録されていない場合
 		if err != nil {
 			res = shopResponse{
-				ID:    0,
-				Count: 0,
+				ID:             0,
+				CommentsCount:  0,
+				FavoritesCount: 0,
 			}
-			commentsCount = append(commentsCount, res)
+			counts = append(counts, res)
 		} else {
 			// 登録されている場合
-			count, err := su.shopRepository.FindAll(shop.ID)
+			commentsCount, err := su.shopRepository.FindCommentsCount(shop.ID)
 			// 登録後にコメントが削除された場合
 			if err != nil {
-				count = 0
+				commentsCount = 0
+			}
+			favoritesCount, err := su.shopRepository.FindFavoritesCount(shop.ID)
+			// 登録後にいいねが削除された場合
+			if err != nil {
+				favoritesCount = 0
 			}
 			res = shopResponse{
-				ID:    shop.ID,
-				Count: int(count),
+				ID:             shop.ID,
+				CommentsCount:  int(commentsCount),
+				FavoritesCount: int(favoritesCount),
 			}
-			commentsCount = append(commentsCount, res)
+			counts = append(counts, res)
 		}
 	}
-	return commentsCount, nil
+	return counts, nil
 }
 
 func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
@@ -80,10 +88,12 @@ func (su shopUsecase) GetShop(sid uint32) ([]models.Comment, error) {
 			comment[i].User = commentUser
 		}
 	}
+	console.Pretty(comment)
 	return comment, nil
 }
 
 type shopResponse struct {
-	ID    uint32 `json:"id"`
-	Count int    `json:"count"`
+	ID             uint32 `json:"id"`
+	CommentsCount  int    `json:"comments_count"`
+	FavoritesCount int    `json:"favorites_count"`
 }
