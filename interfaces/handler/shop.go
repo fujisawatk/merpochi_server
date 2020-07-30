@@ -17,6 +17,7 @@ type ShopHandler interface {
 	HandleShopsGet(w http.ResponseWriter, r *http.Request)
 	HandleShopCreate(w http.ResponseWriter, r *http.Request)
 	HandleShopGet(w http.ResponseWriter, r *http.Request)
+	HandleShopFavoritesGet(w http.ResponseWriter, r *http.Request)
 }
 
 type shopHandler struct {
@@ -92,4 +93,22 @@ func (sh shopHandler) HandleShopGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusOK, comment)
+}
+
+// HandleShopFavoriteGet 店舗情報を1件取得
+func (sh shopHandler) HandleShopFavoritesGet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	sid, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	favorites, err := sh.shopUsecase.GetShopFavorites(uint32(sid))
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, favorites)
 }

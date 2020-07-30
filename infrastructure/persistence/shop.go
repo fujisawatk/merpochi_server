@@ -110,6 +110,31 @@ func (sp *shopPersistence) FindByID(sid uint32) ([]models.Comment, error) {
 	return []models.Comment{}, errors.New("no comment")
 }
 
+// 指定した店舗のいいね情報を取得
+func (sp *shopPersistence) FindFavorites(sid uint32) ([]models.Favorite, error) {
+	var results []models.Favorite
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		query := sp.db.Debug().Table("shops").
+			Select("favorites.*").
+			Joins("inner join favorites on favorites.shop_id = shops.id").
+			Where("shops.id = ?", sid)
+		query.Scan(&results)
+		if len(results) == 0 {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return results, nil
+	}
+	return []models.Favorite{}, errors.New("no favorite")
+}
+
 func (sp *shopPersistence) SearchShop(code string) (models.Shop, error) {
 	var err error
 

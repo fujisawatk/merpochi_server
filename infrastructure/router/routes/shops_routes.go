@@ -33,6 +33,12 @@ func iniShopsRoutes() []Route {
 			Handler:      shopHandler.HandleShopGet,
 			AuthRequired: false,
 		},
+		{
+			URI:          "/shops/{id}/favorites",
+			Method:       http.MethodGet,
+			Handler:      shopHandler.HandleShopFavoritesGet,
+			AuthRequired: false,
+		},
 	}
 	return shopsRoutes
 }
