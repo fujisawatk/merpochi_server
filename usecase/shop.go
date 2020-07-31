@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
-	"merpochi_server/util/console"
 )
 
 // ShopUsecase Shopに対するUsecaseのインターフェイス
 type ShopUsecase interface {
 	GetShops([]string) ([]shopResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
-	GetShop(uint32) ([]models.Comment, error)
+	GetShopComments(uint32) ([]models.Comment, error)
 	GetShopFavorites(uint32) ([]models.Favorite, error)
 }
 
@@ -72,25 +71,24 @@ func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
 	return shop, nil
 }
 
-func (su shopUsecase) GetShop(sid uint32) ([]models.Comment, error) {
-	comment, err := su.shopRepository.FindByID(sid)
+func (su shopUsecase) GetShopComments(sid uint32) ([]models.Comment, error) {
+	comments, err := su.shopRepository.FindComments(sid)
 	if err != nil {
 		return []models.Comment{}, err
 	}
 	// コメントが存在する場合
-	if len(comment) > 0 {
+	if len(comments) > 0 {
 		// 取得した店舗のコメントに紐付くユーザーを取得
-		for i := 0; i < len(comment); i++ {
-			fmt.Println(comment[i])
-			commentUser, err := su.shopRepository.FindCommentUser(comment[i].UserID)
+		for i := 0; i < len(comments); i++ {
+			fmt.Println(comments[i])
+			commentUser, err := su.shopRepository.FindCommentUser(comments[i].UserID)
 			if err != nil {
 				return []models.Comment{}, err
 			}
-			comment[i].User = commentUser
+			comments[i].User = commentUser
 		}
 	}
-	console.Pretty(comment)
-	return comment, nil
+	return comments, nil
 }
 
 func (su shopUsecase) GetShopFavorites(sid uint32) ([]models.Favorite, error) {

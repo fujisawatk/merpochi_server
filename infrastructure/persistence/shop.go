@@ -86,7 +86,7 @@ func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 }
 
 // 指定した店舗のコメント情報を取得（店舗情報はフロント側の外部APIから取得し表示）
-func (sp *shopPersistence) FindByID(sid uint32) ([]models.Comment, error) {
+func (sp *shopPersistence) FindComments(sid uint32) ([]models.Comment, error) {
 	var results []models.Comment
 
 	done := make(chan bool)
@@ -94,7 +94,7 @@ func (sp *shopPersistence) FindByID(sid uint32) ([]models.Comment, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 		query := sp.db.Debug().Table("shops").
-			Select("comments.id, comments.text, comments.user_id").
+			Select("comments.*").
 			Joins("inner join comments on comments.shop_id = shops.id").
 			Where("shops.id = ?", sid)
 		query.Scan(&results)
