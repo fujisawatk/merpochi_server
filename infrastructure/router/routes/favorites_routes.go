@@ -16,13 +16,13 @@ func iniFavoritesRoutes() []Route {
 
 	favoritesRoutes := []Route{
 		{
-			URI:          "/favorites/{id}",
+			URI:          "/shops/{id}/favorites",
 			Method:       http.MethodPost,
 			Handler:      favoriteHandler.HandleFavoriteCreate,
 			AuthRequired: false,
 		},
 		{
-			URI:          "/favorites/{id}",
+			URI:          "/shops/{id}/favorites",
 			Method:       http.MethodDelete,
 			Handler:      favoriteHandler.HandleFavoriteDelete,
 			AuthRequired: false,
