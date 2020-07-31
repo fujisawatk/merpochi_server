@@ -10,7 +10,8 @@ import (
 type ShopUsecase interface {
 	GetShops([]string) ([]shopResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
-	GetShop(uint32) ([]models.Comment, error)
+	GetShopComments(uint32) ([]models.Comment, error)
+	GetShopFavorites(uint32) ([]models.Favorite, error)
 }
 
 type shopUsecase struct {
@@ -25,7 +26,7 @@ func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
 }
 
 func (su shopUsecase) GetShops(shopCodes []string) ([]shopResponse, error) {
-	var commentsCount []shopResponse
+	var counts []shopResponse
 
 	// 取得した店舗IDを1件ずつ登録されているか確認
 	for _, code := range shopCodes {
@@ -34,25 +35,32 @@ func (su shopUsecase) GetShops(shopCodes []string) ([]shopResponse, error) {
 		// 登録されていない場合
 		if err != nil {
 			res = shopResponse{
-				ID:    0,
-				Count: 0,
+				ID:             0,
+				CommentsCount:  0,
+				FavoritesCount: 0,
 			}
-			commentsCount = append(commentsCount, res)
+			counts = append(counts, res)
 		} else {
 			// 登録されている場合
-			count, err := su.shopRepository.FindAll(shop.ID)
+			commentsCount, err := su.shopRepository.FindCommentsCount(shop.ID)
 			// 登録後にコメントが削除された場合
 			if err != nil {
-				count = 0
+				commentsCount = 0
+			}
+			favoritesCount, err := su.shopRepository.FindFavoritesCount(shop.ID)
+			// 登録後にいいねが削除された場合
+			if err != nil {
+				favoritesCount = 0
 			}
 			res = shopResponse{
-				ID:    shop.ID,
-				Count: int(count),
+				ID:             shop.ID,
+				CommentsCount:  int(commentsCount),
+				FavoritesCount: int(favoritesCount),
 			}
-			commentsCount = append(commentsCount, res)
+			counts = append(counts, res)
 		}
 	}
-	return commentsCount, nil
+	return counts, nil
 }
 
 func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
@@ -63,27 +71,47 @@ func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
 	return shop, nil
 }
 
-func (su shopUsecase) GetShop(sid uint32) ([]models.Comment, error) {
-	comment, err := su.shopRepository.FindByID(sid)
+func (su shopUsecase) GetShopComments(sid uint32) ([]models.Comment, error) {
+	comments, err := su.shopRepository.FindComments(sid)
 	if err != nil {
 		return []models.Comment{}, err
 	}
 	// コメントが存在する場合
-	if len(comment) > 0 {
+	if len(comments) > 0 {
 		// 取得した店舗のコメントに紐付くユーザーを取得
-		for i := 0; i < len(comment); i++ {
-			fmt.Println(comment[i])
-			commentUser, err := su.shopRepository.FindCommentUser(comment[i].UserID)
+		for i := 0; i < len(comments); i++ {
+			fmt.Println(comments[i])
+			commentUser, err := su.shopRepository.FindCommentUser(comments[i].UserID)
 			if err != nil {
 				return []models.Comment{}, err
 			}
-			comment[i].User = commentUser
+			comments[i].User = commentUser
 		}
 	}
-	return comment, nil
+	return comments, nil
+}
+
+func (su shopUsecase) GetShopFavorites(sid uint32) ([]models.Favorite, error) {
+	favorites, err := su.shopRepository.FindFavorites(sid)
+	if err != nil {
+		return []models.Favorite{}, err
+	}
+	// お気に入りが存在する場合
+	if len(favorites) > 0 {
+		// 取得した店舗のお気に入りに紐付くユーザーを取得
+		for i := 0; i < len(favorites); i++ {
+			commentUser, err := su.shopRepository.FindCommentUser(favorites[i].UserID)
+			if err != nil {
+				return []models.Favorite{}, err
+			}
+			favorites[i].User = commentUser
+		}
+	}
+	return favorites, nil
 }
 
 type shopResponse struct {
-	ID    uint32 `json:"id"`
-	Count int    `json:"count"`
+	ID             uint32 `json:"id"`
+	CommentsCount  int    `json:"comments_count"`
+	FavoritesCount int    `json:"favorites_count"`
 }

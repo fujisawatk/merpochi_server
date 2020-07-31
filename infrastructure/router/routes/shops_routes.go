@@ -28,9 +28,15 @@ func iniShopsRoutes() []Route {
 			AuthRequired: false,
 		},
 		{
-			URI:          "/shops/{id}",
+			URI:          "/shops/{id}/comments",
 			Method:       http.MethodGet,
-			Handler:      shopHandler.HandleShopGet,
+			Handler:      shopHandler.HandleShopCommentsGet,
+			AuthRequired: false,
+		},
+		{
+			URI:          "/shops/{id}/favorites",
+			Method:       http.MethodGet,
+			Handler:      shopHandler.HandleShopFavoritesGet,
 			AuthRequired: false,
 		},
 	}

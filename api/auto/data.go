@@ -50,6 +50,11 @@ var favorites = []models.Favorite{
 		UserID: 1,
 		ShopID: 1,
 	},
+	{
+		ID:     2,
+		UserID: 1,
+		ShopID: 2,
+	},
 }
 
 var comments = []models.Comment{
