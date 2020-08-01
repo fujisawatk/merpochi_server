@@ -53,13 +53,13 @@ func (fh favoriteHandler) HandleFavoriteCreate(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// 成功したら指定ページのいいね総数を返す
-	count, err := fh.favoriteUsecase.CreateFavorite(uint32(sid), requestBody.UserID)
+	// 処理が成功したら、登録したレコード数を返す。
+	favorite, err := fh.favoriteUsecase.CreateFavorite(uint32(sid), requestBody.UserID)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusCreated, count)
+	responses.JSON(w, http.StatusCreated, favorite)
 }
 
 // HandleFavoriteDelete お気に入りを解除

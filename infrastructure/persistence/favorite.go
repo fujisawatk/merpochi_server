@@ -19,7 +19,7 @@ func NewFavoritePersistence(db *gorm.DB) repository.FavoriteRepository {
 }
 
 // Save お気に入り登録
-func (fp *favoritePersistence) Save(favorite models.Favorite) error {
+func (fp *favoritePersistence) Save(favorite models.Favorite) (models.Favorite, error) {
 	var err error
 
 	done := make(chan bool)
@@ -35,9 +35,9 @@ func (fp *favoritePersistence) Save(favorite models.Favorite) error {
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return nil
+		return favorite, nil
 	}
-	return err
+	return models.Favorite{}, err
 }
 
 // Search 指定した店舗IDが登録されているレコード数を取得
@@ -81,4 +81,25 @@ func (fp *favoritePersistence) Delete(sid uint32, uid uint32) error {
 		return nil
 	}
 	return err
+}
+
+func (fp *favoritePersistence) FindFavoriteUser(uid uint32) (models.User, error) {
+	var err error
+
+	user := models.User{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = fp.db.Debug().Model(&models.User{}).Where("id = ?", uid).First(&user).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return user, nil
+	}
+	return models.User{}, err
 }

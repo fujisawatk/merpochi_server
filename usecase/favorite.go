@@ -7,7 +7,7 @@ import (
 
 // FavoriteUsecase Favoriteに対するUsecaseのインターフェイス
 type FavoriteUsecase interface {
-	CreateFavorite(uint32, uint32) (uint32, error)
+	CreateFavorite(uint32, uint32) (models.Favorite, error)
 	DeleteFavorite(uint32, uint32) (uint32, error)
 }
 
@@ -22,23 +22,25 @@ func NewFavoriteUsecase(fr repository.FavoriteRepository) FavoriteUsecase {
 	}
 }
 
-func (fu favoriteUsecase) CreateFavorite(sid uint32, uid uint32) (uint32, error) {
+func (fu favoriteUsecase) CreateFavorite(sid uint32, uid uint32) (models.Favorite, error) {
 	favorite := models.Favorite{
 		UserID: uid,
 		ShopID: sid,
 	}
 
-	err := fu.favoriteRepository.Save(favorite)
+	favorite, err := fu.favoriteRepository.Save(favorite)
 	if err != nil {
-		return 0, err
+		return models.Favorite{}, err
 	}
 
-	// お気に入り登録したページのお気に入り総数を取得
-	count, err := fu.favoriteRepository.Search(favorite.ShopID)
+	// お気に入りしたユーザー値を取得
+	favoriteUser, err := fu.favoriteRepository.FindFavoriteUser(favorite.UserID)
 	if err != nil {
-		return 0, err
+		return models.Favorite{}, err
 	}
-	return count, nil
+	favorite.User = favoriteUser
+
+	return favorite, nil
 }
 
 func (fu favoriteUsecase) DeleteFavorite(sid uint32, uid uint32) (uint32, error) {
