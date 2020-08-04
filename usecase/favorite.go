@@ -8,7 +8,7 @@ import (
 // FavoriteUsecase Favoriteに対するUsecaseのインターフェイス
 type FavoriteUsecase interface {
 	CreateFavorite(uint32, uint32) (models.Favorite, error)
-	DeleteFavorite(uint32, uint32) (uint32, error)
+	DeleteFavorite(uint32, uint32) error
 }
 
 type favoriteUsecase struct {
@@ -43,14 +43,10 @@ func (fu favoriteUsecase) CreateFavorite(sid uint32, uid uint32) (models.Favorit
 	return favorite, nil
 }
 
-func (fu favoriteUsecase) DeleteFavorite(sid uint32, uid uint32) (uint32, error) {
-	err := fu.favoriteRepository.Delete(sid, uid)
+func (fu favoriteUsecase) DeleteFavorite(sid uint32, uid uint32) error {
+	_, err := fu.favoriteRepository.Delete(sid, uid)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	count, err := fu.favoriteRepository.Search(sid)
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
+	return nil
 }

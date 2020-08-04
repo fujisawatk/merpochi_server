@@ -77,20 +77,18 @@ func (fh favoriteHandler) HandleFavoriteDelete(w http.ResponseWriter, r *http.Re
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-
 	var requestBody favoriteRequest
 	err = json.Unmarshal(body, &requestBody)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-
-	count, err := fh.favoriteUsecase.DeleteFavorite(uint32(sid), requestBody.UserID)
+	err = fh.favoriteUsecase.DeleteFavorite(uint32(sid), requestBody.UserID)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	responses.JSON(w, http.StatusNoContent, count)
+	responses.JSON(w, http.StatusNoContent, "")
 }
 
 type favoriteRequest struct {

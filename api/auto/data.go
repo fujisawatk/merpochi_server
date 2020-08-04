@@ -52,7 +52,7 @@ var favorites = []models.Favorite{
 	},
 	{
 		ID:     2,
-		UserID: 1,
+		UserID: 2,
 		ShopID: 2,
 	},
 }

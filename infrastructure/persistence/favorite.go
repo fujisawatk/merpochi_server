@@ -63,24 +63,23 @@ func (fp *favoritePersistence) Search(sid uint32) (uint32, error) {
 }
 
 // Delete お気に入り解除
-func (fp *favoritePersistence) Delete(sid uint32, uid uint32) error {
-	var err error
+func (fp *favoritePersistence) Delete(sid uint32, uid uint32) (int64, error) {
+	var rs *gorm.DB
 
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? and shop_id = ?", uid, sid).Delete(&models.Favorite{}).Error
-		if err != nil {
-			ch <- false
-			return
-		}
+		rs = fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? and shop_id = ?", uid, sid).Delete(&models.Favorite{})
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return nil
+		if rs.Error != nil {
+			return 0, rs.Error
+		}
+		return rs.RowsAffected, nil
 	}
-	return err
+	return 0, rs.Error
 }
 
 func (fp *favoritePersistence) FindFavoriteUser(uid uint32) (models.User, error) {
