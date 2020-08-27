@@ -3,9 +3,11 @@
 CREATE TABLE stations (
   id int(10) unsigned NOT NULL AUTO_INCREMENT,
   station_name varchar(255) NOT NULL,
-  station_name_k varchar(255),
-  created_at timestamp NULL DEFAULT NULL,
-  updated_at timestamp NULL DEFAULT NULL,
+  station_name_k varchar(255) NOT NULL,
+  prefecture varchar(255) NOT NULL,
+  line_one varchar(255) NOT NULL,
+  line_two varchar(255) NOT NULL,
+  created_at timestamp default current_timestamp,
   PRIMARY KEY(id)
 );
 
