@@ -16,8 +16,8 @@ func iniStationsRoutes() []Route {
 
 	stationsRoutes := []Route{
 		{
-			URI:          "/stations",
-			Method:       http.MethodGet,
+			URI:          "/stations/search",
+			Method:       http.MethodPost,
 			Handler:      stationHandler.HandleStationsSearch,
 			AuthRequired: false,
 		},
