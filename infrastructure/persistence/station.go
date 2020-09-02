@@ -26,7 +26,7 @@ func (sp *stationPersistence) SearchKanaWord(word string) ([]models.Station, err
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = sp.db.Debug().Model(&models.Station{}).Where("convert(station_name_k using utf8) collate utf8_unicode_ci LIKE ?", "%"+word+"%").Find(&stations).Error
+		err = sp.db.Debug().Model(&models.Station{}).Limit(10).Where("convert(station_name_k using utf8) collate utf8_unicode_ci LIKE ?", "%"+word+"%").Find(&stations).Error
 		if err != nil {
 			ch <- false
 			return
@@ -47,7 +47,7 @@ func (sp *stationPersistence) SearchKanjiWord(word string) ([]models.Station, er
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = sp.db.Debug().Model(&models.Station{}).Where("station_name LIKE ?", "%"+word+"%").Find(&stations).Error
+		err = sp.db.Debug().Model(&models.Station{}).Limit(10).Where("station_name LIKE ?", "%"+word+"%").Find(&stations).Error
 		if err != nil {
 			ch <- false
 			return
