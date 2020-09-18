@@ -32,6 +32,14 @@ func NewCommentHandler(cu usecase.CommentUsecase) CommentHandler {
 
 // HandleCommentCreate 店舗情報ページにコメントを登録
 func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
@@ -45,7 +53,7 @@ func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, requestBody.ShopID, requestBody.UserID)
+	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, uint32(sid), requestBody.UserID)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -57,7 +65,7 @@ func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Requ
 func (ch commentHandler) HandleCommentUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	cid, err := strconv.ParseUint(vars["id"], 10, 32)
+	cid, err := strconv.ParseUint(vars["commentId"], 10, 32)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
@@ -88,7 +96,7 @@ func (ch commentHandler) HandleCommentUpdate(w http.ResponseWriter, r *http.Requ
 func (ch commentHandler) HandleCommentDelete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	cid, err := strconv.ParseUint(vars["id"], 10, 32)
+	cid, err := strconv.ParseUint(vars["commentId"], 10, 32)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
@@ -105,7 +113,6 @@ func (ch commentHandler) HandleCommentDelete(w http.ResponseWriter, r *http.Requ
 
 type commentCreateRequest struct {
 	Text   string `json:"text"`
-	ShopID uint32 `json:"shop_id"`
 	UserID uint32 `json:"user_id"`
 }
 
