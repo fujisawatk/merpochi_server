@@ -16,19 +16,19 @@ func iniCommentsRoutes() []Route {
 
 	commentRoutes := []Route{
 		{
-			URI:          "/comments",
+			URI:          "/shops/{shopId}/comments",
 			Method:       http.MethodPost,
 			Handler:      commentHandler.HandleCommentCreate,
 			AuthRequired: false,
 		},
 		{
-			URI:          "/comments/{id}",
+			URI:          "/shops/{shopId}/comments/{commentId}",
 			Method:       http.MethodPut,
 			Handler:      commentHandler.HandleCommentUpdate,
 			AuthRequired: false,
 		},
 		{
-			URI:          "/comments/{id}",
+			URI:          "/shops/{shopId}/comments/{commentId}",
 			Method:       http.MethodDelete,
 			Handler:      commentHandler.HandleCommentDelete,
 			AuthRequired: false,
