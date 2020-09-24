@@ -11,7 +11,7 @@ import (
 
 // ShopHandler Shopに対するHandlerのインターフェイス
 type ShopHandler interface {
-	HandleShopsGet(w http.ResponseWriter, r *http.Request)
+	HandleShopsSearch(w http.ResponseWriter, r *http.Request)
 	HandleShopCreate(w http.ResponseWriter, r *http.Request)
 }
 
@@ -26,8 +26,8 @@ func NewShopHandler(us usecase.ShopUsecase) ShopHandler {
 	}
 }
 
-// HandleShopsGet 外部APIで取得した各店舗に紐付く情報（コメント数）を取得
-func (sh shopHandler) HandleShopsGet(w http.ResponseWriter, r *http.Request) {
+// HandleShopsGet 外部APIで取得した店舗が登録されているか検索
+func (sh shopHandler) HandleShopsSearch(w http.ResponseWriter, r *http.Request) {
 	// body形式 → ["XX0000", ...]
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -42,7 +42,7 @@ func (sh shopHandler) HandleShopsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	counts, err := sh.shopUsecase.GetShops(requestBody)
+	counts, err := sh.shopUsecase.SearchShops(requestBody)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return

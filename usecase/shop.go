@@ -7,7 +7,7 @@ import (
 
 // ShopUsecase Shopに対するUsecaseのインターフェイス
 type ShopUsecase interface {
-	GetShops([]string) ([]shopResponse, error)
+	SearchShops([]string) ([]shopResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
 }
 
@@ -22,13 +22,13 @@ func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
 	}
 }
 
-func (su shopUsecase) GetShops(shopCodes []string) ([]shopResponse, error) {
+func (su shopUsecase) SearchShops(shopCodes []string) ([]shopResponse, error) {
 	var counts []shopResponse
 
 	// 取得した店舗IDを1件ずつ登録されているか確認
 	for _, code := range shopCodes {
 		var res shopResponse
-		shop, err := su.shopRepository.SearchShop(code)
+		shop, err := su.shopRepository.Search(code)
 		// 登録されていない場合
 		if err != nil {
 			res = shopResponse{

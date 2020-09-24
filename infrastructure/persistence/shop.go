@@ -84,7 +84,7 @@ func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 	return models.Shop{}, err
 }
 
-func (sp *shopPersistence) SearchShop(code string) (models.Shop, error) {
+func (sp *shopPersistence) Search(code string) (models.Shop, error) {
 	var err error
 
 	shop := models.Shop{}
