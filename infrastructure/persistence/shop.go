@@ -85,31 +85,6 @@ func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 	return models.Shop{}, err
 }
 
-// 指定した店舗のコメント情報を取得（店舗情報はフロント側の外部APIから取得し表示）
-func (sp *shopPersistence) FindComments(sid uint32) ([]models.Comment, error) {
-	var results []models.Comment
-
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		query := sp.db.Debug().Table("shops").
-			Select("comments.*").
-			Joins("inner join comments on comments.shop_id = shops.id").
-			Where("shops.id = ?", sid)
-		query.Scan(&results)
-		if len(results) == 0 {
-			ch <- false
-			return
-		}
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return results, nil
-	}
-	return []models.Comment{}, errors.New("no comment")
-}
-
 // 指定した店舗のいいね情報を取得
 func (sp *shopPersistence) FindFavorites(sid uint32) ([]models.Favorite, error) {
 	var results []models.Favorite

@@ -14,6 +14,7 @@ import (
 
 // CommentHandler Commentに対するHandlerのインターフェイス
 type CommentHandler interface {
+	HandleCommentsGet(w http.ResponseWriter, r *http.Request)
 	HandleCommentCreate(w http.ResponseWriter, r *http.Request)
 	HandleCommentUpdate(w http.ResponseWriter, r *http.Request)
 	HandleCommentDelete(w http.ResponseWriter, r *http.Request)
@@ -28,6 +29,24 @@ func NewCommentHandler(cu usecase.CommentUsecase) CommentHandler {
 	return &commentHandler{
 		commentUsecase: cu,
 	}
+}
+
+// HandleCommentsGet 指定の店舗に紐づくコメント情報を全て取得
+func (ch commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	comments, err := ch.commentUsecase.GetComments(uint32(sid))
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, comments)
 }
 
 // HandleCommentCreate 店舗情報ページにコメントを登録

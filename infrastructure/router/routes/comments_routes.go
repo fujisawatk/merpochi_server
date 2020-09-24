@@ -17,6 +17,12 @@ func iniCommentsRoutes() []Route {
 	commentRoutes := []Route{
 		{
 			URI:          "/shops/{shopId}/comments",
+			Method:       http.MethodGet,
+			Handler:      commentHandler.HandleCommentsGet,
+			AuthRequired: false,
+		},
+		{
+			URI:          "/shops/{shopId}/comments",
 			Method:       http.MethodPost,
 			Handler:      commentHandler.HandleCommentCreate,
 			AuthRequired: false,
