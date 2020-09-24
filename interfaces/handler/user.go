@@ -18,7 +18,6 @@ type UserHandler interface {
 	HandleUserGet(w http.ResponseWriter, r *http.Request)
 	HandleUserUpdate(w http.ResponseWriter, r *http.Request)
 	HandleUserDelete(w http.ResponseWriter, r *http.Request)
-	HandleUserCommentedShops(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -121,24 +120,6 @@ func (uh userHandler) HandleUserDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Entity", fmt.Sprintf("%d", uid))
 	responses.JSON(w, http.StatusNoContent, "")
-}
-
-// HandleUserCommentedShops ログインユーザーがコメントした店舗情報を取得
-func (uh userHandler) HandleUserCommentedShops(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	uid, err := strconv.ParseUint(vars["id"], 10, 32)
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
-
-	shops, err := uh.userUsecase.CommentedShops(uint32(uid))
-	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
-		return
-	}
-	responses.JSON(w, http.StatusOK, shops)
 }
 
 type userCreateRequest struct {

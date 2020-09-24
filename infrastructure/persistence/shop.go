@@ -105,15 +105,20 @@ func (sp *shopPersistence) Search(code string) (models.Shop, error) {
 	return models.Shop{}, err
 }
 
-func (sp *shopPersistence) FindCommentUser(uid uint32) (models.User, error) {
+func (sp *shopPersistence) FindCommentedShops(uid uint32) ([]models.Shop, error) {
+	var shops []models.Shop
 	var err error
 
-	user := models.User{}
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = sp.db.Debug().Model(&models.User{}).Where("id = ?", uid).First(&user).Error
+		query := sp.db.Debug().Table("users").
+			Select("shops.*").
+			Joins("inner join comments on comments.user_id = users.id").
+			Joins("inner join shops on shops.id = comments.shop_id").
+			Where("users.id = ?", uid)
+		err = query.Scan(&shops).Error
 		if err != nil {
 			ch <- false
 			return
@@ -121,7 +126,33 @@ func (sp *shopPersistence) FindCommentUser(uid uint32) (models.User, error) {
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return user, nil
+		return shops, nil
 	}
-	return models.User{}, err
+	return []models.Shop{}, err
+}
+
+func (sp *shopPersistence) FindFavoritedShops(uid uint32) ([]models.Shop, error) {
+	var shops []models.Shop
+	var err error
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		query := sp.db.Debug().Table("users").
+			Select("shops.*").
+			Joins("inner join favorites on favorites.user_id = users.id").
+			Joins("inner join shops on shops.id = favorites.shop_id").
+			Where("users.id = ?", uid)
+		err = query.Scan(&shops).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return shops, nil
+	}
+	return []models.Shop{}, err
 }

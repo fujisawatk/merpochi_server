@@ -9,5 +9,4 @@ type UserRepository interface {
 	Update(uint32, models.User) (int64, error)
 	Delete(uint32) (int64, error)
 	SearchUser(string) error
-	FindShops(uint32) ([]models.Shop, error)
 }

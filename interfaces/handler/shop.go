@@ -13,6 +13,7 @@ import (
 type ShopHandler interface {
 	HandleShopsSearch(w http.ResponseWriter, r *http.Request)
 	HandleShopCreate(w http.ResponseWriter, r *http.Request)
+	HandleShopsMe(w http.ResponseWriter, r *http.Request)
 }
 
 type shopHandler struct {
@@ -70,4 +71,30 @@ func (sh shopHandler) HandleShopCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusCreated, shop)
+}
+
+// HandleShopsMe ログインユーザーがコメント・お気に入りした店舗情報を取得
+func (sh shopHandler) HandleShopsMe(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	var requestBody shopsMeRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	shops, err := sh.shopUsecase.MeShops(requestBody.UserID)
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, shops)
+}
+
+type shopsMeRequest struct {
+	UserID uint32 `json:"user_id"`
 }
