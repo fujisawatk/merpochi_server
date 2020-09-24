@@ -14,7 +14,6 @@ import (
 
 // UserHandler Userに対するHandlerのインターフェイス
 type UserHandler interface {
-	HandleUsersGet(w http.ResponseWriter, r *http.Request)
 	HandleUserCreate(w http.ResponseWriter, r *http.Request)
 	HandleUserGet(w http.ResponseWriter, r *http.Request)
 	HandleUserUpdate(w http.ResponseWriter, r *http.Request)
@@ -31,16 +30,6 @@ func NewUserHandler(uu usecase.UserUsecase) UserHandler {
 	return &userHandler{
 		userUsecase: uu,
 	}
-}
-
-// HandleUsersGet ユーザー情報を全件取得
-func (uh userHandler) HandleUsersGet(w http.ResponseWriter, r *http.Request) {
-	users, err := uh.userUsecase.GetUsers()
-	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
-		return
-	}
-	responses.JSON(w, http.StatusOK, users)
 }
 
 // HandleUserCreate ユーザー情報を登録

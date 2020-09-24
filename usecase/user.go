@@ -9,7 +9,6 @@ import (
 
 // UserUsecase Userに対するUsecaseのインターフェイス
 type UserUsecase interface {
-	GetUsers() ([]models.User, error)
 	CreateUser(nickname, email, password string) (models.User, error)
 	GetUser(uint32) (models.User, error)
 	UpdateUser(uint32, string, string) (int64, error)
@@ -26,14 +25,6 @@ func NewUserUsecase(ur repository.UserRepository) UserUsecase {
 	return &userUsecase{
 		userRepository: ur,
 	}
-}
-
-func (uu userUsecase) GetUsers() ([]models.User, error) {
-	users, err := uu.userRepository.FindAll()
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
 }
 
 func (uu userUsecase) CreateUser(nickname, email, password string) (models.User, error) {
