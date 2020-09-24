@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"errors"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 
@@ -83,31 +82,6 @@ func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 		return shop, nil
 	}
 	return models.Shop{}, err
-}
-
-// 指定した店舗のいいね情報を取得
-func (sp *shopPersistence) FindFavorites(sid uint32) ([]models.Favorite, error) {
-	var results []models.Favorite
-
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		query := sp.db.Debug().Table("shops").
-			Select("favorites.*").
-			Joins("inner join favorites on favorites.shop_id = shops.id").
-			Where("shops.id = ?", sid)
-		query.Scan(&results)
-		if len(results) == 0 {
-			ch <- false
-			return
-		}
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return results, nil
-	}
-	return []models.Favorite{}, errors.New("no favorite")
 }
 
 func (sp *shopPersistence) SearchShop(code string) (models.Shop, error) {

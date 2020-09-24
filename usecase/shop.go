@@ -9,7 +9,6 @@ import (
 type ShopUsecase interface {
 	GetShops([]string) ([]shopResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
-	GetShopFavorites(uint32) ([]models.Favorite, error)
 }
 
 type shopUsecase struct {
@@ -67,25 +66,6 @@ func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
 		return models.Shop{}, err
 	}
 	return shop, nil
-}
-
-func (su shopUsecase) GetShopFavorites(sid uint32) ([]models.Favorite, error) {
-	favorites, err := su.shopRepository.FindFavorites(sid)
-	if err != nil {
-		return []models.Favorite{}, err
-	}
-	// お気に入りが存在する場合
-	if len(favorites) > 0 {
-		// 取得した店舗のお気に入りに紐付くユーザーを取得
-		for i := 0; i < len(favorites); i++ {
-			commentUser, err := su.shopRepository.FindCommentUser(favorites[i].UserID)
-			if err != nil {
-				return []models.Favorite{}, err
-			}
-			favorites[i].User = commentUser
-		}
-	}
-	return favorites, nil
 }
 
 type shopResponse struct {
