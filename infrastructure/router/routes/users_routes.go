@@ -17,12 +17,6 @@ func iniUsersRoutes() []Route {
 	usersRoutes := []Route{
 		{
 			URI:          "/users",
-			Method:       http.MethodGet,
-			Handler:      userHandler.HandleUsersGet,
-			AuthRequired: false,
-		},
-		{
-			URI:          "/users",
 			Method:       http.MethodPost,
 			Handler:      userHandler.HandleUserCreate,
 			AuthRequired: false,
@@ -44,12 +38,6 @@ func iniUsersRoutes() []Route {
 			Method:       http.MethodDelete,
 			Handler:      userHandler.HandleUserDelete,
 			AuthRequired: true,
-		},
-		{
-			URI:          "/users/{id}/commentedshops",
-			Method:       http.MethodGet,
-			Handler:      userHandler.HandleUserCommentedShops,
-			AuthRequired: false,
 		},
 	}
 	return usersRoutes

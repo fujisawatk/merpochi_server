@@ -9,12 +9,10 @@ import (
 
 // UserUsecase Userに対するUsecaseのインターフェイス
 type UserUsecase interface {
-	GetUsers() ([]models.User, error)
 	CreateUser(nickname, email, password string) (models.User, error)
 	GetUser(uint32) (models.User, error)
 	UpdateUser(uint32, string, string) (int64, error)
 	DeleteUser(uint32) error
-	CommentedShops(uint32) ([]models.Shop, error)
 }
 
 type userUsecase struct {
@@ -26,14 +24,6 @@ func NewUserUsecase(ur repository.UserRepository) UserUsecase {
 	return &userUsecase{
 		userRepository: ur,
 	}
-}
-
-func (uu userUsecase) GetUsers() ([]models.User, error) {
-	users, err := uu.userRepository.FindAll()
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
 }
 
 func (uu userUsecase) CreateUser(nickname, email, password string) (models.User, error) {
@@ -101,22 +91,4 @@ func (uu userUsecase) DeleteUser(uid uint32) error {
 		return err
 	}
 	return nil
-}
-
-func (uu userUsecase) CommentedShops(uid uint32) ([]models.Shop, error) {
-	shops, err := uu.userRepository.FindShops(uid)
-	if err != nil {
-		return []models.Shop{}, err
-	}
-	// 店舗情報重複削除
-	m := make(map[string]bool)
-	uniq := []models.Shop{}
-
-	for _, shop := range shops {
-		if !m[shop.Name] {
-			m[shop.Name] = true
-			uniq = append(uniq, shop)
-		}
-	}
-	return uniq, nil
 }

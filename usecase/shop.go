@@ -1,17 +1,15 @@
 package usecase
 
 import (
-	"fmt"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 )
 
 // ShopUsecase Shopに対するUsecaseのインターフェイス
 type ShopUsecase interface {
-	GetShops([]string) ([]shopResponse, error)
+	SearchShops([]string) ([]searchShopsResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
-	GetShopComments(uint32) ([]models.Comment, error)
-	GetShopFavorites(uint32) ([]models.Favorite, error)
+	MeShops(uint32) (meShopsResponse, error)
 }
 
 type shopUsecase struct {
@@ -25,16 +23,16 @@ func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
 	}
 }
 
-func (su shopUsecase) GetShops(shopCodes []string) ([]shopResponse, error) {
-	var counts []shopResponse
+func (su shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, error) {
+	var counts []searchShopsResponse
 
 	// 取得した店舗IDを1件ずつ登録されているか確認
 	for _, code := range shopCodes {
-		var res shopResponse
-		shop, err := su.shopRepository.SearchShop(code)
+		var res searchShopsResponse
+		shop, err := su.shopRepository.Search(code)
 		// 登録されていない場合
 		if err != nil {
-			res = shopResponse{
+			res = searchShopsResponse{
 				ID:             0,
 				CommentsCount:  0,
 				FavoritesCount: 0,
@@ -52,7 +50,7 @@ func (su shopUsecase) GetShops(shopCodes []string) ([]shopResponse, error) {
 			if err != nil {
 				favoritesCount = 0
 			}
-			res = shopResponse{
+			res = searchShopsResponse{
 				ID:             shop.ID,
 				CommentsCount:  int(commentsCount),
 				FavoritesCount: int(favoritesCount),
@@ -71,47 +69,56 @@ func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
 	return shop, nil
 }
 
-func (su shopUsecase) GetShopComments(sid uint32) ([]models.Comment, error) {
-	comments, err := su.shopRepository.FindComments(sid)
+func (su shopUsecase) MeShops(uid uint32) (meShopsResponse, error) {
+	commentedShops, err := su.shopRepository.FindCommentedShops(uid)
 	if err != nil {
-		return []models.Comment{}, err
+		return meShopsResponse{}, err
 	}
-	// コメントが存在する場合
-	if len(comments) > 0 {
-		// 取得した店舗のコメントに紐付くユーザーを取得
-		for i := 0; i < len(comments); i++ {
-			fmt.Println(comments[i])
-			commentUser, err := su.shopRepository.FindCommentUser(comments[i].UserID)
-			if err != nil {
-				return []models.Comment{}, err
-			}
-			comments[i].User = commentUser
-		}
+
+	commentedShops = DelDuplicateShops(commentedShops)
+	if err != nil {
+		return meShopsResponse{}, err
 	}
-	return comments, nil
+
+	favoritedShops, err := su.shopRepository.FindFavoritedShops(uid)
+	if err != nil {
+		return meShopsResponse{}, err
+	}
+
+	favoritedShops = DelDuplicateShops(favoritedShops)
+	if err != nil {
+		return meShopsResponse{}, err
+	}
+
+	res := meShopsResponse{
+		CommentedShops: commentedShops,
+		FavoritedShops: favoritedShops,
+	}
+
+	return res, nil
 }
 
-func (su shopUsecase) GetShopFavorites(sid uint32) ([]models.Favorite, error) {
-	favorites, err := su.shopRepository.FindFavorites(sid)
-	if err != nil {
-		return []models.Favorite{}, err
-	}
-	// お気に入りが存在する場合
-	if len(favorites) > 0 {
-		// 取得した店舗のお気に入りに紐付くユーザーを取得
-		for i := 0; i < len(favorites); i++ {
-			commentUser, err := su.shopRepository.FindCommentUser(favorites[i].UserID)
-			if err != nil {
-				return []models.Favorite{}, err
-			}
-			favorites[i].User = commentUser
+// DelDuplicateShops 店舗情報重複削除
+func DelDuplicateShops(shops []models.Shop) []models.Shop {
+	m := make(map[string]bool)
+	uniq := []models.Shop{}
+
+	for _, shop := range shops {
+		if !m[shop.Name] {
+			m[shop.Name] = true
+			uniq = append(uniq, shop)
 		}
 	}
-	return favorites, nil
+	return uniq
 }
 
-type shopResponse struct {
+type searchShopsResponse struct {
 	ID             uint32 `json:"id"`
 	CommentsCount  int    `json:"comments_count"`
 	FavoritesCount int    `json:"favorites_count"`
+}
+
+type meShopsResponse struct {
+	CommentedShops []models.Shop `json:"commented_shops"`
+	FavoritedShops []models.Shop `json:"favorited_shops"`
 }

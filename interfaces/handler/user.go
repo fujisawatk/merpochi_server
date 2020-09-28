@@ -14,12 +14,10 @@ import (
 
 // UserHandler Userに対するHandlerのインターフェイス
 type UserHandler interface {
-	HandleUsersGet(w http.ResponseWriter, r *http.Request)
 	HandleUserCreate(w http.ResponseWriter, r *http.Request)
 	HandleUserGet(w http.ResponseWriter, r *http.Request)
 	HandleUserUpdate(w http.ResponseWriter, r *http.Request)
 	HandleUserDelete(w http.ResponseWriter, r *http.Request)
-	HandleUserCommentedShops(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -31,16 +29,6 @@ func NewUserHandler(uu usecase.UserUsecase) UserHandler {
 	return &userHandler{
 		userUsecase: uu,
 	}
-}
-
-// HandleUsersGet ユーザー情報を全件取得
-func (uh userHandler) HandleUsersGet(w http.ResponseWriter, r *http.Request) {
-	users, err := uh.userUsecase.GetUsers()
-	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
-		return
-	}
-	responses.JSON(w, http.StatusOK, users)
 }
 
 // HandleUserCreate ユーザー情報を登録
@@ -132,24 +120,6 @@ func (uh userHandler) HandleUserDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Entity", fmt.Sprintf("%d", uid))
 	responses.JSON(w, http.StatusNoContent, "")
-}
-
-// HandleUserCommentedShops ログインユーザーがコメントした店舗情報を取得
-func (uh userHandler) HandleUserCommentedShops(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	uid, err := strconv.ParseUint(vars["id"], 10, 32)
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
-
-	shops, err := uh.userUsecase.CommentedShops(uint32(uid))
-	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
-		return
-	}
-	responses.JSON(w, http.StatusOK, shops)
 }
 
 type userCreateRequest struct {

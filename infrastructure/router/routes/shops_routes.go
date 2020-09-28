@@ -16,27 +16,21 @@ func iniShopsRoutes() []Route {
 
 	shopsRoutes := []Route{
 		{
-			URI:          "/shops",
+			URI:          "/shops/search",
 			Method:       http.MethodPost,
-			Handler:      shopHandler.HandleShopsGet,
+			Handler:      shopHandler.HandleShopsSearch,
 			AuthRequired: false,
 		},
 		{
-			URI:          "/shops/register",
+			URI:          "/shops",
 			Method:       http.MethodPost,
 			Handler:      shopHandler.HandleShopCreate,
 			AuthRequired: false,
 		},
 		{
-			URI:          "/shops/{id}/comments",
+			URI:          "/shops/me",
 			Method:       http.MethodGet,
-			Handler:      shopHandler.HandleShopCommentsGet,
-			AuthRequired: false,
-		},
-		{
-			URI:          "/shops/{id}/favorites",
-			Method:       http.MethodGet,
-			Handler:      shopHandler.HandleShopFavoritesGet,
+			Handler:      shopHandler.HandleShopsMe,
 			AuthRequired: false,
 		},
 	}

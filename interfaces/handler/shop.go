@@ -7,17 +7,13 @@ import (
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
 	"net/http"
-	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 // ShopHandler Shopに対するHandlerのインターフェイス
 type ShopHandler interface {
-	HandleShopsGet(w http.ResponseWriter, r *http.Request)
+	HandleShopsSearch(w http.ResponseWriter, r *http.Request)
 	HandleShopCreate(w http.ResponseWriter, r *http.Request)
-	HandleShopCommentsGet(w http.ResponseWriter, r *http.Request)
-	HandleShopFavoritesGet(w http.ResponseWriter, r *http.Request)
+	HandleShopsMe(w http.ResponseWriter, r *http.Request)
 }
 
 type shopHandler struct {
@@ -31,8 +27,8 @@ func NewShopHandler(us usecase.ShopUsecase) ShopHandler {
 	}
 }
 
-// HandleShopsGet 外部APIで取得した各店舗に紐付く情報（コメント数）を取得
-func (sh shopHandler) HandleShopsGet(w http.ResponseWriter, r *http.Request) {
+// HandleShopsGet 外部APIで取得した店舗が登録されているか検索
+func (sh shopHandler) HandleShopsSearch(w http.ResponseWriter, r *http.Request) {
 	// body形式 → ["XX0000", ...]
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -47,7 +43,7 @@ func (sh shopHandler) HandleShopsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	counts, err := sh.shopUsecase.GetShops(requestBody)
+	counts, err := sh.shopUsecase.SearchShops(requestBody)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -77,38 +73,28 @@ func (sh shopHandler) HandleShopCreate(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusCreated, shop)
 }
 
-// HandleShopGet 店舗情報を1件取得
-func (sh shopHandler) HandleShopCommentsGet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	sid, err := strconv.ParseUint(vars["id"], 10, 32)
+// HandleShopsMe ログインユーザーがコメント・お気に入りした店舗情報を取得
+func (sh shopHandler) HandleShopsMe(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
+	var requestBody shopsMeRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
 
-	comments, err := sh.shopUsecase.GetShopComments(uint32(sid))
+	shops, err := sh.shopUsecase.MeShops(requestBody.UserID)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, comments)
+	responses.JSON(w, http.StatusOK, shops)
 }
 
-// HandleShopFavoriteGet 店舗情報を1件取得
-func (sh shopHandler) HandleShopFavoritesGet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	sid, err := strconv.ParseUint(vars["id"], 10, 32)
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
-
-	favorites, err := sh.shopUsecase.GetShopFavorites(uint32(sid))
-	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
-		return
-	}
-	responses.JSON(w, http.StatusOK, favorites)
+type shopsMeRequest struct {
+	UserID uint32 `json:"user_id"`
 }
