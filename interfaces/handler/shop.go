@@ -6,6 +6,7 @@ import (
 	"merpochi_server/domain/models"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
+	"merpochi_server/util/ctxval"
 	"net/http"
 )
 
@@ -75,9 +76,9 @@ func (sh shopHandler) HandleShopCreate(w http.ResponseWriter, r *http.Request) {
 
 // HandleShopsMe ログインユーザーがコメント・お気に入りした店舗情報を取得
 func (sh shopHandler) HandleShopsMe(w http.ResponseWriter, r *http.Request) {
-	uid := r.Context().Value("userKey")
+	uid := ctxval.GetUserID(r)
 
-	shops, err := sh.shopUsecase.MeShops(uint32(uid.(float64)))
+	shops, err := sh.shopUsecase.MeShops(uid)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return

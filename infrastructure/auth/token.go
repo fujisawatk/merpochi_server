@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"merpochi_server/config"
+	"merpochi_server/util/ctxval"
 	"net/http"
 	"strings"
 	"time"
@@ -36,8 +37,7 @@ func TokenValid(r *http.Request) (context.Context, error) {
 		return nil, err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// ログインユーザーIDをcontextで受け渡す
-		ctx := context.WithValue(r.Context(), "userKey", claims["user_id"])
+		ctx := ctxval.SetUserID(r, claims["user_id"].(float64))
 		return ctx, nil
 	}
 	fmt.Println(err)
