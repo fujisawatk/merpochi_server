@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// UserHandler Userに対するHandlerのインターフェイス
+// StationHandler Stationに対するHandlerのインターフェイス
 type StationHandler interface {
 	HandleStationsSearch(w http.ResponseWriter, r *http.Request)
 }
@@ -17,14 +17,14 @@ type stationHandler struct {
 	stationUsecase usecase.StationUsecase
 }
 
-// NewUserHandler Userデータに関するHandlerを生成
+// NewStationHandler Stationデータに関するHandlerを生成
 func NewStationHandler(su usecase.StationUsecase) StationHandler {
 	return &stationHandler{
 		stationUsecase: su,
 	}
 }
 
-// HandleUsersGet ユーザー情報を全件取得
+// HandleStationsSearch 該当する駅名情報を検索
 func (sh stationHandler) HandleStationsSearch(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {

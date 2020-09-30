@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
+	"merpochi_server/util/ctxval"
 	"net/http"
 	"strconv"
 
@@ -49,7 +48,6 @@ func (fh favoriteHandler) HandleFavoritesGet(w http.ResponseWriter, r *http.Requ
 
 // HandleFavoriteCreate お気に入りを登録
 func (fh favoriteHandler) HandleFavoriteCreate(w http.ResponseWriter, r *http.Request) {
-	// お気に入りした店舗情報ページのID取得
 	vars := mux.Vars(r)
 
 	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
@@ -58,22 +56,9 @@ func (fh favoriteHandler) HandleFavoriteCreate(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// リクエストボディからユーザーID取得
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
+	uid := ctxval.GetUserID(r)
 
-	var requestBody favoriteRequest
-	err = json.Unmarshal(body, &requestBody)
-	if err != nil {
-		responses.ERROR(w, http.StatusUnprocessableEntity, err)
-		return
-	}
-
-	// 処理が成功したら、登録したレコード数を返す。
-	favorite, err := fh.favoriteUsecase.CreateFavorite(uint32(sid), requestBody.UserID)
+	favorite, err := fh.favoriteUsecase.CreateFavorite(uint32(sid), uid)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -91,25 +76,12 @@ func (fh favoriteHandler) HandleFavoriteDelete(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
-	var requestBody favoriteRequest
-	err = json.Unmarshal(body, &requestBody)
-	if err != nil {
-		responses.ERROR(w, http.StatusUnprocessableEntity, err)
-		return
-	}
-	err = fh.favoriteUsecase.DeleteFavorite(uint32(sid), requestBody.UserID)
+	uid := ctxval.GetUserID(r)
+
+	err = fh.favoriteUsecase.DeleteFavorite(uint32(sid), uid)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
 	responses.JSON(w, http.StatusNoContent, "")
-}
-
-type favoriteRequest struct {
-	UserID uint32 `json:"user_id"`
 }

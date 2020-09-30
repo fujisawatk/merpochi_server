@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
+	"merpochi_server/util/ctxval"
 	"net/http"
 	"strconv"
 
@@ -59,20 +60,22 @@ func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	uid := ctxval.GetUserID(r)
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
 
-	var requestBody commentCreateRequest
+	var requestBody commentRequest
 	err = json.Unmarshal(body, &requestBody)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
-	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, uint32(sid), requestBody.UserID)
+	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, uint32(sid), uid)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -96,7 +99,7 @@ func (ch commentHandler) HandleCommentUpdate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var requestBody commentUpdateRequest
+	var requestBody commentRequest
 	err = json.Unmarshal(body, &requestBody)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -130,11 +133,6 @@ func (ch commentHandler) HandleCommentDelete(w http.ResponseWriter, r *http.Requ
 	responses.JSON(w, http.StatusNoContent, "")
 }
 
-type commentCreateRequest struct {
-	Text   string `json:"text"`
-	UserID uint32 `json:"user_id"`
-}
-
-type commentUpdateRequest struct {
+type commentRequest struct {
 	Text string `json:"text"`
 }
