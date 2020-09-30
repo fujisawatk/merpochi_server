@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"merpochi_server/config"
 	"net/http"
@@ -23,7 +24,7 @@ func CreateToken(userID uint32) (string, error) {
 }
 
 // TokenValid トークンのバリデーションチェック
-func TokenValid(r *http.Request) error {
+func TokenValid(r *http.Request) (context.Context, error) {
 	tokenString := ExtractToken(r)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -32,14 +33,15 @@ func TokenValid(r *http.Request) error {
 		return config.SECRETKEY, nil
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
-		return nil
+		// ログインユーザーIDをcontextで受け渡す
+		ctx := context.WithValue(r.Context(), "userKey", claims["user_id"])
+		return ctx, nil
 	}
 	fmt.Println(err)
-	return err
+	return nil, err
 }
 
 // ExtractToken リクエスト情報からトークン取得

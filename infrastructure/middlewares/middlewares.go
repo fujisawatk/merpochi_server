@@ -10,12 +10,12 @@ import (
 // SetMiddlewareAuthentication 認証トークンを検証
 func SetMiddlewareAuthentication(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := auth.TokenValid(r)
+		ctx, err := auth.TokenValid(r)
 		if err != nil {
 			responses.ERROR(w, http.StatusUnauthorized, err)
 			return
 		}
-		next(w, r)
+		next(w, r.WithContext(ctx))
 	}
 }
 
