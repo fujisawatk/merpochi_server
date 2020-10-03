@@ -1,6 +1,8 @@
 package persistence
 
 import (
+	"fmt"
+	"merpochi_server/domain/models"
 	"reflect"
 	"testing"
 )
@@ -78,6 +80,100 @@ func TestFindFavoritesCount(t *testing.T) {
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("shopPersistence.FindFavoritesCount() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestShopSave(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    models.Shop
+		want    models.Shop
+		wantErr bool
+	}{
+		{
+			name: "店舗情報が登録出来ること",
+			args: models.Shop{
+				Code:      "bbbb111",
+				Name:      "イタリアンショップ",
+				Category:  "イタリアン",
+				Opentime:  "17:00～23:00",
+				Budget:    2000,
+				Img:       "https://rimage.gnst.jp/rest/img/111111110000/1111.jpg",
+				Latitude:  11.111111,
+				Longitude: 11.111111,
+				URL:       "https://r.gnavi.co.jp/111111110000/?ak=bbbbbbbb",
+			},
+			want: models.Shop{
+				Code:      "bbbb111",
+				Name:      "イタリアンショップ",
+				Category:  "イタリアン",
+				Opentime:  "17:00～23:00",
+				Budget:    2000,
+				Img:       "https://rimage.gnst.jp/rest/img/111111110000/1111.jpg",
+				Latitude:  11.111111,
+				Longitude: 11.111111,
+				URL:       "https://r.gnavi.co.jp/111111110000/?ak=bbbbbbbb",
+			},
+			wantErr: false,
+		},
+		{
+			name: "特定の値が空でも、登録出来ること(not null)",
+			args: models.Shop{
+				Code:      "cccc222",
+				Name:      "",
+				Category:  "",
+				Opentime:  "",
+				Budget:    0,
+				Img:       "",
+				Latitude:  0,
+				Longitude: 0,
+				URL:       "",
+			},
+			want: models.Shop{
+				Code:      "cccc222",
+				Name:      "",
+				Category:  "",
+				Opentime:  "",
+				Budget:    0,
+				Img:       "",
+				Latitude:  0,
+				Longitude: 0,
+				URL:       "",
+			},
+			wantErr: false,
+		},
+		{
+			name: "店舗コードが重複していたら、登録出来ないこと(unique)",
+			args: models.Shop{
+				Code:      "aaaa000",
+				Name:      "焼鳥屋",
+				Category:  "焼鳥",
+				Opentime:  "17:00～24:00",
+				Budget:    3000,
+				Img:       "https://rimage.gnst.jp/rest/img/000000000000/0000.jpg",
+				Latitude:  00.000000,
+				Longitude: 00.000000,
+				URL:       "https://r.gnavi.co.jp/000000000000/?ak=aaaaaaaa",
+			},
+			want:    models.Shop{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sp := NewShopPersistence(db)
+			got, err := sp.Save(tt.args)
+			fmt.Println(got)
+			if (err != nil) != tt.wantErr {
+				// 予期しないエラーの場合
+				t.Errorf("shopPersistence.Save() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// 返り値が期待しない値の場合
+			if !reflect.DeepEqual(got.Code, tt.want.Code) {
+				t.Errorf("shopPersistence.Save() = %v, want %v", got, tt.want)
 			}
 		})
 	}
