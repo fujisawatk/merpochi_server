@@ -19,25 +19,20 @@ func NewShopPersistence(db *gorm.DB) repository.ShopRepository {
 }
 
 // 店舗情報に紐づくコメント数を取得
-func (sp *shopPersistence) FindCommentsCount(sid uint32) (uint32, error) {
-	var err error
+func (sp *shopPersistence) FindCommentsCount(sid uint32) uint32 {
 	var count uint32
 
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = sp.db.Debug().Model(&models.Comment{}).Where("shop_id = ?", sid).Count(&count).Error
-		if err != nil {
-			ch <- false
-			return
-		}
+		sp.db.Debug().Model(&models.Comment{}).Where("shop_id = ?", sid).Count(&count)
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return count, nil
+		return count
 	}
-	return 0, err
+	return 0
 }
 
 // 店舗情報に紐づくいいね数を取得

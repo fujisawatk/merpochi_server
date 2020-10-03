@@ -40,7 +40,7 @@ func (su shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, er
 			counts = append(counts, res)
 		} else {
 			// 登録されている場合
-			commentsCount, err := su.shopRepository.FindCommentsCount(shop.ID)
+			commentsCount := su.shopRepository.FindCommentsCount(shop.ID)
 			// 登録後にコメントが削除された場合
 			if err != nil {
 				commentsCount = 0
