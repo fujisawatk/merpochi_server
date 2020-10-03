@@ -9,7 +9,7 @@ CREATE TABLE stations (
   line_two varchar(255) NOT NULL,
   created_at timestamp default current_timestamp,
   PRIMARY KEY(id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- +goose Down
 -- SQL section 'Down' is executed when this migration is rolled back
