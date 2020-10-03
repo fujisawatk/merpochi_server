@@ -35,26 +35,21 @@ func (sp *shopPersistence) FindCommentsCount(sid uint32) uint32 {
 	return 0
 }
 
-// 店舗情報に紐づくいいね数を取得
-func (sp *shopPersistence) FindFavoritesCount(sid uint32) (uint32, error) {
-	var err error
+// 店舗情報に紐づくお気に入り数を取得
+func (sp *shopPersistence) FindFavoritesCount(sid uint32) uint32 {
 	var count uint32
 
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = sp.db.Debug().Model(&models.Favorite{}).Where("shop_id = ?", sid).Count(&count).Error
-		if err != nil {
-			ch <- false
-			return
-		}
+		sp.db.Debug().Model(&models.Favorite{}).Where("shop_id = ?", sid).Count(&count)
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return count, nil
+		return count
 	}
-	return 0, err
+	return 0
 }
 
 // 店舗情報を保存

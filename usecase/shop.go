@@ -45,7 +45,7 @@ func (su shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, er
 			if err != nil {
 				commentsCount = 0
 			}
-			favoritesCount, err := su.shopRepository.FindFavoritesCount(shop.ID)
+			favoritesCount := su.shopRepository.FindFavoritesCount(shop.ID)
 			// 登録後にいいねが削除された場合
 			if err != nil {
 				favoritesCount = 0
