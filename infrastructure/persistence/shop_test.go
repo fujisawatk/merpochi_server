@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"fmt"
 	"merpochi_server/domain/models"
 	"reflect"
 	"testing"
@@ -165,15 +164,68 @@ func TestShopSave(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sp := NewShopPersistence(db)
 			got, err := sp.Save(tt.args)
-			fmt.Println(got)
+			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
-				// 予期しないエラーの場合
 				t.Errorf("shopPersistence.Save() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got.Code, tt.want.Code) {
 				t.Errorf("shopPersistence.Save() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestShopSearch(t *testing.T) {
+	type args struct {
+		code string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    models.Shop
+		wantErr bool
+	}{
+		{
+			name: "指定した店舗コードが登録されている場合、該当する店舗情報を取得出来ること",
+			args: args{
+				code: "aaaa000",
+			},
+			want: models.Shop{
+				Code:      "aaaa000",
+				Name:      "焼鳥屋",
+				Category:  "焼鳥",
+				Opentime:  "17:00～24:00",
+				Budget:    3000,
+				Img:       "https://rimage.gnst.jp/rest/img/000000000000/0000.jpg",
+				Latitude:  00.000000,
+				Longitude: 00.000000,
+				URL:       "https://r.gnavi.co.jp/000000000000/?ak=aaaaaaaa",
+			},
+			wantErr: false,
+		},
+		{
+			name: "指定した店舗コードが未登録の場合、エラーを返すこと",
+			args: args{
+				code: "dddd444",
+			},
+			want:    models.Shop{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sp := NewShopPersistence(db)
+			got, err := sp.Search(tt.args.code)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("shopPersistence.Search() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// 返り値が期待しない値の場合
+			if !reflect.DeepEqual(got.Name, tt.want.Name) {
+				t.Errorf("shopPersistence.Search() = %v, want %v", got, tt.want)
 			}
 		})
 	}
