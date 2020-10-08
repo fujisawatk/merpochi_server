@@ -230,3 +230,59 @@ func TestShopSearch(t *testing.T) {
 		})
 	}
 }
+
+func TestFindCommentedShops(t *testing.T) {
+	type args struct {
+		uid uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []models.Shop
+		wantErr bool
+	}{
+		{
+			name: "ログインユーザーがコメントした店舗情報を取得出来ること",
+			args: args{
+				uid: 1,
+			},
+			want: []models.Shop{
+				{
+					Code:      "aaaa000",
+					Name:      "焼鳥屋",
+					Category:  "焼鳥",
+					Opentime:  "17:00～24:00",
+					Budget:    3000,
+					Img:       "https://rimage.gnst.jp/rest/img/000000000000/0000.jpg",
+					Latitude:  00.000000,
+					Longitude: 00.000000,
+					URL:       "https://r.gnavi.co.jp/000000000000/?ak=aaaaaaaa",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "ログインユーザーがコメントした店舗がないなら、エラーを返すこと",
+			args: args{
+				uid: 3,
+			},
+			want:    []models.Shop{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sp := NewShopPersistence(db)
+			got, err := sp.FindCommentedShops(tt.args.uid)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("shopPersistence.FindCommentedShops() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// 返り値が期待しない値の場合
+			if !reflect.DeepEqual(got[0].Name, tt.want[0].Name) {
+				t.Errorf("shopPersistence.FindCommentedShops() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
