@@ -91,4 +91,28 @@ func initTestDatabase() {
 			log.Fatal(err)
 		}
 	}
+
+	for _, shop := range shops {
+		// 店舗情報を保存
+		err = db.Debug().Model(&models.Shop{}).Create(&shop).Error
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	for _, favorite := range favorites {
+		// 指定したページのお気に入り登録
+		err = db.Debug().Model(&models.Favorite{}).Create(&favorite).Error
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	for _, comment := range comments {
+		// 店舗情報を保存
+		err = db.Debug().Model(&models.Comment{}).Create(&comment).Error
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }

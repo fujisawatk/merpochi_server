@@ -40,12 +40,12 @@ func (su shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, er
 			counts = append(counts, res)
 		} else {
 			// 登録されている場合
-			commentsCount, err := su.shopRepository.FindCommentsCount(shop.ID)
+			commentsCount := su.shopRepository.FindCommentsCount(shop.ID)
 			// 登録後にコメントが削除された場合
 			if err != nil {
 				commentsCount = 0
 			}
-			favoritesCount, err := su.shopRepository.FindFavoritesCount(shop.ID)
+			favoritesCount := su.shopRepository.FindFavoritesCount(shop.ID)
 			// 登録後にいいねが削除された場合
 			if err != nil {
 				favoritesCount = 0
@@ -74,21 +74,13 @@ func (su shopUsecase) MeShops(uid uint32) (meShopsResponse, error) {
 	if err != nil {
 		return meShopsResponse{}, err
 	}
-
 	commentedShops = DelDuplicateShops(commentedShops)
-	if err != nil {
-		return meShopsResponse{}, err
-	}
 
 	favoritedShops, err := su.shopRepository.FindFavoritedShops(uid)
 	if err != nil {
 		return meShopsResponse{}, err
 	}
-
 	favoritedShops = DelDuplicateShops(favoritedShops)
-	if err != nil {
-		return meShopsResponse{}, err
-	}
 
 	res := meShopsResponse{
 		CommentedShops: commentedShops,
