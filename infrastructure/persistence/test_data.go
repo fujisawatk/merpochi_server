@@ -1,17 +1,28 @@
 package persistence
 
-import "merpochi_server/domain/models"
+import (
+	"merpochi_server/domain/models"
+	"time"
+)
 
 var users = []models.User{
 	{
+		ID:       1,
 		Nickname: "miku",
 		Email:    "miku@email.com",
 		Password: "mikumiku",
+	},
+	{
+		ID:       2,
+		Nickname: "taka",
+		Email:    "taka@email.com",
+		Password: "takataka",
 	},
 }
 
 var shops = []models.Shop{
 	{
+		ID:        1,
 		Code:      "aaaa000",
 		Name:      "焼鳥屋",
 		Category:  "焼鳥",
@@ -21,6 +32,8 @@ var shops = []models.Shop{
 		Latitude:  00.000000,
 		Longitude: 00.000000,
 		URL:       "https://r.gnavi.co.jp/000000000000/?ak=aaaaaaaa",
+		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 	},
 }
 

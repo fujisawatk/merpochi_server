@@ -16,6 +16,7 @@ func TestSave(t *testing.T) {
 		{
 			name: "ユーザー情報の保存処理が正常に行われること",
 			args: models.User{
+				ID:       3,
 				Nickname: "fujisawatk",
 				Email:    "fuji@email.com",
 				Password: "fujifuji0707",
@@ -68,7 +69,7 @@ func TestFindByID(t *testing.T) {
 		{
 			name: "指定したユーザー情報がない時にエラーを返すこと",
 			args: args{
-				uid: 3,
+				uid: 10,
 			},
 			want: models.User{
 				Email: "",
@@ -118,7 +119,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "指定したユーザー情報がない時は更新出来ないこと",
 			args: args{
-				uid: 3,
+				uid: 10,
 				user: models.User{
 					Email: "mikumiku@email.com",
 				},
@@ -165,7 +166,7 @@ func TestDelete(t *testing.T) {
 		{
 			name: "指定したユーザー情報がない時は削除出来ないこと",
 			args: args{
-				uid: 3,
+				uid: 10,
 			},
 			want:    0,
 			wantErr: true,

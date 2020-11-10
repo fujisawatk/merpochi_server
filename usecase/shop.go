@@ -74,21 +74,13 @@ func (su shopUsecase) MeShops(uid uint32) (meShopsResponse, error) {
 	if err != nil {
 		return meShopsResponse{}, err
 	}
-
 	commentedShops = DelDuplicateShops(commentedShops)
-	if err != nil {
-		return meShopsResponse{}, err
-	}
 
 	favoritedShops, err := su.shopRepository.FindFavoritedShops(uid)
 	if err != nil {
 		return meShopsResponse{}, err
 	}
-
 	favoritedShops = DelDuplicateShops(favoritedShops)
-	if err != nil {
-		return meShopsResponse{}, err
-	}
 
 	res := meShopsResponse{
 		CommentedShops: commentedShops,

@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"errors"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 
@@ -118,9 +117,6 @@ func (sp *shopPersistence) FindCommentedShops(uid uint32) ([]models.Shop, error)
 	}(done)
 	if channels.OK(done) {
 		return shops, nil
-	}
-	if gorm.IsRecordNotFoundError(err) {
-		return []models.Shop{}, errors.New("shop not found")
 	}
 	return []models.Shop{}, err
 }
