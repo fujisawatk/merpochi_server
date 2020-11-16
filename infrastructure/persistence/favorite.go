@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"errors"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 
@@ -21,7 +20,8 @@ func NewFavoritePersistence(db *gorm.DB) repository.FavoriteRepository {
 
 // 指定した店舗のいいね情報を取得
 func (fp *favoritePersistence) FindAll(sid uint32) ([]models.Favorite, error) {
-	var results []models.Favorite
+	var err error
+	var favorites []models.Favorite
 
 	done := make(chan bool)
 
@@ -31,17 +31,17 @@ func (fp *favoritePersistence) FindAll(sid uint32) ([]models.Favorite, error) {
 			Select("favorites.*").
 			Joins("inner join favorites on favorites.shop_id = shops.id").
 			Where("shops.id = ?", sid)
-		query.Scan(&results)
-		if len(results) == 0 {
+		err = query.Scan(&favorites).Error
+		if err != nil {
 			ch <- false
 			return
 		}
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return results, nil
+		return favorites, nil
 	}
-	return []models.Favorite{}, errors.New("no favorite")
+	return []models.Favorite{}, err
 }
 
 // Save お気に入り登録
