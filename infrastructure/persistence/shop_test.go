@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestFindCommentsCount(t *testing.T) {
+func TestShop_FindCommentsCount(t *testing.T) {
 	type args struct {
 		sid uint32
 	}
@@ -46,7 +46,7 @@ func TestFindCommentsCount(t *testing.T) {
 	}
 }
 
-func TestFindFavoritesCount(t *testing.T) {
+func TestShop_FindFavoritesCount(t *testing.T) {
 	type args struct {
 		sid uint32
 	}
@@ -85,7 +85,7 @@ func TestFindFavoritesCount(t *testing.T) {
 	}
 }
 
-func TestShopSave(t *testing.T) {
+func TestShop_Save(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    models.Shop
@@ -179,7 +179,7 @@ func TestShopSave(t *testing.T) {
 	}
 }
 
-func TestShopSearch(t *testing.T) {
+func TestShop_Search(t *testing.T) {
 	type args struct {
 		code string
 	}
@@ -236,7 +236,7 @@ func TestShopSearch(t *testing.T) {
 	}
 }
 
-func TestFindCommentedShops(t *testing.T) {
+func TestShop_FindCommentedShops(t *testing.T) {
 	type args struct {
 		uid uint32
 	}
@@ -295,7 +295,7 @@ func TestFindCommentedShops(t *testing.T) {
 	}
 }
 
-func TestFindFavoritedShops(t *testing.T) {
+func TestShop_FindFavoritedShops(t *testing.T) {
 	type args struct {
 		uid uint32
 	}

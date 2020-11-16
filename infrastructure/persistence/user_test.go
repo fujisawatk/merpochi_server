@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSave(t *testing.T) {
+func TestUser_Save(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    models.User
@@ -46,7 +46,7 @@ func TestSave(t *testing.T) {
 	}
 }
 
-func TestFindByID(t *testing.T) {
+func TestUser_FindByID(t *testing.T) {
 	type args struct {
 		uid uint32
 	}
@@ -94,7 +94,7 @@ func TestFindByID(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
+func TestUser_Update(t *testing.T) {
 	type args struct {
 		uid  uint32
 		user models.User
@@ -145,7 +145,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestUser_Delete(t *testing.T) {
 	type args struct {
 		uid uint32
 	}
@@ -189,7 +189,7 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestSearchUser(t *testing.T) {
+func TestUser_SearchUser(t *testing.T) {
 	type args struct {
 		email string
 	}
