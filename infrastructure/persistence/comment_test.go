@@ -142,3 +142,64 @@ func TestCommentSave(t *testing.T) {
 		})
 	}
 }
+
+func TestCommentUpdate(t *testing.T) {
+	type args struct {
+		cid     uint32
+		comment models.Comment
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{
+			name: "255文字以内のコメントを更新出来ること",
+			args: args{
+				cid: 1,
+				comment: models.Comment{
+					Text: strings.Repeat("a", 255),
+				},
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "256文字以上のコメントは更新出来ないこと",
+			args: args{
+				cid: 1,
+				comment: models.Comment{
+					Text: strings.Repeat("a", 256),
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "指定のコメントIDが存在しなければ、エラーが返ること",
+			args: args{
+				cid: 10,
+				comment: models.Comment{
+					Text: strings.Repeat("a", 255),
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cp := NewCommentPersistence(db)
+			got, err := cp.Update(tt.args.cid, tt.args.comment)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("commentPersistence.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			// 返り値が期待しない値の場合
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("commentPersistence.Update() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
