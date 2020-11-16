@@ -203,3 +203,46 @@ func TestCommentUpdate(t *testing.T) {
 		})
 	}
 }
+
+func TestCommentDelete(t *testing.T) {
+	type args struct {
+		cid uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{
+			name: "コメント情報を削除出来ること",
+			args: args{
+				cid: 1,
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "指定のコメントIDが存在しない場合、削除処理が行われないこと",
+			args: args{
+				cid: 1,
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cp := NewCommentPersistence(db)
+			got, err := cp.Delete(tt.args.cid)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("commentPersistence.Delete() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			// 返り値が期待しない値の場合
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("commentPersistence.Delete() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
