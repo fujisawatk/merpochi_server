@@ -213,7 +213,7 @@ func TestShop_Search(t *testing.T) {
 		{
 			name: "指定した店舗コードが未登録の場合、エラーを返すこと",
 			args: args{
-				code: "dddd444",
+				code: "eeee555",
 			},
 			want:    models.Shop{},
 			wantErr: true,
