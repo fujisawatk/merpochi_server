@@ -7,13 +7,11 @@ import (
 
 var users = []models.User{
 	{
-		ID:       1,
 		Nickname: "miku",
 		Email:    "miku@email.com",
 		Password: "mikumiku",
 	},
 	{
-		ID:       2,
 		Nickname: "taka",
 		Email:    "taka@email.com",
 		Password: "takataka",
@@ -31,6 +29,19 @@ var shops = []models.Shop{
 		Latitude:  00.000000,
 		Longitude: 00.000000,
 		URL:       "https://r.gnavi.co.jp/000000000000/?ak=aaaaaaaa",
+		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+	},
+	{
+		Code:      "bbbb000",
+		Name:      "海鮮居酒屋",
+		Category:  "海鮮",
+		Opentime:  "16:00～23:00",
+		Budget:    4000,
+		Img:       "https://rimage.gnst.jp/rest/img/111111111111/1111.jpg",
+		Latitude:  11.111111,
+		Longitude: 11.111111,
+		URL:       "https://r.gnavi.co.jp/111111111111/?ak=bbbbbbbb",
 		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 	},
