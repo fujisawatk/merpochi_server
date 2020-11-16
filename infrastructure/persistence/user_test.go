@@ -3,6 +3,7 @@ package persistence
 import (
 	"merpochi_server/domain/models"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -14,19 +15,80 @@ func TestUser_Save(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "ユーザー情報の保存処理が正常に行われること",
+			name: "ニックネームが20文字以内の場合、登録出来ること",
 			args: models.User{
-				ID:       3,
-				Nickname: "fujisawatk",
-				Email:    "fuji@email.com",
-				Password: "fujifuji0707",
+				Nickname: strings.Repeat("a", 20),
+				Email:    "test1@email.com",
+				Password: "testpassword",
 			},
 			want: models.User{
-				Nickname: "fujisawatk",
-				Email:    "fuji@email.com",
-				Password: "fujifuji0707",
+				Email: "test1@email.com",
 			},
 			wantErr: false,
+		},
+		{
+			name: "ニックネームが21文字以上の場合、登録出来ないこと",
+			args: models.User{
+				Nickname: strings.Repeat("a", 21),
+				Email:    "test2@email.com",
+				Password: "testpassword",
+			},
+			want:    models.User{},
+			wantErr: true,
+		},
+		{
+			name: "メールアドレスが100文字以内の場合、登録出来ること",
+			args: models.User{
+				Nickname: "testname",
+				Email:    strings.Repeat("a", 90) + "@email.com", // 100文字
+				Password: "testpassword",
+			},
+			want: models.User{
+				Email: strings.Repeat("a", 90) + "@email.com", // 100文字
+			},
+			wantErr: false,
+		},
+		{
+			name: "メールアドレスが101文字以上の場合、登録出来ないこと",
+			args: models.User{
+				Nickname: "testname",
+				Email:    strings.Repeat("b", 91) + "@email.com", // 101文字
+				Password: "testpassword",
+			},
+			want:    models.User{},
+			wantErr: true,
+		},
+		{
+			name: "メールアドレスが重複している場合、登録出来ないこと",
+			args: models.User{
+				Nickname: "testname",
+				Email:    "miku@email.com",
+				Password: "testpassword",
+			},
+			want:    models.User{},
+			wantErr: true,
+		},
+		{
+			name: "パスワードが40文字以内の場合、登録出来ること",
+			args: models.User{
+				Nickname: "testname",
+				Email:    "test3@email.com",
+				Password: strings.Repeat("a", 40),
+			},
+			want: models.User{
+				Email: "test3@email.com",
+			},
+			wantErr: false,
+		},
+		{
+			name: "パスワードが41文字以上の場合、登録出来ないこと",
+			args: models.User{
+				Nickname: "testname",
+				Email:    "fuji4@email.com",
+				Password: strings.Repeat("b", 41),
+			},
+			want:    models.User{},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
