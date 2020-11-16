@@ -22,7 +22,6 @@ var users = []models.User{
 
 var shops = []models.Shop{
 	{
-		ID:        1,
 		Code:      "aaaa000",
 		Name:      "焼鳥屋",
 		Category:  "焼鳥",
@@ -46,8 +45,17 @@ var favorites = []models.Favorite{
 
 var comments = []models.Comment{
 	{
-		Text:   "コメントテストa00000",
-		ShopID: 1,
-		UserID: 1,
+		Text:      "mikuのコメント001",
+		ShopID:    1,
+		UserID:    1,
+		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+	},
+	{
+		Text:      "takaのコメント001",
+		ShopID:    1,
+		UserID:    2,
+		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 	},
 }

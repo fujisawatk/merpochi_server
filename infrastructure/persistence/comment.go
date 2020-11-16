@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"errors"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 	"time"
@@ -21,7 +20,8 @@ func NewCommentPersistence(db *gorm.DB) repository.CommentRepository {
 }
 
 func (cp *commentPersistence) FindAll(sid uint32) ([]models.Comment, error) {
-	var results []models.Comment
+	var err error
+	var comments []models.Comment
 
 	done := make(chan bool)
 
@@ -31,17 +31,17 @@ func (cp *commentPersistence) FindAll(sid uint32) ([]models.Comment, error) {
 			Select("comments.*").
 			Joins("inner join comments on comments.shop_id = shops.id").
 			Where("shops.id = ?", sid)
-		query.Scan(&results)
-		if len(results) == 0 {
+		err = query.Scan(&comments).Error
+		if err != nil {
 			ch <- false
 			return
 		}
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return results, nil
+		return comments, nil
 	}
-	return []models.Comment{}, errors.New("no comment")
+	return []models.Comment{}, err
 }
 
 // Save コメント保存
