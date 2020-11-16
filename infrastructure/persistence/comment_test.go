@@ -52,9 +52,10 @@ func TestCommentFindAll(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cp := NewCommentPersistence(db)
+			cp := NewCommentPersistence(tx)
 			got, err := cp.FindAll(tt.args.sid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -67,6 +68,7 @@ func TestCommentFindAll(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestCommentSave(t *testing.T) {
@@ -127,9 +129,10 @@ func TestCommentSave(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cp := NewCommentPersistence(db)
+			cp := NewCommentPersistence(tx)
 			got, err := cp.Save(tt.args)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -141,6 +144,7 @@ func TestCommentSave(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestCommentUpdate(t *testing.T) {
@@ -188,9 +192,10 @@ func TestCommentUpdate(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cp := NewCommentPersistence(db)
+			cp := NewCommentPersistence(tx)
 			got, err := cp.Update(tt.args.cid, tt.args.comment)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -202,6 +207,7 @@ func TestCommentUpdate(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestCommentDelete(t *testing.T) {
@@ -231,9 +237,10 @@ func TestCommentDelete(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cp := NewCommentPersistence(db)
+			cp := NewCommentPersistence(tx)
 			got, err := cp.Delete(tt.args.cid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -245,6 +252,7 @@ func TestCommentDelete(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestCommentFindCommentUser(t *testing.T) {
@@ -276,9 +284,10 @@ func TestCommentFindCommentUser(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cp := NewCommentPersistence(db)
+			cp := NewCommentPersistence(tx)
 			got, err := cp.FindCommentUser(tt.args.uid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -290,4 +299,5 @@ func TestCommentFindCommentUser(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
