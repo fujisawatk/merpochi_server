@@ -16,6 +16,11 @@ var users = []models.User{
 		Email:    "taka@email.com",
 		Password: "takataka",
 	},
+	{
+		Nickname: "enako",
+		Email:    "enako@email.com",
+		Password: "enaena",
+	},
 }
 
 var shops = []models.Shop{

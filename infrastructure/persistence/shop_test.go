@@ -272,7 +272,7 @@ func TestShop_FindCommentedShops(t *testing.T) {
 		{
 			name: "ログインユーザーがコメントした店舗がない場合、空の値を返す",
 			args: args{
-				uid: 2,
+				uid: 3,
 			},
 			want:    []models.Shop{},
 			wantErr: false,
@@ -331,7 +331,7 @@ func TestShop_FindFavoritedShops(t *testing.T) {
 		{
 			name: "ログインユーザーがお気に入りした店舗がない場合、空の値を返す",
 			args: args{
-				uid: 2,
+				uid: 3,
 			},
 			want:    []models.Shop{},
 			wantErr: false,
