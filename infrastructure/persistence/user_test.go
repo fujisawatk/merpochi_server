@@ -91,9 +91,10 @@ func TestUser_Save(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			up := NewUserPersistence(db)
+			up := NewUserPersistence(tx)
 			got, err := up.Save(tt.args)
 			if (err != nil) != tt.wantErr {
 				// 予期しないエラーの場合
@@ -106,6 +107,7 @@ func TestUser_Save(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestUser_FindByID(t *testing.T) {
@@ -137,9 +139,10 @@ func TestUser_FindByID(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			up := NewUserPersistence(db)
+			up := NewUserPersistence(tx)
 			got, err := up.FindByID(tt.args.uid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -152,6 +155,7 @@ func TestUser_FindByID(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestUser_Update(t *testing.T) {
@@ -232,9 +236,10 @@ func TestUser_Update(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			up := NewUserPersistence(db)
+			up := NewUserPersistence(tx)
 			got, err := up.Update(tt.args.uid, tt.args.user)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -247,6 +252,7 @@ func TestUser_Update(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestUser_Delete(t *testing.T) {
@@ -276,9 +282,10 @@ func TestUser_Delete(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			up := NewUserPersistence(db)
+			up := NewUserPersistence(tx)
 			got, err := up.Delete(tt.args.uid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -291,4 +298,5 @@ func TestUser_Delete(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }

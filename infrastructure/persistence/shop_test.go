@@ -34,9 +34,10 @@ func TestShop_FindCommentsCount(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got := sp.FindCommentsCount(tt.args.sid)
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
@@ -44,6 +45,7 @@ func TestShop_FindCommentsCount(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestShop_FindFavoritesCount(t *testing.T) {
@@ -73,9 +75,10 @@ func TestShop_FindFavoritesCount(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got := sp.FindFavoritesCount(tt.args.sid)
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
@@ -83,6 +86,7 @@ func TestShop_FindFavoritesCount(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestShop_Save(t *testing.T) {
@@ -163,9 +167,10 @@ func TestShop_Save(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got, err := sp.Save(tt.args)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -177,6 +182,7 @@ func TestShop_Save(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestShop_Search(t *testing.T) {
@@ -219,9 +225,10 @@ func TestShop_Search(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got, err := sp.Search(tt.args.code)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -234,6 +241,7 @@ func TestShop_Search(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestShop_FindCommentedShops(t *testing.T) {
@@ -278,9 +286,10 @@ func TestShop_FindCommentedShops(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got, err := sp.FindCommentedShops(tt.args.uid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -293,6 +302,7 @@ func TestShop_FindCommentedShops(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
 func TestShop_FindFavoritedShops(t *testing.T) {
@@ -337,9 +347,10 @@ func TestShop_FindFavoritedShops(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got, err := sp.FindFavoritedShops(tt.args.uid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -352,4 +363,5 @@ func TestShop_FindFavoritedShops(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
