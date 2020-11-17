@@ -38,12 +38,6 @@ func (uu userUsecase) CreateUser(nickname, email, password string) (models.User,
 		return models.User{}, err
 	}
 
-	// メールアドレスの重複確認
-	err = uu.userRepository.SearchUser(user.Email)
-	if err != nil {
-		return models.User{}, err
-	}
-
 	// パスワードのハッシュ化
 	var hashedPassword []byte
 	hashedPassword, err = security.Hash(user.Password)
