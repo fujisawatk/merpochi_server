@@ -129,13 +129,11 @@ func TestUser_FindByID(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "指定したユーザー情報がない時にエラーを返すこと",
+			name: "指定したユーザー情報がない場合、エラーを返すこと",
 			args: args{
 				uid: 10,
 			},
-			want: models.User{
-				Email: "",
-			},
+			want:    models.User{},
 			wantErr: true,
 		},
 	}
