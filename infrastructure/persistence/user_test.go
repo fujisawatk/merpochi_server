@@ -166,18 +166,62 @@ func TestUser_Update(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "指定したユーザー情報を更新出来ること",
+			name: "変更するニックネームが20文字以内の場合、更新出来ること",
 			args: args{
 				uid: 1,
 				user: models.User{
-					Email: "mikumiku@email.com",
+					Nickname: strings.Repeat("b", 20),
 				},
 			},
 			want:    1,
 			wantErr: false,
 		},
 		{
-			name: "指定したユーザー情報がない時は更新出来ないこと",
+			name: "変更するニックネームが21文字以上の場合、更新出来ないこと",
+			args: args{
+				uid: 2,
+				user: models.User{
+					Nickname: strings.Repeat("b", 21),
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "変更するメールアドレスが100文字以内の場合、更新出来ること",
+			args: args{
+				uid: 1,
+				user: models.User{
+					Email: strings.Repeat("a", 90) + "@email.com", // 100文字
+				},
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "変更するメールアドレスが101文字以上の場合、更新出来ないこと",
+			args: args{
+				uid: 2,
+				user: models.User{
+					Email: strings.Repeat("a", 91) + "@email.com", // 101文字
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "変更するメールアドレスが重複している場合、更新出来ないこと",
+			args: args{
+				uid: 3,
+				user: models.User{
+					Email: "taka@email.com",
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "指定したユーザーIDが存在しない場合、更新出来ないこと",
 			args: args{
 				uid: 10,
 				user: models.User{
