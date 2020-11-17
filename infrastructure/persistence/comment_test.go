@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestCommentFindAll(t *testing.T) {
+func TestComment_FindAll(t *testing.T) {
 	type args struct {
 		sid uint32
 	}
@@ -71,7 +71,7 @@ func TestCommentFindAll(t *testing.T) {
 	tx.Rollback()
 }
 
-func TestCommentSave(t *testing.T) {
+func TestComment_Save(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    models.Comment
@@ -147,7 +147,7 @@ func TestCommentSave(t *testing.T) {
 	tx.Rollback()
 }
 
-func TestCommentUpdate(t *testing.T) {
+func TestComment_Update(t *testing.T) {
 	type args struct {
 		cid     uint32
 		comment models.Comment
@@ -210,7 +210,7 @@ func TestCommentUpdate(t *testing.T) {
 	tx.Rollback()
 }
 
-func TestCommentDelete(t *testing.T) {
+func TestComment_Delete(t *testing.T) {
 	type args struct {
 		cid uint32
 	}
@@ -255,7 +255,7 @@ func TestCommentDelete(t *testing.T) {
 	tx.Rollback()
 }
 
-func TestCommentFindCommentUser(t *testing.T) {
+func TestComment_FindCommentUser(t *testing.T) {
 	type args struct {
 		uid uint32
 	}

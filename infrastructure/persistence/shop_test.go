@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestFindCommentsCount(t *testing.T) {
+func TestShop_FindCommentsCount(t *testing.T) {
 	type args struct {
 		sid uint32
 	}
@@ -34,9 +34,10 @@ func TestFindCommentsCount(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got := sp.FindCommentsCount(tt.args.sid)
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
@@ -44,9 +45,10 @@ func TestFindCommentsCount(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
-func TestFindFavoritesCount(t *testing.T) {
+func TestShop_FindFavoritesCount(t *testing.T) {
 	type args struct {
 		sid uint32
 	}
@@ -73,9 +75,10 @@ func TestFindFavoritesCount(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got := sp.FindFavoritesCount(tt.args.sid)
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
@@ -83,9 +86,10 @@ func TestFindFavoritesCount(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
-func TestShopSave(t *testing.T) {
+func TestShop_Save(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    models.Shop
@@ -95,30 +99,29 @@ func TestShopSave(t *testing.T) {
 		{
 			name: "店舗情報が登録出来ること",
 			args: models.Shop{
-				ID:        2,
-				Code:      "bbbb111",
+				Code:      "cccc222",
 				Name:      "イタリアンショップ",
 				Category:  "イタリアン",
-				Opentime:  "17:00～23:00",
+				Opentime:  "18:00～23:00",
 				Budget:    2000,
-				Img:       "https://rimage.gnst.jp/rest/img/111111110000/1111.jpg",
-				Latitude:  11.111111,
-				Longitude: 11.111111,
-				URL:       "https://r.gnavi.co.jp/111111110000/?ak=bbbbbbbb",
+				Img:       "https://rimage.gnst.jp/rest/img/222222222222/2222.jpg",
+				Latitude:  22.222222,
+				Longitude: 22.222222,
+				URL:       "https://r.gnavi.co.jp/222222222222/?ak=cccccccc",
 				CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 				UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 			},
 			want: models.Shop{
-				ID:        2,
-				Code:      "bbbb111",
+				ID:        3,
+				Code:      "cccc222",
 				Name:      "イタリアンショップ",
 				Category:  "イタリアン",
-				Opentime:  "17:00～23:00",
+				Opentime:  "18:00～23:00",
 				Budget:    2000,
-				Img:       "https://rimage.gnst.jp/rest/img/111111110000/1111.jpg",
-				Latitude:  11.111111,
-				Longitude: 11.111111,
-				URL:       "https://r.gnavi.co.jp/111111110000/?ak=bbbbbbbb",
+				Img:       "https://rimage.gnst.jp/rest/img/222222222222/2222.jpg",
+				Latitude:  22.222222,
+				Longitude: 22.222222,
+				URL:       "https://r.gnavi.co.jp/222222222222/?ak=cccccccc",
 				CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 				UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 			},
@@ -127,8 +130,7 @@ func TestShopSave(t *testing.T) {
 		{
 			name: "特定の値が空でも、登録出来ること(not null)",
 			args: models.Shop{
-				ID:        3,
-				Code:      "cccc222",
+				Code:      "dddd444",
 				Name:      "",
 				Category:  "",
 				Opentime:  "",
@@ -141,8 +143,8 @@ func TestShopSave(t *testing.T) {
 				UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 			},
 			want: models.Shop{
-				ID:        3,
-				Code:      "cccc222",
+				ID:        4,
+				Code:      "dddd444",
 				Name:      "",
 				Category:  "",
 				Opentime:  "",
@@ -165,14 +167,14 @@ func TestShopSave(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got, err := sp.Save(tt.args)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("shopPersistence.Save() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
@@ -180,9 +182,10 @@ func TestShopSave(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
-func TestShopSearch(t *testing.T) {
+func TestShop_Search(t *testing.T) {
 	type args struct {
 		code string
 	}
@@ -216,15 +219,16 @@ func TestShopSearch(t *testing.T) {
 		{
 			name: "指定した店舗コードが未登録の場合、エラーを返すこと",
 			args: args{
-				code: "dddd444",
+				code: "eeee555",
 			},
 			want:    models.Shop{},
 			wantErr: true,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got, err := sp.Search(tt.args.code)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -237,9 +241,10 @@ func TestShopSearch(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
-func TestFindCommentedShops(t *testing.T) {
+func TestShop_FindCommentedShops(t *testing.T) {
 	type args struct {
 		uid uint32
 	}
@@ -275,15 +280,16 @@ func TestFindCommentedShops(t *testing.T) {
 		{
 			name: "ログインユーザーがコメントした店舗がない場合、空の値を返す",
 			args: args{
-				uid: 2,
+				uid: 3,
 			},
 			want:    []models.Shop{},
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got, err := sp.FindCommentedShops(tt.args.uid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -296,9 +302,10 @@ func TestFindCommentedShops(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
 
-func TestFindFavoritedShops(t *testing.T) {
+func TestShop_FindFavoritedShops(t *testing.T) {
 	type args struct {
 		uid uint32
 	}
@@ -334,15 +341,16 @@ func TestFindFavoritedShops(t *testing.T) {
 		{
 			name: "ログインユーザーがお気に入りした店舗がない場合、空の値を返す",
 			args: args{
-				uid: 2,
+				uid: 3,
 			},
 			want:    []models.Shop{},
 			wantErr: false,
 		},
 	}
+	tx := db.Begin()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(db)
+			sp := NewShopPersistence(tx)
 			got, err := sp.FindFavoritedShops(tt.args.uid)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
@@ -355,4 +363,5 @@ func TestFindFavoritedShops(t *testing.T) {
 			}
 		})
 	}
+	tx.Rollback()
 }
