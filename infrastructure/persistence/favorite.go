@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"errors"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 
@@ -52,7 +53,13 @@ func (fp *favoritePersistence) Save(favorite models.Favorite) (models.Favorite, 
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-
+		// 重複チェック
+		result := fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? AND shop_id = ?", favorite.UserID, favorite.ShopID).Take(&models.Favorite{})
+		if result.RowsAffected > 0 {
+			err = errors.New("favorite registered")
+			ch <- false
+			return
+		}
 		err = fp.db.Debug().Model(&models.Favorite{}).Create(&favorite).Error
 		if err != nil {
 			ch <- false
