@@ -81,6 +81,13 @@ func (fp *favoritePersistence) Delete(sid uint32, uid uint32) (int64, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
+		// 存在チェック
+		rs = fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Favorite{})
+		if rs.Error != nil {
+			ch <- false
+			return
+		}
+		// 削除処理
 		rs = fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? and shop_id = ?", uid, sid).Delete(&models.Favorite{})
 		ch <- true
 	}(done)
@@ -90,7 +97,7 @@ func (fp *favoritePersistence) Delete(sid uint32, uid uint32) (int64, error) {
 		}
 		return rs.RowsAffected, nil
 	}
-	return 0, rs.Error
+	return 0, errors.New("favorite not found")
 }
 
 func (fp *favoritePersistence) FindFavoriteUser(uid uint32) (models.User, error) {

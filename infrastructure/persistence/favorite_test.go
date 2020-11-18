@@ -122,3 +122,52 @@ func TestFavorite_Save(t *testing.T) {
 	}
 	tx.Rollback()
 }
+
+func TestFavorite_Delete(t *testing.T) {
+	type args struct {
+		sid uint32
+		uid uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{
+			name: "お気に入り情報を削除出来ること",
+			args: args{
+				sid: 1,
+				uid: 1,
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "一致するお気に入り情報が存在しない場合、エラーが返ること",
+			args: args{
+				sid: 2,
+				uid: 1,
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	tx := db.Begin()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fp := NewFavoritePersistence(tx)
+			got, err := fp.Delete(tt.args.sid, tt.args.uid)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("favoritePersistence.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// 返り値が期待しない値の場合
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("favoritePersistence.Delete() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+	tx.Rollback()
+}
