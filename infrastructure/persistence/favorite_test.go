@@ -116,7 +116,7 @@ func TestFavorite_Save(t *testing.T) {
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("faovritePersistence.Save() = %v, want %v", got, tt.want)
+				t.Errorf("favoritePersistence.Save() = %v, want %v", got, tt.want)
 			}
 		})
 	}
