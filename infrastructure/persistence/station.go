@@ -36,7 +36,7 @@ func (sp *stationPersistence) SearchKanaWord(word string) ([]models.Station, err
 	if channels.OK(done) {
 		return stations, nil
 	}
-	return nil, err
+	return []models.Station{}, err
 }
 
 func (sp *stationPersistence) SearchKanjiWord(word string) ([]models.Station, error) {
@@ -57,5 +57,5 @@ func (sp *stationPersistence) SearchKanjiWord(word string) ([]models.Station, er
 	if channels.OK(done) {
 		return stations, nil
 	}
-	return nil, err
+	return []models.Station{}, err
 }
