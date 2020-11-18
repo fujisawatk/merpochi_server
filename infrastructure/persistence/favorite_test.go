@@ -171,3 +171,50 @@ func TestFavorite_Delete(t *testing.T) {
 	}
 	tx.Rollback()
 }
+
+func TestFavorite_FindFavoriteUser(t *testing.T) {
+	type args struct {
+		uid uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    models.User
+		wantErr bool
+	}{
+		{
+			name: "お気に入りしたユーザー情報を取得出来ること",
+			args: args{
+				uid: 1,
+			},
+			want: models.User{
+				Email: "miku@email.com",
+			},
+			wantErr: false,
+		},
+		{
+			name: "指定のユーザーIDが存在しない場合、エラーが返ること",
+			args: args{
+				uid: 10,
+			},
+			want:    models.User{},
+			wantErr: true,
+		},
+	}
+	tx := db.Begin()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fp := NewFavoritePersistence(tx)
+			got, err := fp.FindFavoriteUser(tt.args.uid)
+			// 予期しないエラーの場合
+			if (err != nil) != tt.wantErr {
+				t.Errorf("favoritePersistence.FindFavoriteUser() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			// 返り値が期待しない値の場合
+			if !reflect.DeepEqual(got.Email, tt.want.Email) {
+				t.Errorf("favoritePersistence.FindFavoriteUser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+	tx.Rollback()
+}

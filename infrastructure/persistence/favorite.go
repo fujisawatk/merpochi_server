@@ -108,7 +108,7 @@ func (fp *favoritePersistence) FindFavoriteUser(uid uint32) (models.User, error)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = fp.db.Debug().Model(&models.User{}).Where("id = ?", uid).First(&user).Error
+		err = fp.db.Debug().Model(&models.User{}).Where("id = ?", uid).Take(&user).Error
 		if err != nil {
 			ch <- false
 			return
