@@ -63,7 +63,7 @@ func TestShop_FindFavoritesCount(t *testing.T) {
 			args: args{
 				sid: 1,
 			},
-			want:    1,
+			want:    2,
 			wantErr: false,
 		},
 		{
