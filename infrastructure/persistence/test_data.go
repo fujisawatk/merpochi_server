@@ -54,8 +54,16 @@ var shops = []models.Shop{
 
 var favorites = []models.Favorite{
 	{
-		UserID: 1,
-		ShopID: 1,
+		UserID:    1,
+		ShopID:    1,
+		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+	},
+	{
+		UserID:    2,
+		ShopID:    1,
+		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 	},
 }
 
