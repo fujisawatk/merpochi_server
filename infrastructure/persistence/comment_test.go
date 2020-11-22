@@ -60,7 +60,6 @@ func TestComment_FindAll(t *testing.T) {
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("commentPersistence.FindAll() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
