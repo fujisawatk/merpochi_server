@@ -27,7 +27,7 @@ func (cp *commentPersistence) FindAll(sid uint32) ([]models.Comment, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		query := cp.db.Debug().Table("shops").
+		query := cp.db.Table("shops").
 			Select("comments.*").
 			Joins("inner join comments on comments.shop_id = shops.id").
 			Where("shops.id = ?", sid)
@@ -53,7 +53,7 @@ func (cp *commentPersistence) Save(comment models.Comment) (models.Comment, erro
 	go func(ch chan<- bool) {
 		defer close(ch)
 
-		err = cp.db.Debug().Model(&models.Comment{}).Create(&comment).Error
+		err = cp.db.Model(&models.Comment{}).Create(&comment).Error
 		if err != nil {
 			ch <- false
 			return
@@ -74,7 +74,7 @@ func (cp *commentPersistence) Update(cid uint32, comment models.Comment) (int64,
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		rs = cp.db.Debug().Model(&models.Comment{}).Where("id = ?", cid).Take(&models.Comment{}).UpdateColumns(
+		rs = cp.db.Model(&models.Comment{}).Where("id = ?", cid).Take(&models.Comment{}).UpdateColumns(
 			map[string]interface{}{
 				"text":       comment.Text,
 				"updated_at": time.Now(),
@@ -100,7 +100,7 @@ func (cp *commentPersistence) Delete(cid uint32) (int64, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		rs = cp.db.Debug().Model(&models.Comment{}).Where("id = ?", cid).Take(&models.Comment{}).Delete(&models.Comment{})
+		rs = cp.db.Model(&models.Comment{}).Where("id = ?", cid).Take(&models.Comment{}).Delete(&models.Comment{})
 		ch <- true
 	}(done)
 	if channels.OK(done) {
@@ -121,7 +121,7 @@ func (cp *commentPersistence) FindCommentUser(uid uint32) (models.User, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = cp.db.Debug().Model(&models.User{}).Where("id = ?", uid).First(&user).Error
+		err = cp.db.Model(&models.User{}).Where("id = ?", uid).First(&user).Error
 		if err != nil {
 			ch <- false
 			return

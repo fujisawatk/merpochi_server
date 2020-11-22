@@ -26,7 +26,7 @@ func (sp *shopPersistence) FindCommentsCount(sid uint32) uint32 {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		sp.db.Debug().Model(&models.Comment{}).Where("shop_id = ?", sid).Count(&count)
+		sp.db.Model(&models.Comment{}).Where("shop_id = ?", sid).Count(&count)
 		ch <- true
 	}(done)
 	if channels.OK(done) {
@@ -43,7 +43,7 @@ func (sp *shopPersistence) FindFavoritesCount(sid uint32) uint32 {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		sp.db.Debug().Model(&models.Favorite{}).Where("shop_id = ?", sid).Count(&count)
+		sp.db.Model(&models.Favorite{}).Where("shop_id = ?", sid).Count(&count)
 		ch <- true
 	}(done)
 	if channels.OK(done) {
@@ -61,7 +61,7 @@ func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 
-		err = sp.db.Debug().Model(&models.Shop{}).Create(&shop).Error
+		err = sp.db.Model(&models.Shop{}).Create(&shop).Error
 		if err != nil {
 			ch <- false
 			return
@@ -82,7 +82,7 @@ func (sp *shopPersistence) Search(code string) (models.Shop, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = sp.db.Debug().Model(&models.Shop{}).Where("code = ?", code).Take(&shop).Error
+		err = sp.db.Model(&models.Shop{}).Where("code = ?", code).Take(&shop).Error
 		if err != nil {
 			ch <- false
 			return
@@ -103,7 +103,7 @@ func (sp *shopPersistence) FindCommentedShops(uid uint32) ([]models.Shop, error)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		query := sp.db.Debug().Table("users").
+		query := sp.db.Table("users").
 			Select("shops.*").
 			Joins("inner join comments on comments.user_id = users.id").
 			Joins("inner join shops on shops.id = comments.shop_id").
@@ -129,7 +129,7 @@ func (sp *shopPersistence) FindFavoritedShops(uid uint32) ([]models.Shop, error)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		query := sp.db.Debug().Table("users").
+		query := sp.db.Table("users").
 			Select("shops.*").
 			Joins("inner join favorites on favorites.user_id = users.id").
 			Joins("inner join shops on shops.id = favorites.shop_id").
