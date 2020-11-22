@@ -58,6 +58,9 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to Docker: %s", err)
 	}
 
+	// ログ出力設定
+	db.LogMode(false)
+
 	// 初期設定
 	log.Println("Initialize test database...")
 	initTestDatabase()
