@@ -58,6 +58,9 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to Docker: %s", err)
 	}
 
+	// ログ出力設定
+	db.LogMode(false)
+
 	// 初期設定
 	log.Println("Initialize test database...")
 	initTestDatabase()
@@ -86,35 +89,35 @@ func initTestDatabase() {
 
 	// 初期データ挿入
 	for _, user := range users {
-		err = db.Debug().Model(&models.User{}).Create(&user).Error
+		err = db.Model(&models.User{}).Create(&user).Error
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	for _, shop := range shops {
-		err = db.Debug().Model(&models.Shop{}).Create(&shop).Error
+		err = db.Model(&models.Shop{}).Create(&shop).Error
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	for _, favorite := range favorites {
-		err = db.Debug().Model(&models.Favorite{}).Create(&favorite).Error
+		err = db.Model(&models.Favorite{}).Create(&favorite).Error
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	for _, comment := range comments {
-		err = db.Debug().Model(&models.Comment{}).Create(&comment).Error
+		err = db.Model(&models.Comment{}).Create(&comment).Error
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	for _, station := range stations {
-		err = db.Debug().Model(&models.Station{}).Create(&station).Error
+		err = db.Model(&models.Station{}).Create(&station).Error
 		if err != nil {
 			log.Fatal(err)
 		}

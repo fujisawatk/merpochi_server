@@ -29,7 +29,7 @@ func (up *userPersistence) Save(user models.User) (models.User, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 
-		err = up.db.Debug().Model(&models.User{}).Create(&user).Error
+		err = up.db.Model(&models.User{}).Create(&user).Error
 		if err != nil {
 			ch <- false
 			return
@@ -51,7 +51,7 @@ func (up *userPersistence) FindByID(uid uint32) (models.User, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = up.db.Debug().Model(&models.User{}).Where("id = ?", uid).Take(&user).Error
+		err = up.db.Model(&models.User{}).Where("id = ?", uid).Take(&user).Error
 		if err != nil {
 			ch <- false
 			return
@@ -76,7 +76,7 @@ func (up *userPersistence) Update(uid uint32, user models.User) (int64, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		rs = up.db.Debug().Model(&models.User{}).Where("id = ?", uid).Take(&models.User{}).UpdateColumns(
+		rs = up.db.Model(&models.User{}).Where("id = ?", uid).Take(&models.User{}).UpdateColumns(
 			map[string]interface{}{
 				"nickname":   user.Nickname,
 				"email":      user.Email,
@@ -103,7 +103,7 @@ func (up *userPersistence) Delete(uid uint32) (int64, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		rs = up.db.Debug().Model(&models.User{}).Where("id = ?", uid).Take(&models.User{}).Delete(&models.User{})
+		rs = up.db.Model(&models.User{}).Where("id = ?", uid).Take(&models.User{}).Delete(&models.User{})
 		ch <- true
 	}(done)
 	if channels.OK(done) {

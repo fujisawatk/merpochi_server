@@ -28,7 +28,7 @@ func (fp *favoritePersistence) FindAll(sid uint32) ([]models.Favorite, error) {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		query := fp.db.Debug().Table("shops").
+		query := fp.db.Table("shops").
 			Select("favorites.*").
 			Joins("inner join favorites on favorites.shop_id = shops.id").
 			Where("shops.id = ?", sid)
@@ -54,13 +54,13 @@ func (fp *favoritePersistence) Save(favorite models.Favorite) (models.Favorite, 
 	go func(ch chan<- bool) {
 		defer close(ch)
 		// 重複チェック
-		result := fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? AND shop_id = ?", favorite.UserID, favorite.ShopID).Take(&models.Favorite{})
+		result := fp.db.Model(&models.Favorite{}).Where("user_id = ? AND shop_id = ?", favorite.UserID, favorite.ShopID).Take(&models.Favorite{})
 		if result.RowsAffected > 0 {
 			err = errors.New("favorite registered")
 			ch <- false
 			return
 		}
-		err = fp.db.Debug().Model(&models.Favorite{}).Create(&favorite).Error
+		err = fp.db.Model(&models.Favorite{}).Create(&favorite).Error
 		if err != nil {
 			ch <- false
 			return
@@ -82,13 +82,13 @@ func (fp *favoritePersistence) Delete(sid uint32, uid uint32) (int64, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 		// 存在チェック
-		rs = fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Favorite{})
+		rs = fp.db.Model(&models.Favorite{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Favorite{})
 		if rs.Error != nil {
 			ch <- false
 			return
 		}
 		// 削除処理
-		rs = fp.db.Debug().Model(&models.Favorite{}).Where("user_id = ? and shop_id = ?", uid, sid).Delete(&models.Favorite{})
+		rs = fp.db.Model(&models.Favorite{}).Where("user_id = ? and shop_id = ?", uid, sid).Delete(&models.Favorite{})
 		ch <- true
 	}(done)
 	if channels.OK(done) {
@@ -108,7 +108,7 @@ func (fp *favoritePersistence) FindFavoriteUser(uid uint32) (models.User, error)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = fp.db.Debug().Model(&models.User{}).Where("id = ?", uid).Take(&user).Error
+		err = fp.db.Model(&models.User{}).Where("id = ?", uid).Take(&user).Error
 		if err != nil {
 			ch <- false
 			return

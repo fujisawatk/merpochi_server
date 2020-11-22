@@ -233,7 +233,6 @@ func TestShop_Search(t *testing.T) {
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("shopPersistence.Search() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
@@ -294,7 +293,6 @@ func TestShop_FindCommentedShops(t *testing.T) {
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("shopPersistence.FindCommentedShops() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
@@ -355,7 +353,6 @@ func TestShop_FindFavoritedShops(t *testing.T) {
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("shopPersistence.FindFavoritedShops() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {

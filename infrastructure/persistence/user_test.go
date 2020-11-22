@@ -99,7 +99,6 @@ func TestUser_Save(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				// 予期しないエラーの場合
 				t.Errorf("userPersistence.Save() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got.Email, tt.want.Email) {
@@ -147,7 +146,6 @@ func TestUser_FindByID(t *testing.T) {
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("userPersistence.FindByID() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got.Email, tt.want.Email) {
@@ -244,7 +242,6 @@ func TestUser_Update(t *testing.T) {
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("userPersistence.Update() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if got != tt.want {
@@ -290,7 +287,6 @@ func TestUser_Delete(t *testing.T) {
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("userPersistence.Delete() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			// 返り値が期待しない値の場合
 			if got != tt.want {
