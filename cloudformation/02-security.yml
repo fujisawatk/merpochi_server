@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: 
+  Security Group Create
+
+Metadata: 
+  "AWS::CloudFormation::Interface":
+    ParameterGroups: 
+      - Label: 
+          default: "Project Name Prefix"
+        Parameters: 
+          - PJPrefix
+      - Label: 
+          default: "Security Configuration"
+        Parameters: 
+          - VPCCIDR
+          - PublicSubnetACIDR
+          - PublicSubnetCCIDR
+          - PrivateSubnetACIDR
+          - PrivateSubnetCCIDR
+    ParameterLabels: 
+      VPCCIDR: 
+        default: "VPC CIDR"
+      PublicSubnetACIDR: 
+        default: "PublicSubnetA CIDR"
+      PublicSubnetCCIDR: 
+        default: "PublicSubnetC CIDR"
+      PrivateSubnetACIDR: 
+        default: "PrivateSubnetA CIDR"
+      PrivateSubnetCCIDR: 
+        default: "PrivateSubnetC CIDR"
+
+# ------------------------------------------------------------#
+# Input Parameters
+# ------------------------------------------------------------# 
+Parameters:
+  PJPrefix:
+    Type: String
+
+Resources:
+# ------------------------------------------------------------#
+#  SecurityGroup for Endpoint
+# ------------------------------------------------------------#
+  EndpointSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      GroupName: !Sub "${PJPrefix}-endpoint-sg"
+      GroupDescription: "-"
+      Tags:
+        - Key: "Name"
+          Value: !Sub "${PJPrefix}-entpoint-sg"
+# Rule
+  EndpointSecurityGroupIngress:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties: 
+      GroupId: !Ref EndpointSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc-cidr" }
+# ------------------------------------------------------------#
+#  SecurityGroup for ALB
+# ------------------------------------------------------------#
+  ALBSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      GroupName: !Sub "${PJPrefix}-alb-sg"
+      GroupDescription: "-"
+      Tags:
+        - Key: "Name"
+          Value: !Sub "${PJPrefix}-alb-sg"
+# Rule
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: "0.0.0.0/0"
+
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: "0.0.0.0/0"
+
+# ------------------------------------------------------------#
+#  SecurityGroup for ECS Service
+# ------------------------------------------------------------#
+  ECSSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      GroupName: !Sub "${PJPrefix}-ecs-sg"
+      GroupDescription: "-"
+      Tags:
+        - Key: "Name"
+          Value: !Sub "${PJPrefix}-ecs-sg"
+
+# Rule
+  ECSSecurityGroupIngress: 
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties: 
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !GetAtt [ ALBSecurityGroup, GroupId ] 
+      GroupId: !GetAtt [ ECSSecurityGroup, GroupId ]
