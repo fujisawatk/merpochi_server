@@ -33,8 +33,7 @@ Resources:
 # ------------------------------------------------------------#
 #  ECREndpoint
 # ------------------------------------------------------------#
-# ecr.dkr(Docker Registry API) Endpoint Create
-  EcrDkrEndpoint:
+  ECREndpoint:
     Type: "AWS::EC2::VPCEndpoint"
     Properties:
       ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.dkr"
@@ -46,13 +45,14 @@ Resources:
         - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
       SecurityGroupIds:
         - { "Fn::ImportValue": !Sub "${PJPrefix}-endpoint-sg" }
-      
 
-# ecr.api(Amazon ECR API) Endpoint Create
-  EcrApiEndpoint:
-    Type: "AWS::EC2::VPCEndpoint"
+# ------------------------------------------------------------#
+#  LogsEndpoint
+# ------------------------------------------------------------#
+  logsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
     Properties:
-      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.api"
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.logs"
       VpcEndpointType: "Interface"
       PrivateDnsEnabled: true
       VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }

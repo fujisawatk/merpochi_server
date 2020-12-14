@@ -94,3 +94,13 @@ Outputs:
     Value: !Ref EndpointSecurityGroup
     Export:
       Name: !Sub "${PJPrefix}-endpoint-sg"
+
+  ALBSecurityGroup:
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name: !Sub "${PJPrefix}-alb-sg"
+
+  ECSSecurityGroup:
+    Value: !Ref ECSSecurityGroup
+    Export:
+      Name: !Sub "${PJPrefix}-ecs-sg"
