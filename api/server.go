@@ -13,7 +13,10 @@ import (
 // Run サーバ起動
 func Run() {
 	config.EnvLoad()
-	auto.TestLoad()
+	// 開発環境では起動毎にDBテーブル、テストデータリセット
+	if "development" == config.ENV {
+		auto.TestLoad()
+	}
 	fmt.Printf("\n\tListening [::]:%d\n", config.APIPORT)
 	listen(config.APIPORT)
 }
