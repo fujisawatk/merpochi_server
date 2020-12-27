@@ -61,3 +61,32 @@ Resources:
         - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
       SecurityGroupIds:
         - { "Fn::ImportValue": !Sub "${PJPrefix}-endpoint-sg" }
+
+# ------------------------------------------------------------#
+#  SSMAgentEndpoint
+# ------------------------------------------------------------#
+  SSMEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      SubnetIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-a" }
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
+      SecurityGroupIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-endpoint-sg" }
+
+  SSMAgentEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssmmessages"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      SubnetIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-a" }
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
+      SecurityGroupIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-endpoint-sg" }

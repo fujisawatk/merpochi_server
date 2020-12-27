@@ -81,8 +81,8 @@ Resources:
     Type: "AWS::EC2::SecurityGroupIngress"
     Properties: 
       IpProtocol: tcp
-      FromPort: 80
-      ToPort: 80
+      FromPort: 8080
+      ToPort: 8080
       SourceSecurityGroupId: !GetAtt [ ALBSecurityGroup, GroupId ] 
       GroupId: !GetAtt [ ECSSecurityGroup, GroupId ]
 

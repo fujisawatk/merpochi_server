@@ -22,7 +22,6 @@ Metadata:
           - ECSTaskCPUUnit
           - ECSTaskMemory
           - ECSContainerName
-          # - ECSImageName
           - ECSServiceName
           - ECSTaskDesiredCount
         
@@ -41,8 +40,6 @@ Metadata:
         default: "ECSTaskMemory"
       ECSContainerName:
         default: "ECSContainerName"
-      # ECSImageName:
-      #   default: "ECSImageName"
       ECSServiceName:
         default: "ECSServiceName"
       ECSTaskDesiredCount:
@@ -77,13 +74,13 @@ Parameters:
 
 #ECSTaskCPUUnit
   ECSTaskCPUUnit:
-    AllowedValues: [ 256, 512, 1024, 2048, 4096  ]
+    AllowedValues: [ "256", "512", "1024", "2048", "4096"  ]
     Type: String
     Default: "256"
 
 #ECSTaskMemory
   ECSTaskMemory:
-    AllowedValues: [ 256, 512, 1024, 2048, 4096  ]
+    AllowedValues: [ "256", "512", "1024", "2048", "4096"  ]
     Type: String
     Default: "512"
 
@@ -91,11 +88,6 @@ Parameters:
   ECSContainerName:
     Type: String
     Default: "container"
-
-#ECSImageName
-  # ECSImageName:
-  #   Type: String
-  #   Default: "merpochi-server"
 
 #ECSServiceName
   ECSServiceName:
@@ -117,8 +109,9 @@ Resources:
       VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" } 
       Name: !Sub "${PJPrefix}-${TargetGroupName}"
       Protocol: HTTP
-      Port: 80
+      Port: 8080
       TargetType: ip
+      HealthCheckPath: "/health"
 
 # ------------------------------------------------------------#
 #  Internet ALB
@@ -133,9 +126,9 @@ Resources:
       Scheme: "internet-facing"
       LoadBalancerAttributes: 
         - Key: "deletion_protection.enabled"
-          Value: false
+          Value: "false"
         - Key: "idle_timeout.timeout_seconds"
-          Value: 60
+          Value: "60"
       SecurityGroups:
         - { "Fn::ImportValue": !Sub "${PJPrefix}-alb-sg" }
       Subnets: 
@@ -186,7 +179,9 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
         - arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
-        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+        - arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/AmazonSSMDirectoryServiceAccess
 
 # ------------------------------------------------------------#
 #  ECS TaskDefinition
@@ -195,7 +190,8 @@ Resources:
     Type: "AWS::ECS::TaskDefinition"
     Properties:
       Cpu: !Ref ECSTaskCPUUnit
-      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt ECSTaskExecutionRole.Arn
       Family: !Sub "${PJPrefix}-${ECSTaskName}"
       Memory: !Ref ECSTaskMemory
       NetworkMode: awsvpc
@@ -214,9 +210,37 @@ Resources:
               awslogs-stream-prefix: !Ref PJPrefix
           MemoryReservation: 128
           PortMappings:
-            - HostPort: 80
+            - HostPort: 8080
               Protocol: tcp
-              ContainerPort: 80
+              ContainerPort: 8080
+          Secrets:
+            - Name: API_SECRET
+              ValueFrom: merpochi-api-secret
+            - Name: CLIENT_URL
+              ValueFrom: merpochi-client-url
+            - Name: DB_DRIVER
+              ValueFrom: merpochi-db-driver
+            - Name: DB_PASS
+              ValueFrom: merpochi-db-pass
+            - Name: MYSQL_URI
+              ValueFrom: merpochi-mysql-uri
+            - Name: SSM_ACTIVATE_ID
+              ValueFrom: merpochi-activation-id
+            - Name: SSM_ACTIVATE_CODE
+              ValueFrom: merpochi-activation-code
+          Environment:
+            - Name: ENV
+              Value: ""
+            - Name: DB_USER
+              Value: { "Fn::ImportValue": !Sub "${PJPrefix}-rds-dbuser" }
+            - Name: DB_NAME
+              Value: { "Fn::ImportValue": !Sub "${PJPrefix}-rds-dbname" }
+            - Name: DB_HOST
+              Value: { "Fn::ImportValue": !Sub "${PJPrefix}-rds-endpoint" }
+            - Name: API_PORT
+              Value: "8080"
+            - Name: DB_PORT
+              Value: "3306"
 
 # ------------------------------------------------------------#
 #  ECS Service
@@ -231,7 +255,7 @@ Resources:
       LoadBalancers:
         -
           TargetGroupArn: !Ref TargetGroup
-          ContainerPort: 80
+          ContainerPort: 8080
           ContainerName: !Sub "${PJPrefix}-${ECSContainerName}"
       NetworkConfiguration:
        AwsvpcConfiguration:
@@ -306,12 +330,6 @@ Outputs:
     Value: !Sub "${PJPrefix}-${ECSContainerName}"
     Export:
       Name: !Sub "${PJPrefix}-${ECSContainerName}-name"
-
-#ECSImage
-  # ECSImageName:
-  #   Value: !Ref ECSImageName
-  #   Export:
-  #     Name: !Sub "${ECSImageName}-name"
 
 #ECSServiceName
   ECSService:
