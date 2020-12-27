@@ -24,6 +24,7 @@ services:
     build:
       context: ./db
       dockerfile: Dockerfile
+    restart: always
     ports:
       - 13306:3306
     environment:
