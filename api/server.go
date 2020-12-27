@@ -7,6 +7,7 @@ import (
 	"merpochi_server/config"
 	"merpochi_server/infrastructure/database"
 	"merpochi_server/infrastructure/router"
+	"merpochi_server/interfaces/healthcheck"
 	"net/http"
 )
 
@@ -14,7 +15,7 @@ import (
 func Run() {
 	config.EnvLoad()
 	// 開発環境では起動毎にDBテーブル、テストデータリセット
-	if "development" == config.ENV {
+	if config.ENV == "development" {
 		auto.TestLoad()
 	}
 	fmt.Printf("\n\tListening [::]:%d\n", config.APIPORT)
@@ -30,5 +31,6 @@ func listen(port int) {
 	defer db.Close()
 
 	r := router.New()
+	r.HandleFunc("/health", healthcheck.HandleHealthCheck)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), (r)))
 }
