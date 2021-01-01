@@ -19,3 +19,11 @@ mysql:
 # テスト実行
 test:
 	go test -v ./infrastructure/persistence
+
+# SSMアクチベーション作成
+addssm:
+	sh ./aws/ssm-create-activation.sh
+
+# SSMアクチベーション削除
+delssm:
+	sh ./aws/ssm-del-activation.sh
