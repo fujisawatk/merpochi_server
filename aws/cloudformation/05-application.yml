@@ -24,6 +24,9 @@ Metadata:
           - ECSContainerName
           - ECSServiceName
           - ECSTaskDesiredCount
+          - HostZoneId
+          # - DomainName
+          - SubDomain
         
     ParameterLabels:
       InternetALBName:
@@ -44,6 +47,12 @@ Metadata:
         default: "ECSServiceName"
       ECSTaskDesiredCount:
         default: "ECSTaskDesiredCount"
+      HostZoneId:
+        default: "HostZoneId"
+      # DomainName:
+      #   default: "DomainName"
+      SubDomain:
+        default: "SubDomain"
 
 # ------------------------------------------------------------#
 # Input Parameters
@@ -99,6 +108,18 @@ Parameters:
     Type: Number
     Default: 1 
 
+  HostZoneId:
+    Type: String
+    Default: "Z098434634121RR42SPVL"
+
+  # DomainName:
+  #   Type: String
+  #   Default: "merpochi.tk"
+
+  SubDomain:
+    Type: String
+    Default: "www.merpochi.tk"
+
 Resources:
 # ------------------------------------------------------------#
 #  Target Group
@@ -135,15 +156,53 @@ Resources:
         - { "Fn::ImportValue": !Sub "${PJPrefix}-public-subnet-a" }
         - { "Fn::ImportValue": !Sub "${PJPrefix}-public-subnet-c" }
 
-  ALBListener: 
+  ALBListenerHTTP: 
     Type: "AWS::ElasticLoadBalancingV2::Listener"
     Properties: 
+      Port: 80
+      Protocol: HTTP
+      DefaultActions: 
+        - Type: redirect
+          RedirectConfig: 
+            Host: "#{host}"
+            Path: "/#{path}"
+            Port: "443"
+            Protocol: HTTPS
+            Query: "#{query}"
+            StatusCode: HTTP_301
+      LoadBalancerArn: !Ref InternetALB
+
+  ALBListenerHTTPS: 
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties:
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref ACM
       DefaultActions: 
         - TargetGroupArn: !Ref TargetGroup
           Type: forward
       LoadBalancerArn: !Ref InternetALB
-      Port: 80
-      Protocol: HTTP
+
+  DnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Sub "${HostZoneId}"
+      Comment: "DNS for ALB"
+      Name: !Sub "${SubDomain}"
+      Type: A
+      AliasTarget:
+        HostedZoneId: !GetAtt "InternetALB.CanonicalHostedZoneID"
+        DNSName: !GetAtt "InternetALB.DNSName"
+
+  ACM:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "${SubDomain}"
+      DomainValidationOptions:
+        - DomainName: !Sub "${SubDomain}"
+          HostedZoneId: !Sub "${HostZoneId}"
+      ValidationMethod: DNS
 
 # ------------------------------------------------------------#
 # ECS Cluster
@@ -247,7 +306,7 @@ Resources:
 # ------------------------------------------------------------#
   ECSService:
     Type: AWS::ECS::Service
-    DependsOn: ALBListener
+    DependsOn: ALBListenerHTTPS
     Properties:
       Cluster: !Ref ECSCluster
       DesiredCount: !Ref ECSTaskDesiredCount
