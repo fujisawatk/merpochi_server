@@ -1,0 +1,402 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  Fargate for ECS Create
+
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: "Project Name Prefix"
+        Parameters:
+          - PJPrefix
+      - Label:
+          default: "InternetALB Configuration"
+        Parameters:
+          - InternetALBName
+          - TargetGroupName
+      - Label:
+          default: "Fargate for ECS Configuration"
+        Parameters:
+          - ECSClusterName
+          - ECSTaskName
+          - ECSTaskCPUUnit
+          - ECSTaskMemory
+          - ECSContainerName
+          - ECSServiceName
+          - ECSTaskDesiredCount
+          - HostZoneId
+          - SubDomain
+        
+    ParameterLabels:
+      InternetALBName:
+        default: "InternetALBName"
+      TargetGroupName:
+        default: "TargetGroupName"
+      ECSClusterName:
+        default: "ECSClusterName"
+      ECSTaskName:
+        default: "ECSTaskName"
+      ECSTaskCPUUnit:
+        default: "ECSTaskCPUUnit"
+      ECSTaskMemory:
+        default: "ECSTaskMemory"
+      ECSContainerName:
+        default: "ECSContainerName"
+      ECSServiceName:
+        default: "ECSServiceName"
+      ECSTaskDesiredCount:
+        default: "ECSTaskDesiredCount"
+      HostZoneId:
+        default: "HostZoneId"
+      SubDomain:
+        default: "SubDomain"
+
+# ------------------------------------------------------------#
+# Input Parameters
+# ------------------------------------------------------------# 
+Parameters:
+  PJPrefix:
+    Type: String
+
+#InternetALB
+  InternetALBName:
+    Type: String
+    Default: "alb"
+
+#TargetGroupName
+  TargetGroupName:
+    Type: String
+    Default: "tg"
+
+#ECSClusterName
+  ECSClusterName:
+    Type: String
+    Default: "cluster"
+
+#ECSTaskName
+  ECSTaskName:
+    Type: String
+    Default: "task"
+
+#ECSTaskCPUUnit
+  ECSTaskCPUUnit:
+    AllowedValues: [ "256", "512", "1024", "2048", "4096"  ]
+    Type: String
+    Default: "256"
+
+#ECSTaskMemory
+  ECSTaskMemory:
+    AllowedValues: [ "256", "512", "1024", "2048", "4096"  ]
+    Type: String
+    Default: "512"
+
+#ECSContainerName
+  ECSContainerName:
+    Type: String
+    Default: "container"
+
+#ECSServiceName
+  ECSServiceName:
+    Type: String
+    Default: "service"
+
+#ECSTaskDesiredCount
+  ECSTaskDesiredCount:
+    Type: Number
+    Default: 1 
+
+  HostZoneId:
+    Type: String
+    Default: "Z098434634121RR42SPVL"
+
+  SubDomain:
+    Type: String
+    Default: "api.merpochi.tk"
+
+Resources:
+# ------------------------------------------------------------#
+#  Target Group
+# ------------------------------------------------------------#
+  TargetGroup: 
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Properties: 
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" } 
+      Name: !Sub "${PJPrefix}-${TargetGroupName}"
+      Protocol: HTTP
+      Port: 8080
+      TargetType: ip
+      HealthCheckPath: "/health"
+
+# ------------------------------------------------------------#
+#  Internet ALB
+# ------------------------------------------------------------#
+  InternetALB: 
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties: 
+      Name: !Sub "${PJPrefix}-${InternetALBName}"
+      Tags: 
+        - Key: Name
+          Value: !Sub "${PJPrefix}-${InternetALBName}"
+      Scheme: "internet-facing"
+      LoadBalancerAttributes: 
+        - Key: "deletion_protection.enabled"
+          Value: "false"
+        - Key: "idle_timeout.timeout_seconds"
+          Value: "60"
+      SecurityGroups:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-alb-sg" }
+      Subnets: 
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-public-subnet-a" }
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-public-subnet-c" }
+
+  ALBListenerHTTP: 
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties: 
+      Port: 80
+      Protocol: HTTP
+      DefaultActions: 
+        - Type: redirect
+          RedirectConfig: 
+            Host: "#{host}"
+            Path: "/#{path}"
+            Port: "443"
+            Protocol: HTTPS
+            Query: "#{query}"
+            StatusCode: HTTP_301
+      LoadBalancerArn: !Ref InternetALB
+
+  ALBListenerHTTPS: 
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties:
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref ACM
+      DefaultActions: 
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref InternetALB
+
+  DnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Sub "${HostZoneId}"
+      Comment: "DNS for ALB"
+      Name: !Sub "${SubDomain}"
+      Type: A
+      AliasTarget:
+        HostedZoneId: !GetAtt "InternetALB.CanonicalHostedZoneID"
+        DNSName: !GetAtt "InternetALB.DNSName"
+
+  ACM:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "${SubDomain}"
+      DomainValidationOptions:
+        - DomainName: !Sub "${SubDomain}"
+          HostedZoneId: !Sub "${HostZoneId}"
+      ValidationMethod: DNS
+
+# ------------------------------------------------------------#
+# ECS Cluster
+# ------------------------------------------------------------# 
+  ECSCluster:
+    Type: "AWS::ECS::Cluster"
+    Properties:
+      ClusterName: !Sub "${PJPrefix}-${ECSClusterName}"
+
+# ------------------------------------------------------------#
+#  ECS LogGroup
+# ------------------------------------------------------------#
+  ECSLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/ecs/logs/${PJPrefix}-ecs-group"
+
+# ------------------------------------------------------------#
+#  ECS Task Execution Role
+# ------------------------------------------------------------#
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${PJPrefix}-ECSTaskExecutionRolePolicy"
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+
+# ------------------------------------------------------------#
+#  ECS TaskDefinition
+# ------------------------------------------------------------#
+  ECSTaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+      Cpu: !Ref ECSTaskCPUUnit
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      Family: !Sub "${PJPrefix}-${ECSTaskName}"
+      Memory: !Ref ECSTaskMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+
+#ContainerDefinitions
+      ContainerDefinitions:
+        - Name: !Sub "${PJPrefix}-${ECSContainerName}"
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${PJPrefix}-server:latest
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ECSLogGroup
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref PJPrefix
+          MemoryReservation: 128
+          PortMappings:
+            - HostPort: 8080
+              Protocol: tcp
+              ContainerPort: 8080
+          Secrets:
+            - Name: API_SECRET
+              ValueFrom: merpochi-api-secret
+            - Name: CLIENT_URL
+              ValueFrom: merpochi-client-url
+            - Name: DB_DRIVER
+              ValueFrom: merpochi-db-driver
+            - Name: DB_PASS
+              ValueFrom: merpochi-db-pass
+            - Name: MYSQL_URI
+              ValueFrom: merpochi-mysql-uri
+            - Name: SSM_ACTIVATE_ID
+              ValueFrom: merpochi-activation-id
+            - Name: SSM_ACTIVATE_CODE
+              ValueFrom: merpochi-activation-code
+          Environment:
+            - Name: ENV
+              Value: ""
+            - Name: DB_USER
+              Value: { "Fn::ImportValue": !Sub "${PJPrefix}-rds-dbuser" }
+            - Name: DB_NAME
+              Value: { "Fn::ImportValue": !Sub "${PJPrefix}-rds-dbname" }
+            - Name: DB_HOST
+              Value: { "Fn::ImportValue": !Sub "${PJPrefix}-rds-endpoint" }
+            - Name: API_PORT
+              Value: "8080"
+            - Name: DB_PORT
+              Value: "3306"
+
+# ------------------------------------------------------------#
+#  ECS Service
+# ------------------------------------------------------------#
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: ALBListenerHTTPS
+    Properties:
+      Cluster: !Ref ECSCluster
+      DesiredCount: !Ref ECSTaskDesiredCount
+      LaunchType: FARGATE
+      LoadBalancers:
+        -
+          TargetGroupArn: !Ref TargetGroup
+          ContainerPort: 8080
+          ContainerName: !Sub "${PJPrefix}-${ECSContainerName}"
+      NetworkConfiguration:
+       AwsvpcConfiguration:
+           AssignPublicIp: ENABLED
+           SecurityGroups:
+             - { "Fn::ImportValue": !Sub "${PJPrefix}-ecs-sg" }
+           Subnets:
+             - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-a" }
+             - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
+      ServiceName: !Sub "${PJPrefix}-${ECSServiceName}"
+      TaskDefinition: !Ref ECSTaskDefinition
+
+# ------------------------------------------------------------#
+# Output Parameters
+# ------------------------------------------------------------# 
+Outputs:
+#InternetALB
+  ALBDNSName:
+    Value: !GetAtt InternetALB.DNSName
+    Export:
+      Name: !Sub "${PJPrefix}-${InternetALBName}-dnsname"
+
+#ECSClusterName
+  ECSClusterName:
+    Value: !Sub "${PJPrefix}-${ECSClusterName}"
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSClusterName}-name"
+
+#ECSClusterARN
+  ECSClusterARN:
+    Value: !GetAtt ECSCluster.Arn
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSClusterName}-arn"
+
+#ECSLogGroup
+  ECSLogGroupName:
+    Value: !Sub "/ecs/logs/${PJPrefix}-ecs-group"
+    Export:
+      Name: !Sub "${PJPrefix}-ecs-group-name"
+
+  ECSLogGroupARN:
+    Value: !GetAtt ECSLogGroup.Arn
+    Export:
+      Name: !Sub "${PJPrefix}-ecs-group-arn"
+
+#ECSTaskDefinitionName
+  ECSTaskDefinitionName:
+    Value: !Sub "${PJPrefix}-${ECSTaskName}"
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSTaskName}-name"
+
+#ECSTaskDefinition
+  ECSTaskDefinitionARN:
+    Value: !Ref ECSTaskDefinition
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSTaskName}-arn"
+
+#ECSTaskCPUUnit
+  ECSTaskCPUUnit:
+    Value: !Ref ECSTaskCPUUnit
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSTaskName}-cpuunit"
+
+#ECSTaskMemory
+  ECSTaskMemory:
+    Value: !Ref ECSTaskMemory
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSTaskName}-memory"
+
+#ECSContainer
+  ECSContainerName:
+    Value: !Sub "${PJPrefix}-${ECSContainerName}"
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSContainerName}-name"
+
+#ECSServiceName
+  ECSService:
+    Value: !Sub "${PJPrefix}-${ECSServiceName}"
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSServiceName}-name"
+
+#ECSServiceARN
+  ECSServiceARN:
+    Value: !Ref ECSService
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSServiceName}-arn"
+
+#ECSTaskDesiredCount
+  ECSTaskDesiredCount:
+    Value: !Ref ECSTaskDesiredCount
+    Export:
+      Name: !Sub "${PJPrefix}-${ECSTaskName}-count"

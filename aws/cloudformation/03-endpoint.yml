@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: 
+  Endpoint Create
+
+Metadata: 
+  "AWS::CloudFormation::Interface": 
+    ParameterGroups: 
+      - Label: 
+          default: "Project Name Prefix"
+        Parameters: 
+          - PJPrefix
+
+# ------------------------------------------------------------#
+# Input Parameters
+# ------------------------------------------------------------# 
+Parameters:
+  PJPrefix:
+    Type: String
+
+Resources:
+# ------------------------------------------------------------#
+#  S3Endpoint
+# ------------------------------------------------------------#
+  S3Endpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      RouteTableIds: 
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-route-a" }
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-route-c" }
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+
+# ------------------------------------------------------------#
+#  ECREndpoint
+# ------------------------------------------------------------#
+  ECREndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.dkr"
+      VpcEndpointType: "Interface"
+      PrivateDnsEnabled: true
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      SubnetIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-a" }
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
+      SecurityGroupIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-endpoint-sg" }
+
+# ------------------------------------------------------------#
+#  LogsEndpoint
+# ------------------------------------------------------------#
+  logsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.logs"
+      VpcEndpointType: "Interface"
+      PrivateDnsEnabled: true
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      SubnetIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-a" }
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
+      SecurityGroupIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-endpoint-sg" }
+
+# ------------------------------------------------------------#
+#  SSMAgentEndpoint
+# ------------------------------------------------------------#
+  SSMEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      SubnetIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-a" }
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
+      SecurityGroupIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-endpoint-sg" }
+
+  SSMAgentEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssmmessages"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      SubnetIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-a" }
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-private-subnet-c" }
+      SecurityGroupIds:
+        - { "Fn::ImportValue": !Sub "${PJPrefix}-endpoint-sg" }
