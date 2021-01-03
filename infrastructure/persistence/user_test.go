@@ -69,11 +69,11 @@ func TestUser_Save(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "パスワードが40文字以内の場合、登録出来ること",
+			name: "パスワードが60文字以内の場合、登録出来ること",
 			args: models.User{
 				Nickname: "testname",
 				Email:    "test3@email.com",
-				Password: strings.Repeat("a", 40),
+				Password: strings.Repeat("a", 60),
 			},
 			want: models.User{
 				Email: "test3@email.com",
@@ -81,11 +81,11 @@ func TestUser_Save(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "パスワードが41文字以上の場合、登録出来ないこと",
+			name: "パスワードが61文字以上の場合、登録出来ないこと",
 			args: models.User{
 				Nickname: "testname",
 				Email:    "fuji4@email.com",
-				Password: strings.Repeat("b", 41),
+				Password: strings.Repeat("b", 61),
 			},
 			want:    models.User{},
 			wantErr: true,
