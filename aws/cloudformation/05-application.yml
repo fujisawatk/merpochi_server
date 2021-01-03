@@ -25,7 +25,6 @@ Metadata:
           - ECSServiceName
           - ECSTaskDesiredCount
           - HostZoneId
-          # - DomainName
           - SubDomain
         
     ParameterLabels:
@@ -49,8 +48,6 @@ Metadata:
         default: "ECSTaskDesiredCount"
       HostZoneId:
         default: "HostZoneId"
-      # DomainName:
-      #   default: "DomainName"
       SubDomain:
         default: "SubDomain"
 
@@ -112,13 +109,9 @@ Parameters:
     Type: String
     Default: "Z098434634121RR42SPVL"
 
-  # DomainName:
-  #   Type: String
-  #   Default: "merpochi.tk"
-
   SubDomain:
     Type: String
-    Default: "www.merpochi.tk"
+    Default: "api.merpochi.tk"
 
 Resources:
 # ------------------------------------------------------------#
