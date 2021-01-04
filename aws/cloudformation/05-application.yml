@@ -26,6 +26,7 @@ Metadata:
           - ECSTaskDesiredCount
           - HostZoneId
           - SubDomain
+          - ImageTag
         
     ParameterLabels:
       InternetALBName:
@@ -50,6 +51,8 @@ Metadata:
         default: "HostZoneId"
       SubDomain:
         default: "SubDomain"
+      ImageTag:
+        default: "ImageTag"
 
 # ------------------------------------------------------------#
 # Input Parameters
@@ -112,6 +115,9 @@ Parameters:
   SubDomain:
     Type: String
     Default: "api.merpochi.tk"
+
+  ImageTag:
+    Type: String
 
 Resources:
 # ------------------------------------------------------------#
@@ -253,7 +259,7 @@ Resources:
 #ContainerDefinitions
       ContainerDefinitions:
         - Name: !Sub "${PJPrefix}-${ECSContainerName}"
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${PJPrefix}-server:latest
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${PJPrefix}-server:${ImageTag}
           LogConfiguration:
             LogDriver: awslogs
             Options:
