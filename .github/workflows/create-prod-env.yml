@@ -1,0 +1,64 @@
+name: Create Production Environment 
+
+on:
+  schedule:
+    - cron: '0 1 * * MON-FRI'
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-1
+
+    - name: Create SSM Activation
+      run: |
+        SSM_ACTIVATION=$(aws ssm create-activation \
+          --iam-role "service-role/AmazonEC2RunCommandRoleForManagedInstances" \
+          --registration-limit 1 \
+          --region ap-northeast-1 \
+          --default-instance-name "merpochi-fargate-container" )
+
+        export SSM_ACTIVATION_ID=$(echo $SSM_ACTIVATION | jq -r .ActivationId)
+        export SSM_ACTIVATION_CODE=$(echo $SSM_ACTIVATION | jq -r .ActivationCode)
+
+        aws ssm put-parameter --name "merpochi-activation-id" --value $SSM_ACTIVATION_ID --type "SecureString"
+        aws ssm put-parameter --name "merpochi-activation-code" --value $SSM_ACTIVATION_CODE --type "SecureString"
+
+    - name: Create Cloudformation Stack For Endpoint
+      env:
+        STACK_NAME: endpoint
+        TEMPLATE_URL: https://cf-templates-xhvncdgtjupr-ap-northeast-1.s3-ap-northeast-1.amazonaws.com/03-endpoint.yml
+      run: |
+        aws cloudformation create-stack \
+          --stack-name ${STACK_NAME} \
+          --template-url ${TEMPLATE_URL} \
+          --parameters ParameterKey=PJPrefix,ParameterValue=merpochi
+
+    - name: Create Cloudformation Stack For Application
+      env:
+        STACK_NAME: app
+        TEMPLATE_URL: https://cf-templates-xhvncdgtjupr-ap-northeast-1.s3-ap-northeast-1.amazonaws.com/05-application.yml
+      run: |
+        IMAGE_TAG=$(aws ecr describe-images --repository-name ${{ secrets.AWS_ECR_REPO_NAME }} \
+          --query "reverse(sort_by(imageDetails[*], &imagePushedAt))[0].imageTags[0]" | sed -e 's/"//g')
+        echo $IMAGE_TAG
+
+        aws cloudformation create-stack \
+          --stack-name ${STACK_NAME} \
+          --template-url ${TEMPLATE_URL} \
+          --capabilities CAPABILITY_NAMED_IAM \
+          --parameters ParameterKey=PJPrefix,ParameterValue=merpochi \
+          ParameterKey=ImageTag,ParameterValue=$IMAGE_TAG
+
+    - name: Send LINE Message
+      uses: snow-actions/line-notify@v1.0.0
+      with:
+        access_token: ${{ secrets.LINE_ACCESS_TOKEN }}
+        message: Finished building the production environment
