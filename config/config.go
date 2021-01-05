@@ -17,6 +17,8 @@ var (
 	DBDRIVER  = ""
 	DBURL     = ""
 	SECRETKEY []byte
+	AWSID     = ""
+	AWSKEY    = ""
 )
 
 // EnvLoad 環境変数の読み込み
@@ -44,4 +46,7 @@ func EnvLoad() {
 		os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
 
 	SECRETKEY = []byte(os.Getenv("API_SECRET"))
+
+	AWSID = os.Getenv("AWS_ACCESS_KEY_ID")
+	AWSKEY = os.Getenv("AWS_SECRET_ACCESS_KEY")
 }
