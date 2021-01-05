@@ -25,6 +25,7 @@ func Load() []Route {
 	routes = append(routes, iniFavoritesRoutes()...)
 	routes = append(routes, iniCommentsRoutes()...)
 	routes = append(routes, iniStationsRoutes()...)
+	routes = append(routes, iniImagesRoutes()...)
 	return routes
 }
 
