@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	"bytes"
+	"fmt"
 	"merpochi_server/config"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
@@ -24,7 +24,7 @@ func NewImagePersistence(db *gorm.DB) repository.ImageRepository {
 }
 
 // Upload ユーザー画像をAmazon S3へアップロード
-func (ip *imagePersistence) Upload(name string, file *bytes.Buffer) error {
+func (ip *imagePersistence) Upload(img *models.Image) error {
 	var err error
 
 	done := make(chan bool)
@@ -45,8 +45,8 @@ func (ip *imagePersistence) Upload(name string, file *bytes.Buffer) error {
 		uploader := s3manager.NewUploader(sess)
 		_, err = uploader.Upload(&s3manager.UploadInput{
 			Bucket: aws.String("merpochi-users-image"),
-			Key:    aws.String(name),
-			Body:   file,
+			Key:    aws.String(img.Name),
+			Body:   img.Buf,
 		})
 		if err != nil {
 			ch <- false
@@ -60,14 +60,15 @@ func (ip *imagePersistence) Upload(name string, file *bytes.Buffer) error {
 	return err
 }
 
-func (ip *imagePersistence) Create(image models.Image) (models.Image, error) {
+func (ip *imagePersistence) Create(img *models.Image) (*models.Image, error) {
 	var err error
 
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = ip.db.Model(&models.Image{}).Create(&image).Error
+
+		err = ip.db.Model(&models.Image{}).Create(&img).Error
 		if err != nil {
 			ch <- false
 			return
@@ -75,8 +76,8 @@ func (ip *imagePersistence) Create(image models.Image) (models.Image, error) {
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return image, nil
+		return img, nil
 	}
-	return models.Image{}, err
-
+	fmt.Println(img)
+	return &models.Image{}, err
 }

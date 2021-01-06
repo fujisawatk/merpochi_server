@@ -16,7 +16,7 @@ import (
 
 // ImageUsecase Imageに対するUsecaseのインターフェイス
 type ImageUsecase interface {
-	UploadImage(uint32, multipart.File) (models.Image, error)
+	UploadImage(uint32, multipart.File) (*models.Image, error)
 }
 
 type imageUsecase struct {
@@ -30,69 +30,65 @@ func NewImageUsecase(ir repository.ImageRepository) ImageUsecase {
 	}
 }
 
-func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (models.Image, error) {
-	bf := new(bytes.Buffer)
-	defer bf.Reset()
-
-	_, err := bf.ReadFrom(file)
-	if err != nil {
-		return models.Image{}, err
-	}
-
-	filename, err := ResizeImage(bf)
-	if err != nil {
-		return models.Image{}, err
-	}
-
-	err = iu.imageRepository.Upload(filename, bf)
-	if err != nil {
-		return models.Image{}, err
-	}
-
-	img := models.Image{
-		Name:   filename,
+func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (*models.Image, error) {
+	img := &models.Image{
 		UserID: uid,
+		Buf:    &bytes.Buffer{},
+	}
+
+	_, err := img.Buf.ReadFrom(file)
+	if err != nil {
+		return &models.Image{}, err
+	}
+
+	err = ResizeImage(img)
+	if err != nil {
+		return &models.Image{}, err
+	}
+
+	err = iu.imageRepository.Upload(img)
+	if err != nil {
+		return &models.Image{}, err
 	}
 
 	img, err = iu.imageRepository.Create(img)
 	if err != nil {
-		return models.Image{}, err
+		return &models.Image{}, err
 	}
+
 	return img, nil
 }
 
 // ResizeImage 画像の整形
-func ResizeImage(bf *bytes.Buffer) (string, error) {
-	var filename string
-
-	img, t, err := image.Decode(bf)
+func ResizeImage(i *models.Image) error {
+	img, t, err := image.Decode(i.Buf)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	m := resize.Resize(300, 0, img, resize.Lanczos3)
 	switch t {
 	case "jpeg":
-		filename = security.RandomString(20) + ".jpg"
+		i.Name = security.RandomString(20) + ".jpg"
 
-		err = jpeg.Encode(bf, m, nil)
+		err = jpeg.Encode(i.Buf, m, nil)
 		if err != nil {
-			return "", err
+			return err
 		}
 	case "png":
-		filename = security.RandomString(20) + ".png"
+		i.Name = security.RandomString(20) + ".png"
 
-		err = png.Encode(bf, m)
+		err = png.Encode(i.Buf, m)
 		if err != nil {
-			return "", err
+			return err
 		}
 	case "gif":
-		filename = security.RandomString(20) + ".gif"
+		i.Name = security.RandomString(20) + ".gif"
 
-		err = gif.Encode(bf, m, nil)
+		err = gif.Encode(i.Buf, m, nil)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
-	return filename, nil
+	return nil
 }
