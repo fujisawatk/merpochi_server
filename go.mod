@@ -20,4 +20,5 @@ require (
 	github.com/ory/dockertest/v3 v3.6.0
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/sys v0.0.0-20210105210732-16f7687f5001 // indirect
 )

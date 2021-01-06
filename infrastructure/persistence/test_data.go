@@ -10,16 +10,19 @@ var users = []models.User{
 		Nickname: "miku",
 		Email:    "miku@email.com",
 		Password: "mikumiku",
+		Genre:    "居酒屋",
 	},
 	{
 		Nickname: "taka",
 		Email:    "taka@email.com",
 		Password: "takataka",
+		Genre:    "焼き鳥",
 	},
 	{
 		Nickname: "enako",
 		Email:    "enako@email.com",
 		Password: "enaena",
+		Genre:    "海鮮",
 	},
 }
 
