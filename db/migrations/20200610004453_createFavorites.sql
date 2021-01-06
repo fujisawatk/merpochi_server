@@ -1,12 +1,11 @@
 -- +goose Up
 -- SQL in section 'Up' is executed when this migration is applied
 CREATE TABLE favorites (
-  id int unsigned NOT NULL AUTO_INCREMENT,
-  user_id int NOT NULL,
-  shop_id int NOT NULL,
-  created_at timestamp NULL DEFAULT NULL,
-  updated_at timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (id)
+  id INT(11) PRIMARY KEY AUTO_INCREMENT,
+  user_id INT(11) NOT NULL,
+  shop_id INT(11) NOT NULL,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- +goose Down
