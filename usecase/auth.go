@@ -46,6 +46,7 @@ func (au authUsecase) LoginUser(email, password string) (authResponse, error) {
 		ID:       user.ID,
 		Nickname: user.Nickname,
 		Email:    user.Email,
+		Genre:    user.Genre,
 		Token:    token,
 	}
 	return cUser, nil
@@ -72,6 +73,7 @@ func (au authUsecase) VerifyUser(authToken string) (authResponse, error) {
 		ID:       user.ID,
 		Nickname: user.Nickname,
 		Email:    user.Email,
+		Genre:    user.Genre,
 		Token:    rToken,
 	}
 	return cUser, nil
@@ -81,5 +83,6 @@ type authResponse struct {
 	ID       uint32 `json:"id"`
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
+	Genre    string `json:"genre"`
 	Token    string `json:"token"`
 }

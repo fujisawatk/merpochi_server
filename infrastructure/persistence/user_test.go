@@ -20,6 +20,7 @@ func TestUser_Save(t *testing.T) {
 				Nickname: strings.Repeat("a", 20),
 				Email:    "test1@email.com",
 				Password: "testpassword",
+				Genre:    "焼き鳥",
 			},
 			want: models.User{
 				Email: "test1@email.com",
@@ -32,6 +33,7 @@ func TestUser_Save(t *testing.T) {
 				Nickname: strings.Repeat("a", 21),
 				Email:    "test2@email.com",
 				Password: "testpassword",
+				Genre:    "焼き鳥",
 			},
 			want:    models.User{},
 			wantErr: true,
@@ -42,6 +44,7 @@ func TestUser_Save(t *testing.T) {
 				Nickname: "testname",
 				Email:    strings.Repeat("a", 90) + "@email.com", // 100文字
 				Password: "testpassword",
+				Genre:    "焼き鳥",
 			},
 			want: models.User{
 				Email: strings.Repeat("a", 90) + "@email.com", // 100文字
@@ -54,6 +57,7 @@ func TestUser_Save(t *testing.T) {
 				Nickname: "testname",
 				Email:    strings.Repeat("b", 91) + "@email.com", // 101文字
 				Password: "testpassword",
+				Genre:    "焼き鳥",
 			},
 			want:    models.User{},
 			wantErr: true,
@@ -64,6 +68,7 @@ func TestUser_Save(t *testing.T) {
 				Nickname: "testname",
 				Email:    "miku@email.com",
 				Password: "testpassword",
+				Genre:    "焼き鳥",
 			},
 			want:    models.User{},
 			wantErr: true,
@@ -74,6 +79,7 @@ func TestUser_Save(t *testing.T) {
 				Nickname: "testname",
 				Email:    "test3@email.com",
 				Password: strings.Repeat("a", 60),
+				Genre:    "焼き鳥",
 			},
 			want: models.User{
 				Email: "test3@email.com",
@@ -86,6 +92,31 @@ func TestUser_Save(t *testing.T) {
 				Nickname: "testname",
 				Email:    "fuji4@email.com",
 				Password: strings.Repeat("b", 61),
+				Genre:    "焼き鳥",
+			},
+			want:    models.User{},
+			wantErr: true,
+		},
+		{
+			name: "ジャンルが10文字以内の場合、登録出来ること",
+			args: models.User{
+				Nickname: "testname",
+				Email:    "test5@email.com",
+				Password: "testpassword",
+				Genre:    strings.Repeat("b", 10),
+			},
+			want: models.User{
+				Email: "test5@email.com",
+			},
+			wantErr: false,
+		},
+		{
+			name: "ジャンルが11文字以上の場合、登録出来ないこと",
+			args: models.User{
+				Nickname: "testname",
+				Email:    "test6@email.com",
+				Password: "testpassword",
+				Genre:    strings.Repeat("b", 11),
 			},
 			want:    models.User{},
 			wantErr: true,
@@ -228,6 +259,28 @@ func TestUser_Update(t *testing.T) {
 				uid: 10,
 				user: models.User{
 					Email: "mikumiku@email.com",
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "変更するジャンルが10文字以内の場合、更新出来ること",
+			args: args{
+				uid: 1,
+				user: models.User{
+					Genre: strings.Repeat("a", 10),
+				},
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "変更するジャンルが11文字以上の場合、更新出来ないこと",
+			args: args{
+				uid: 2,
+				user: models.User{
+					Genre: strings.Repeat("a", 11),
 				},
 			},
 			want:    0,
