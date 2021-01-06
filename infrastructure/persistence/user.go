@@ -80,6 +80,7 @@ func (up *userPersistence) Update(uid uint32, user models.User) (int64, error) {
 			map[string]interface{}{
 				"nickname":   user.Nickname,
 				"email":      user.Email,
+				"genre":      user.Genre,
 				"updated_at": time.Now(),
 			},
 		)

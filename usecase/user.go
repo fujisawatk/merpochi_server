@@ -11,7 +11,7 @@ import (
 type UserUsecase interface {
 	CreateUser(string, string, string, string) (models.User, error)
 	GetUser(uint32) (models.User, error)
-	UpdateUser(uint32, string, string) (int64, error)
+	UpdateUser(uint32, string, string, string) (int64, error)
 	DeleteUser(uint32) error
 }
 
@@ -62,10 +62,11 @@ func (uu userUsecase) GetUser(uid uint32) (models.User, error) {
 	return user, nil
 }
 
-func (uu userUsecase) UpdateUser(uid uint32, nickname, email string) (int64, error) {
+func (uu userUsecase) UpdateUser(uid uint32, nickname, email, genre string) (int64, error) {
 	user := models.User{
 		Nickname: nickname,
 		Email:    email,
+		Genre:    genre,
 	}
 
 	err := validations.UserUpdateValidate(&user)

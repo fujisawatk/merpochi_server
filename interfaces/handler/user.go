@@ -95,7 +95,7 @@ func (uh userHandler) HandleUserUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := uh.userUsecase.UpdateUser(uint32(uid), requestBody.Nickname, requestBody.Email)
+	rows, err := uh.userUsecase.UpdateUser(uint32(uid), requestBody.Nickname, requestBody.Email, requestBody.Genre)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -132,4 +132,5 @@ type userCreateRequest struct {
 type userUpdateRequest struct {
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
+	Genre    string `json:"genre"`
 }
