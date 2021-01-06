@@ -46,6 +46,11 @@ func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (*models.Ima
 		return &models.Image{}, err
 	}
 
+	err = iu.imageRepository.Search(img.ID)
+	if err != nil {
+		return &models.Image{}, err
+	}
+
 	err = iu.imageRepository.Upload(img)
 	if err != nil {
 		return &models.Image{}, err

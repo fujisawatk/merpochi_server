@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"errors"
 	"fmt"
 	"merpochi_server/config"
 	"merpochi_server/domain/models"
@@ -80,4 +81,28 @@ func (ip *imagePersistence) Create(img *models.Image) (*models.Image, error) {
 	}
 	fmt.Println(img)
 	return &models.Image{}, err
+}
+
+// Search 重複確認（ユーザー画像は一意性の必要があるため）
+func (ip *imagePersistence) Search(uid uint32) error {
+	var err error
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+
+		// ユーザー画像は一意性であるため
+		result := ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ?", uid, 0).Take(&models.Image{})
+		if result.RowsAffected > 0 {
+			err = errors.New("user image is already registered")
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return nil
+	}
+	return err
 }
