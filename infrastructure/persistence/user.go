@@ -20,7 +20,7 @@ func NewUserPersistence(db *gorm.DB) repository.UserRepository {
 	return &userPersistence{db}
 }
 
-// Save ユーザー情報保存のトランザクション
+// Save ユーザー情報の保存
 func (up *userPersistence) Save(user models.User) (models.User, error) {
 	var err error
 

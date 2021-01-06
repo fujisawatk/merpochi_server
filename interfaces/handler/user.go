@@ -46,7 +46,7 @@ func (uh userHandler) HandleUserCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := uh.userUsecase.CreateUser(requestBody.Nickname, requestBody.Email, requestBody.Password)
+	user, err := uh.userUsecase.CreateUser(requestBody.Nickname, requestBody.Email, requestBody.Password, requestBody.Genre)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -126,6 +126,7 @@ type userCreateRequest struct {
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Genre    string `json:"genre"`
 }
 
 type userUpdateRequest struct {
