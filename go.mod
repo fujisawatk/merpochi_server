@@ -15,6 +15,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/ory/dockertest/v3 v3.6.0
 	github.com/sirupsen/logrus v1.6.0 // indirect

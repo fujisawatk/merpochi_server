@@ -1,11 +1,11 @@
 package persistence
 
 import (
+	"bytes"
 	"merpochi_server/config"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 	"merpochi_server/util/channels"
-	"mime/multipart"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -24,7 +24,7 @@ func NewImagePersistence(db *gorm.DB) repository.ImageRepository {
 }
 
 // Upload ユーザー画像をAmazon S3へアップロード
-func (ip *imagePersistence) Upload(name string, file multipart.File) error {
+func (ip *imagePersistence) Upload(name string, file *bytes.Buffer) error {
 	var err error
 
 	done := make(chan bool)

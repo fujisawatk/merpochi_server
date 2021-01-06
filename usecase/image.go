@@ -1,11 +1,17 @@
 package usecase
 
 import (
+	"bytes"
+	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 	"merpochi_server/util/security"
 	"mime/multipart"
-	"net/http"
+
+	"github.com/nfnt/resize"
 )
 
 // ImageUsecase Imageに対するUsecaseのインターフェイス
@@ -25,21 +31,20 @@ func NewImageUsecase(ir repository.ImageRepository) ImageUsecase {
 }
 
 func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (models.Image, error) {
-	var filename string
+	bf := new(bytes.Buffer)
+	defer bf.Reset()
 
-	fileHeader := make([]byte, 512)
-
-	_, err := file.Read(fileHeader)
+	_, err := bf.ReadFrom(file)
 	if err != nil {
 		return models.Image{}, err
 	}
 
-	switch http.DetectContentType(fileHeader) {
-	case "image/jpeg":
-		filename = security.RandomString(20) + ".jpeg"
+	filename, err := ResizeImage(bf)
+	if err != nil {
+		return models.Image{}, err
 	}
 
-	err = iu.imageRepository.Upload(filename, file)
+	err = iu.imageRepository.Upload(filename, bf)
 	if err != nil {
 		return models.Image{}, err
 	}
@@ -54,4 +59,40 @@ func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (models.Imag
 		return models.Image{}, err
 	}
 	return img, nil
+}
+
+// ResizeImage 画像の整形
+func ResizeImage(bf *bytes.Buffer) (string, error) {
+	var filename string
+
+	img, t, err := image.Decode(bf)
+	if err != nil {
+		return "", err
+	}
+
+	m := resize.Resize(300, 0, img, resize.Lanczos3)
+	switch t {
+	case "jpeg":
+		filename = security.RandomString(20) + ".jpg"
+
+		err = jpeg.Encode(bf, m, nil)
+		if err != nil {
+			return "", err
+		}
+	case "png":
+		filename = security.RandomString(20) + ".png"
+
+		err = png.Encode(bf, m)
+		if err != nil {
+			return "", err
+		}
+	case "gif":
+		filename = security.RandomString(20) + ".gif"
+
+		err = gif.Encode(bf, m, nil)
+		if err != nil {
+			return "", err
+		}
+	}
+	return filename, nil
 }

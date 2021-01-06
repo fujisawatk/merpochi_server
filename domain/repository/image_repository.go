@@ -1,12 +1,12 @@
 package repository
 
 import (
+	"bytes"
 	"merpochi_server/domain/models"
-	"mime/multipart"
 )
 
 // ImageRepository imagePersistenceの抽象依存
 type ImageRepository interface {
-	Upload(string, multipart.File) error
+	Upload(string, *bytes.Buffer) error
 	Create(models.Image) (models.Image, error)
 }
