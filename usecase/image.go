@@ -17,6 +17,7 @@ import (
 // ImageUsecase Imageに対するUsecaseのインターフェイス
 type ImageUsecase interface {
 	UploadImage(uint32, multipart.File) (*models.Image, error)
+	GetImage(uint32) (*models.Image, error)
 }
 
 type imageUsecase struct {
@@ -46,7 +47,7 @@ func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (*models.Ima
 		return &models.Image{}, err
 	}
 
-	err = iu.imageRepository.Search(img.ID)
+	err = iu.imageRepository.Search(uid)
 	if err != nil {
 		return &models.Image{}, err
 	}
@@ -57,6 +58,20 @@ func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (*models.Ima
 	}
 
 	img, err = iu.imageRepository.Create(img)
+	if err != nil {
+		return &models.Image{}, err
+	}
+
+	return img, nil
+}
+
+func (iu imageUsecase) GetImage(uid uint32) (*models.Image, error) {
+	img, err := iu.imageRepository.FindByID(uid)
+	if err != nil {
+		return &models.Image{}, err
+	}
+
+	err = iu.imageRepository.Download(img)
 	if err != nil {
 		return &models.Image{}, err
 	}
