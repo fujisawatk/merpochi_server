@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/base64"
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
@@ -69,9 +70,6 @@ func (ih imageHandler) HandleImageGet(w http.ResponseWriter, r *http.Request) {
 
 	data, _ := ioutil.ReadAll(img.Buf)
 	mine := http.DetectContentType(data)
-
-	w.Header().Set("Content-Disposition", "attachment; filename="+img.Name)
-	w.Header().Set("Content-Type", mine)
-	w.Write(data)
-	responses.JSON(w, http.StatusOK, img)
+	uri := "data:" + mine + ";base64," + base64.StdEncoding.EncodeToString(data)
+	responses.JSON(w, http.StatusOK, uri)
 }
