@@ -9,6 +9,7 @@ import (
 	"merpochi_server/domain/repository"
 	"merpochi_server/util/channels"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -97,6 +98,30 @@ func (ip *imagePersistence) FindByID(uid uint32) (*models.Image, error) {
 	return &models.Image{}, err
 }
 
+func (ip *imagePersistence) Update(img *models.Image) (int64, error) {
+	var rs *gorm.DB
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+
+		rs = ip.db.Model(&models.Image{}).Where("id = ?", img.ID).Take(&models.Image{}).UpdateColumns(
+			map[string]interface{}{
+				"name":       img.Name,
+				"updated_at": time.Now(),
+			},
+		)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		if rs.Error != nil {
+			return 0, rs.Error
+		}
+		return rs.RowsAffected, nil
+	}
+	return 0, rs.Error
+}
+
 // Upload ユーザー画像をAmazon S3へアップロード
 func (ip *imagePersistence) Upload(img *models.Image) error {
 	var err error
@@ -134,7 +159,7 @@ func (ip *imagePersistence) Upload(img *models.Image) error {
 func (ip *imagePersistence) Download(img *models.Image) error {
 	var err error
 	done := make(chan bool)
-
+	fmt.Println(img.Name)
 	go func(ch chan<- bool) {
 		defer close(ch)
 
@@ -161,6 +186,47 @@ func (ip *imagePersistence) Download(img *models.Image) error {
 			return
 		}
 		_, err = img.Buf.ReadFrom(file)
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return nil
+	}
+	return err
+}
+
+// DeleteS3 Amazon S3へアップロードしたユーザー画像削除
+func (ip *imagePersistence) DeleteS3(img *models.Image) error {
+	var err error
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+
+		sess, err := SetCredentialsForAWS()
+		if err != nil {
+			ch <- false
+			return
+		}
+		svc := s3.New(sess)
+		// 指定した画像の削除指示
+		_, err = svc.DeleteObject(&s3.DeleteObjectInput{
+			Bucket: aws.String("merpochi-users-image"),
+			Key:    aws.String(img.Name),
+		})
+		if err != nil {
+			ch <- false
+			return
+		}
+		// 画像が正常に削除されたか確認
+		err = svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+			Bucket: aws.String("merpochi-users-image"),
+			Key:    aws.String(img.Name),
+		})
 		if err != nil {
 			ch <- false
 			return

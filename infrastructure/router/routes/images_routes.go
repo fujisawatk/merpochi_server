@@ -26,6 +26,12 @@ func iniImagesRoutes() []Route {
 			Handler:      imageHandler.HandleImageGet,
 			AuthRequired: false,
 		},
+		{
+			URI:          "/users/{id}/image",
+			Method:       http.MethodPut,
+			Handler:      imageHandler.HandleImageUpdate,
+			AuthRequired: false,
+		},
 	}
 	return imagesRoutes
 }

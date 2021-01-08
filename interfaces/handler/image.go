@@ -15,6 +15,7 @@ import (
 type ImageHandler interface {
 	HandleImageUploadAndCreate(w http.ResponseWriter, r *http.Request)
 	HandleImageGet(w http.ResponseWriter, r *http.Request)
+	HandleImageUpdate(w http.ResponseWriter, r *http.Request)
 }
 
 type imageHandler struct {
@@ -72,4 +73,28 @@ func (ih imageHandler) HandleImageGet(w http.ResponseWriter, r *http.Request) {
 	mine := http.DetectContentType(data)
 	uri := "data:" + mine + ";base64," + base64.StdEncoding.EncodeToString(data)
 	responses.JSON(w, http.StatusOK, uri)
+}
+
+// HandleUserImageUpdate ユーザー画像を更新
+func (ih imageHandler) HandleImageUpdate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	uid, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	file, _, err := r.FormFile("image")
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	rows, err := ih.imageUsecase.UpdateImage(uint32(uid), file)
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, rows)
 }
