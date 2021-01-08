@@ -16,7 +16,7 @@ import (
 
 // ImageUsecase Imageに対するUsecaseのインターフェイス
 type ImageUsecase interface {
-	UploadImage(uint32, multipart.File) (*models.Image, error)
+	CreateImage(uint32, multipart.File) (*models.Image, error)
 	GetImage(uint32) (*models.Image, error)
 	UpdateImage(uint32, multipart.File) (int64, error)
 }
@@ -32,7 +32,7 @@ func NewImageUsecase(ir repository.ImageRepository) ImageUsecase {
 	}
 }
 
-func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (*models.Image, error) {
+func (iu imageUsecase) CreateImage(uid uint32, file multipart.File) (*models.Image, error) {
 	img := &models.Image{
 		UserID: uid,
 		Buf:    &bytes.Buffer{},
@@ -53,7 +53,7 @@ func (iu imageUsecase) UploadImage(uid uint32, file multipart.File) (*models.Ima
 		return &models.Image{}, err
 	}
 
-	err = iu.imageRepository.Upload(img)
+	err = iu.imageRepository.UploadS3(img)
 	if err != nil {
 		return &models.Image{}, err
 	}
@@ -72,7 +72,7 @@ func (iu imageUsecase) GetImage(uid uint32) (*models.Image, error) {
 		return &models.Image{}, err
 	}
 
-	err = iu.imageRepository.Download(img)
+	err = iu.imageRepository.DownloadS3(img)
 	if err != nil {
 		return &models.Image{}, err
 	}
@@ -101,7 +101,7 @@ func (iu imageUsecase) UpdateImage(uid uint32, file multipart.File) (int64, erro
 		return 0, err
 	}
 
-	err = iu.imageRepository.Upload(img)
+	err = iu.imageRepository.UploadS3(img)
 	if err != nil {
 		return 0, err
 	}

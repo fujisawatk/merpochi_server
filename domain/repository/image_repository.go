@@ -10,7 +10,7 @@ type ImageRepository interface {
 	Search(uint32) error
 	FindByID(uint32) (*models.Image, error)
 	Update(*models.Image) (int64, error)
-	Upload(*models.Image) error
-	Download(*models.Image) error
+	UploadS3(*models.Image) error
+	DownloadS3(*models.Image) error
 	DeleteS3(*models.Image) error
 }

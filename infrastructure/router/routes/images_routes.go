@@ -17,7 +17,7 @@ func iniImagesRoutes() []Route {
 		{
 			URI:          "/users/{id}/image",
 			Method:       http.MethodPost,
-			Handler:      imageHandler.HandleImageUploadAndCreate,
+			Handler:      imageHandler.HandleImageCreate,
 			AuthRequired: false,
 		},
 		{

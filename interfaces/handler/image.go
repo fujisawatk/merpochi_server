@@ -13,7 +13,7 @@ import (
 
 // ImageHandler Userに対するHandlerのインターフェイス
 type ImageHandler interface {
-	HandleImageUploadAndCreate(w http.ResponseWriter, r *http.Request)
+	HandleImageCreate(w http.ResponseWriter, r *http.Request)
 	HandleImageGet(w http.ResponseWriter, r *http.Request)
 	HandleImageUpdate(w http.ResponseWriter, r *http.Request)
 }
@@ -29,8 +29,8 @@ func NewImageHandler(iu usecase.ImageUsecase) ImageHandler {
 	}
 }
 
-// HandleUserImageUploadAndCreate ユーザー情報を登録
-func (ih imageHandler) HandleImageUploadAndCreate(w http.ResponseWriter, r *http.Request) {
+// HandleUserImageCreate ユーザー情報を登録
+func (ih imageHandler) HandleImageCreate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	uid, err := strconv.ParseUint(vars["id"], 10, 32)
@@ -45,7 +45,7 @@ func (ih imageHandler) HandleImageUploadAndCreate(w http.ResponseWriter, r *http
 		return
 	}
 
-	img, err := ih.imageUsecase.UploadImage(uint32(uid), file)
+	img, err := ih.imageUsecase.CreateImage(uint32(uid), file)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return

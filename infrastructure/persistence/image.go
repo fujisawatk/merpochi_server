@@ -123,7 +123,7 @@ func (ip *imagePersistence) Update(img *models.Image) (int64, error) {
 }
 
 // Upload ユーザー画像をAmazon S3へアップロード
-func (ip *imagePersistence) Upload(img *models.Image) error {
+func (ip *imagePersistence) UploadS3(img *models.Image) error {
 	var err error
 
 	done := make(chan bool)
@@ -156,7 +156,7 @@ func (ip *imagePersistence) Upload(img *models.Image) error {
 }
 
 // Download ユーザー画像をAmazon S3からダウンロード
-func (ip *imagePersistence) Download(img *models.Image) error {
+func (ip *imagePersistence) DownloadS3(img *models.Image) error {
 	var err error
 	done := make(chan bool)
 	fmt.Println(img.Name)
