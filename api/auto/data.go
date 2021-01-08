@@ -85,3 +85,18 @@ var comments = []models.Comment{
 		UserID: 1,
 	},
 }
+
+var images = []models.Image{
+	{
+		ID:     1,
+		Name:   "1-profile-image.gif",
+		UserID: 1,
+		ShopID: 0,
+	},
+	{
+		ID:     2,
+		Name:   "2-profile-image.png",
+		UserID: 2,
+		ShopID: 0,
+	},
+}

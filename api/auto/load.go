@@ -35,6 +35,11 @@ func TestLoad() {
 		log.Fatal(err)
 	}
 
+	err = db.Debug().Delete(&images).Error
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, user := range users {
 		// パスワードのハッシュ化
 		var hashedPassword []byte
@@ -111,4 +116,12 @@ func TestLoad() {
 		results[i].CommentUser = commentUser.Nickname
 	}
 	console.Pretty(results)
+
+	for _, image := range images {
+		// 店舗情報を保存
+		err = db.Debug().Model(&models.Image{}).Create(&image).Error
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
