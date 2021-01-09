@@ -73,15 +73,15 @@ var favorites = []models.Favorite{
 var comments = []models.Comment{
 	{
 		Text:      "mikuのコメント001",
-		ShopID:    1,
 		UserID:    1,
+		PostID:    1,
 		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 	},
 	{
 		Text:      "takaのコメント001",
-		ShopID:    1,
 		UserID:    2,
+		PostID:    1,
 		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
 	},

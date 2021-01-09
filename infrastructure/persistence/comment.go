@@ -18,19 +18,15 @@ func NewCommentPersistence(db *gorm.DB) repository.CommentRepository {
 	return &commentPersistence{db}
 }
 
-func (cp *commentPersistence) FindAll(sid uint32) ([]models.Comment, error) {
+func (cp *commentPersistence) FindAll(pid uint32) (*[]models.Comment, error) {
 	var err error
-	var comments []models.Comment
+	comments := &[]models.Comment{}
 
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		query := cp.db.Table("shops").
-			Select("comments.*").
-			Joins("inner join comments on comments.shop_id = shops.id").
-			Where("shops.id = ?", sid)
-		err = query.Scan(&comments).Error
+		err := cp.db.Model(&models.Comment{}).Where("post_id = ?", pid).Find(comments).Error
 		if err != nil {
 			ch <- false
 			return
@@ -40,7 +36,7 @@ func (cp *commentPersistence) FindAll(sid uint32) ([]models.Comment, error) {
 	if channels.OK(done) {
 		return comments, nil
 	}
-	return []models.Comment{}, err
+	return &[]models.Comment{}, err
 }
 
 // Save コメント保存
@@ -112,23 +108,22 @@ func (cp *commentPersistence) FindAll(sid uint32) ([]models.Comment, error) {
 // 	return 0, rs.Error
 // }
 
-// func (cp *commentPersistence) FindCommentUser(uid uint32) (models.User, error) {
-// 	var err error
+func (cp *commentPersistence) FindByUserID(uid uint32) (*models.User, error) {
+	var err error
+	user := &models.User{}
+	done := make(chan bool)
 
-// 	user := models.User{}
-// 	done := make(chan bool)
-
-// 	go func(ch chan<- bool) {
-// 		defer close(ch)
-// 		err = cp.db.Model(&models.User{}).Where("id = ?", uid).First(&user).Error
-// 		if err != nil {
-// 			ch <- false
-// 			return
-// 		}
-// 		ch <- true
-// 	}(done)
-// 	if channels.OK(done) {
-// 		return user, nil
-// 	}
-// 	return models.User{}, err
-// }
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = cp.db.Model(&models.User{}).Where("id = ?", uid).First(user).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return user, nil
+	}
+	return &models.User{}, err
+}

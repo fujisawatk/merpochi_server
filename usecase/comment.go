@@ -7,7 +7,7 @@ import (
 
 // CommentUsecase Commentに対するUsecaseのインターフェイス
 type CommentUsecase interface {
-	GetComments(uint32) ([]models.Comment, error)
+	GetComments(uint32) (*[]models.Comment, error)
 	// CreateComment(string, uint32, uint32) (models.Comment, error)
 	// UpdateComment(uint32, string) (int64, error)
 	// DeleteComment(uint32) error
@@ -24,22 +24,22 @@ func NewCommentUsecase(cr repository.CommentRepository) CommentUsecase {
 	}
 }
 
-func (cu commentUsecase) GetComments(sid uint32) ([]models.Comment, error) {
-	comments, err := cu.commentRepository.FindAll(sid)
+func (cu *commentUsecase) GetComments(pid uint32) (*[]models.Comment, error) {
+	comments, err := cu.commentRepository.FindAll(pid)
 	if err != nil {
-		return []models.Comment{}, err
+		return &[]models.Comment{}, err
 	}
 	// コメントが存在する場合
-	// if len(comments) > 0 {
-	// 	// 取得した店舗のコメントに紐付くユーザーを取得
-	// 	for i := 0; i < len(comments); i++ {
-	// 		commentUser, err := cu.commentRepository.FindCommentUser(comments[i].UserID)
-	// 		if err != nil {
-	// 			return []models.Comment{}, err
-	// 		}
-	// 		comments[i].User = commentUser
-	// 	}
-	// }
+	if len(*comments) > 0 {
+		// 取得した投稿にコメントしたユーザー情報を取得
+		for i := 0; i < len(*comments); i++ {
+			user, err := cu.commentRepository.FindByUserID((*comments)[i].UserID)
+			if err != nil {
+				return &[]models.Comment{}, err
+			}
+			(*comments)[i].User = *user
+		}
+	}
 	return comments, nil
 }
 

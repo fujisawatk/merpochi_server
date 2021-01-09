@@ -29,16 +29,16 @@ func NewCommentHandler(cu usecase.CommentUsecase) CommentHandler {
 }
 
 // HandleCommentsGet 指定の店舗に紐づくコメント情報を全て取得
-func (ch commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Request) {
+func (ch *commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
+	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
 
-	comments, err := ch.commentUsecase.GetComments(uint32(sid))
+	comments, err := ch.commentUsecase.GetComments(uint32(pid))
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
