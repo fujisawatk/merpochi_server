@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
@@ -17,7 +18,7 @@ type CommentHandler interface {
 	HandleCommentsGet(w http.ResponseWriter, r *http.Request)
 	HandleCommentCreate(w http.ResponseWriter, r *http.Request)
 	HandleCommentUpdate(w http.ResponseWriter, r *http.Request)
-	// HandleCommentDelete(w http.ResponseWriter, r *http.Request)
+	HandleCommentDelete(w http.ResponseWriter, r *http.Request)
 }
 
 type commentHandler struct {
@@ -114,24 +115,24 @@ func (ch *commentHandler) HandleCommentUpdate(w http.ResponseWriter, r *http.Req
 	responses.JSON(w, http.StatusOK, rows)
 }
 
-// // HandleCommentDelete 店舗情報ページに記載したコメントを削除
-// func (ch commentHandler) HandleCommentDelete(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
+// HandleCommentDelete 店舗情報ページに記載したコメントを削除
+func (ch *commentHandler) HandleCommentDelete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 
-// 	cid, err := strconv.ParseUint(vars["commentId"], 10, 32)
-// 	if err != nil {
-// 		responses.ERROR(w, http.StatusBadRequest, err)
-// 		return
-// 	}
+	cid, err := strconv.ParseUint(vars["commentId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
 
-// 	err = ch.commentUsecase.DeleteComment(uint32(cid))
-// 	if err != nil {
-// 		responses.ERROR(w, http.StatusBadRequest, err)
-// 		return
-// 	}
-// 	w.Header().Set("Entity", fmt.Sprintf("%d", cid))
-// 	responses.JSON(w, http.StatusNoContent, "")
-// }
+	err = ch.commentUsecase.DeleteComment(uint32(cid))
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	w.Header().Set("Entity", fmt.Sprintf("%d", cid))
+	responses.JSON(w, http.StatusNoContent, "")
+}
 
 type commentRequest struct {
 	Text string `json:"text"`

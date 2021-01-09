@@ -33,12 +33,12 @@ func iniCommentsRoutes() []Route {
 			Handler:      commentHandler.HandleCommentUpdate,
 			AuthRequired: true,
 		},
-		// {
-		// 	URI:          "/shops/{shopId}/comments/{commentId}",
-		// 	Method:       http.MethodDelete,
-		// 	Handler:      commentHandler.HandleCommentDelete,
-		// 	AuthRequired: true,
-		// },
+		{
+			URI:          "/posts/{postId}/comments/{commentId}",
+			Method:       http.MethodDelete,
+			Handler:      commentHandler.HandleCommentDelete,
+			AuthRequired: true,
+		},
 	}
 	return commentRoutes
 }
