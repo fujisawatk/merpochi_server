@@ -100,3 +100,34 @@ var images = []models.Image{
 		ShopID: 0,
 	},
 }
+
+var posts = []models.Post{
+	{
+		ID:     1,
+		Text:   "美味しかったです！",
+		Rating: 5,
+		ShopID: 1,
+		UserID: 1,
+	},
+	{
+		ID:     2,
+		Text:   "また行きたい！！",
+		Rating: 4,
+		ShopID: 2,
+		UserID: 2,
+	},
+	{
+		ID:     3,
+		Text:   "まあまあ！！",
+		Rating: 3,
+		ShopID: 2,
+		UserID: 1,
+	},
+	{
+		ID:     4,
+		Text:   "ぜひリピートしたいです！",
+		Rating: 5,
+		ShopID: 2,
+		UserID: 1,
+	},
+}
