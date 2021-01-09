@@ -21,7 +21,6 @@ func NewCommentPersistence(db *gorm.DB) repository.CommentRepository {
 func (cp *commentPersistence) FindAll(pid uint32) (*[]models.Comment, error) {
 	var err error
 	comments := &[]models.Comment{}
-
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
@@ -40,26 +39,25 @@ func (cp *commentPersistence) FindAll(pid uint32) (*[]models.Comment, error) {
 }
 
 // Save コメント保存
-// func (cp *commentPersistence) Save(comment models.Comment) (models.Comment, error) {
-// 	var err error
+func (cp *commentPersistence) Save(comment *models.Comment) error {
+	var err error
+	done := make(chan bool)
 
-// 	done := make(chan bool)
+	go func(ch chan<- bool) {
+		defer close(ch)
 
-// 	go func(ch chan<- bool) {
-// 		defer close(ch)
-
-// 		err = cp.db.Model(&models.Comment{}).Create(&comment).Error
-// 		if err != nil {
-// 			ch <- false
-// 			return
-// 		}
-// 		ch <- true
-// 	}(done)
-// 	if channels.OK(done) {
-// 		return comment, nil
-// 	}
-// 	return models.Comment{}, err
-// }
+		err = cp.db.Model(&models.Comment{}).Create(comment).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return nil
+	}
+	return err
+}
 
 // // 指定したコメントのレコードを1件更新
 // func (cp *commentPersistence) Update(cid uint32, comment models.Comment) (int64, error) {

@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
+	"merpochi_server/util/ctxval"
 	"net/http"
 	"strconv"
 
@@ -12,7 +15,7 @@ import (
 // CommentHandler Commentに対するHandlerのインターフェイス
 type CommentHandler interface {
 	HandleCommentsGet(w http.ResponseWriter, r *http.Request)
-	// HandleCommentCreate(w http.ResponseWriter, r *http.Request)
+	HandleCommentCreate(w http.ResponseWriter, r *http.Request)
 	// HandleCommentUpdate(w http.ResponseWriter, r *http.Request)
 	// HandleCommentDelete(w http.ResponseWriter, r *http.Request)
 }
@@ -28,7 +31,7 @@ func NewCommentHandler(cu usecase.CommentUsecase) CommentHandler {
 	}
 }
 
-// HandleCommentsGet 指定の店舗に紐づくコメント情報を全て取得
+// HandleCommentsGet 指定の投稿に紐づくコメント情報を全件取得
 func (ch *commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -46,38 +49,39 @@ func (ch *commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Reque
 	responses.JSON(w, http.StatusOK, comments)
 }
 
-// HandleCommentCreate 店舗情報ページにコメントを登録
-// func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
+// HandleCommentCreate 指定の投稿にコメントを登録
+func (ch *commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 
-// 	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
-// 	if err != nil {
-// 		responses.ERROR(w, http.StatusBadRequest, err)
-// 		return
-// 	}
+	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
 
-// 	uid := ctxval.GetUserID(r)
+	// contextからユーザーID取得
+	uid := ctxval.GetUserID(r)
 
-// 	body, err := ioutil.ReadAll(r.Body)
-// 	if err != nil {
-// 		responses.ERROR(w, http.StatusBadRequest, err)
-// 		return
-// 	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
 
-// 	var requestBody commentRequest
-// 	err = json.Unmarshal(body, &requestBody)
-// 	if err != nil {
-// 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
-// 		return
-// 	}
+	var requestBody commentRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
 
-// 	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, uint32(sid), uid)
-// 	if err != nil {
-// 		responses.ERROR(w, http.StatusInternalServerError, err)
-// 		return
-// 	}
-// 	responses.JSON(w, http.StatusCreated, comment)
-// }
+	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, uid, uint32(pid))
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusCreated, comment)
+}
 
 // // HandleCommentUpdate 店舗情報ページに記載したコメントを編集
 // func (ch commentHandler) HandleCommentUpdate(w http.ResponseWriter, r *http.Request) {
@@ -129,6 +133,6 @@ func (ch *commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Reque
 // 	responses.JSON(w, http.StatusNoContent, "")
 // }
 
-// type commentRequest struct {
-// 	Text string `json:"text"`
-// }
+type commentRequest struct {
+	Text string `json:"text"`
+}

@@ -3,12 +3,13 @@ package usecase
 import (
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
+	"merpochi_server/usecase/validations"
 )
 
 // CommentUsecase Commentに対するUsecaseのインターフェイス
 type CommentUsecase interface {
 	GetComments(uint32) (*[]models.Comment, error)
-	// CreateComment(string, uint32, uint32) (models.Comment, error)
+	CreateComment(string, uint32, uint32) (*models.Comment, error)
 	// UpdateComment(uint32, string) (int64, error)
 	// DeleteComment(uint32) error
 }
@@ -43,32 +44,31 @@ func (cu *commentUsecase) GetComments(pid uint32) (*[]models.Comment, error) {
 	return comments, nil
 }
 
-// func (cu commentUsecase) CreateComment(text string, sid, uid uint32) (models.Comment, error) {
-// 	comment := models.Comment{
-// 		Text:   text,
-// 		ShopID: sid,
-// 		UserID: uid,
-// 	}
+func (cu *commentUsecase) CreateComment(text string, uid, pid uint32) (*models.Comment, error) {
+	comment := &models.Comment{
+		Text:   text,
+		UserID: uid,
+		PostID: pid,
+	}
 
-// 	err := validations.CommentValidate(&comment)
-// 	if err != nil {
-// 		return models.Comment{}, err
-// 	}
+	err := validations.CommentValidate(comment)
+	if err != nil {
+		return &models.Comment{}, err
+	}
 
-// 	comment, err = cu.commentRepository.Save(comment)
-// 	if err != nil {
-// 		return models.Comment{}, err
-// 	}
+	err = cu.commentRepository.Save(comment)
+	if err != nil {
+		return &models.Comment{}, err
+	}
 
-// 	// コメントしたユーザー値を取得
-// 	commentUser, err := cu.commentRepository.FindCommentUser(comment.UserID)
-// 	if err != nil {
-// 		return models.Comment{}, err
-// 	}
-// 	comment.User = commentUser
+	user, err := cu.commentRepository.FindByUserID(comment.UserID)
+	if err != nil {
+		return &models.Comment{}, err
+	}
+	comment.User = *user
 
-// 	return comment, nil
-// }
+	return comment, nil
+}
 
 // func (cu commentUsecase) UpdateComment(cid uint32, text string) (int64, error) {
 // 	comment := models.Comment{

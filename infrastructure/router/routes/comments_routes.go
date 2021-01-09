@@ -21,12 +21,12 @@ func iniCommentsRoutes() []Route {
 			Handler:      commentHandler.HandleCommentsGet,
 			AuthRequired: false,
 		},
-		// {
-		// 	URI:          "/shops/{shopId}/comments",
-		// 	Method:       http.MethodPost,
-		// 	Handler:      commentHandler.HandleCommentCreate,
-		// 	AuthRequired: true,
-		// },
+		{
+			URI:          "/posts/{postId}/comments",
+			Method:       http.MethodPost,
+			Handler:      commentHandler.HandleCommentCreate,
+			AuthRequired: true,
+		},
 		// {
 		// 	URI:          "/shops/{shopId}/comments/{commentId}",
 		// 	Method:       http.MethodPut,
