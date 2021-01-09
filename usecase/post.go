@@ -10,6 +10,7 @@ import (
 type PostUsecase interface {
 	CreatePost(string, uint32, uint32, uint32) (*models.Post, error)
 	GetPosts(uint32) (*[]models.Post, error)
+	GetPost(uint32, uint32) (*models.Post, error)
 }
 
 type postUsecase struct {
@@ -49,4 +50,12 @@ func (pu *postUsecase) GetPosts(sid uint32) (*[]models.Post, error) {
 		return &[]models.Post{}, err
 	}
 	return posts, nil
+}
+
+func (pu *postUsecase) GetPost(sid, pid uint32) (*models.Post, error) {
+	post, err := pu.postRepository.FindByID(sid, pid)
+	if err != nil {
+		return &models.Post{}, err
+	}
+	return post, nil
 }
