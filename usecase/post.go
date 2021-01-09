@@ -12,6 +12,7 @@ type PostUsecase interface {
 	GetPosts(uint32) (*[]models.Post, error)
 	GetPost(uint32, uint32) (*models.Post, error)
 	UpdatePost(uint32, uint32, string) (int64, error)
+	DeletePost(uint32) error
 }
 
 type postUsecase struct {
@@ -78,4 +79,12 @@ func (pu *postUsecase) UpdatePost(pid, rating uint32, text string) (int64, error
 		return 0, err
 	}
 	return rows, nil
+}
+
+func (pu *postUsecase) DeletePost(pid uint32) error {
+	err := pu.postRepository.Delete(pid)
+	if err != nil {
+		return err
+	}
+	return nil
 }
