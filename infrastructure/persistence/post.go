@@ -39,3 +39,24 @@ func (pp *postPersistence) Save(post *models.Post) error {
 	}
 	return err
 }
+
+// 指定した店舗に紐付く投稿情報のレコードを全件取得
+func (pp *postPersistence) FindAll(sid uint32) (*[]models.Post, error) {
+	var err error
+	posts := &[]models.Post{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = pp.db.Model(&models.Post{}).Where("shop_id = ?", sid).Find(posts).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return posts, nil
+	}
+	return &[]models.Post{}, err
+}

@@ -14,6 +14,7 @@ import (
 // PostHandler Userに対するHandlerのインターフェイス
 type PostHandler interface {
 	HandlePostCreate(w http.ResponseWriter, r *http.Request)
+	HandlePostsGet(w http.ResponseWriter, r *http.Request)
 }
 
 type postHandler struct {
@@ -56,6 +57,24 @@ func (ph *postHandler) HandlePostCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	responses.JSON(w, http.StatusCreated, post)
+}
+
+// HandlePostsGet 指定した店舗に紐付く投稿情報を全件取得
+func (ph *postHandler) HandlePostsGet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	sid, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	posts, err := ph.postUsecase.GetPosts(uint32(sid))
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, posts)
 }
 
 type postCreateRequest struct {
