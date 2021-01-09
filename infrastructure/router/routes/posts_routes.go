@@ -21,6 +21,12 @@ func iniPostsRoutes() []Route {
 			Handler:      postHandler.HandlePostCreate,
 			AuthRequired: false,
 		},
+		{
+			URI:          "/shops/{id}/posts",
+			Method:       http.MethodGet,
+			Handler:      postHandler.HandlePostsGet,
+			AuthRequired: false,
+		},
 	}
 	return postRoutes
 }

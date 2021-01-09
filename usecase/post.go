@@ -9,6 +9,7 @@ import (
 // PostUsecase Postに対するUsecaseのインターフェイス
 type PostUsecase interface {
 	CreatePost(string, uint32, uint32, uint32) (*models.Post, error)
+	GetPosts(uint32) (*[]models.Post, error)
 }
 
 type postUsecase struct {
@@ -40,4 +41,12 @@ func (pu *postUsecase) CreatePost(text string, rating, uid, sid uint32) (*models
 		return &models.Post{}, err
 	}
 	return post, nil
+}
+
+func (pu *postUsecase) GetPosts(sid uint32) (*[]models.Post, error) {
+	posts, err := pu.postRepository.FindAll(sid)
+	if err != nil {
+		return &[]models.Post{}, err
+	}
+	return posts, nil
 }
