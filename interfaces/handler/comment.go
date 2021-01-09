@@ -32,17 +32,17 @@ func NewCommentHandler(cu usecase.CommentUsecase) CommentHandler {
 	}
 }
 
-// HandleCommentsGet 指定の店舗に紐づくコメント情報を全て取得
-func (ch commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Request) {
+// HandleCommentsGet 指定の投稿に紐づくコメント情報を全件取得
+func (ch *commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
+	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
 
-	comments, err := ch.commentUsecase.GetComments(uint32(sid))
+	comments, err := ch.commentUsecase.GetComments(uint32(pid))
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -50,16 +50,17 @@ func (ch commentHandler) HandleCommentsGet(w http.ResponseWriter, r *http.Reques
 	responses.JSON(w, http.StatusOK, comments)
 }
 
-// HandleCommentCreate 店舗情報ページにコメントを登録
-func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Request) {
+// HandleCommentCreate 指定の投稿にコメントを登録
+func (ch *commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
+	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
 
+	// contextからユーザーID取得
 	uid := ctxval.GetUserID(r)
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -75,7 +76,7 @@ func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, uint32(sid), uid)
+	comment, err := ch.commentUsecase.CreateComment(requestBody.Text, uid, uint32(pid))
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -84,7 +85,7 @@ func (ch commentHandler) HandleCommentCreate(w http.ResponseWriter, r *http.Requ
 }
 
 // HandleCommentUpdate 店舗情報ページに記載したコメントを編集
-func (ch commentHandler) HandleCommentUpdate(w http.ResponseWriter, r *http.Request) {
+func (ch *commentHandler) HandleCommentUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	cid, err := strconv.ParseUint(vars["commentId"], 10, 32)
@@ -115,7 +116,7 @@ func (ch commentHandler) HandleCommentUpdate(w http.ResponseWriter, r *http.Requ
 }
 
 // HandleCommentDelete 店舗情報ページに記載したコメントを削除
-func (ch commentHandler) HandleCommentDelete(w http.ResponseWriter, r *http.Request) {
+func (ch *commentHandler) HandleCommentDelete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	cid, err := strconv.ParseUint(vars["commentId"], 10, 32)

@@ -6,9 +6,9 @@ import "time"
 type Comment struct {
 	ID        uint32    `json:"id"`
 	Text      string    `json:"text"`
-	ShopID    uint32    `json:"shop_id"`
 	User      User      `json:"user"`
 	UserID    uint32    `json:"user_id"`
+	PostID    uint32    `json:"post_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
