@@ -8,4 +8,5 @@ type PostRepository interface {
 	FindAll(uint32) (*[]models.Post, error)
 	FindByID(uint32, uint32) (*models.Post, error)
 	Update(*models.Post) (int64, error)
+	Delete(uint32) error
 }

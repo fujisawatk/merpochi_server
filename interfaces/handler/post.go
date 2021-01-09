@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
@@ -17,6 +18,7 @@ type PostHandler interface {
 	HandlePostsGet(w http.ResponseWriter, r *http.Request)
 	HandlePostGet(w http.ResponseWriter, r *http.Request)
 	HandlePostUpdate(w http.ResponseWriter, r *http.Request)
+	HandlePostDelete(w http.ResponseWriter, r *http.Request)
 }
 
 type postHandler struct {
@@ -132,6 +134,25 @@ func (ph *postHandler) HandlePostUpdate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	responses.JSON(w, http.StatusOK, rows)
+}
+
+// HandlePostDelete 投稿情報を1件削除
+func (ph *postHandler) HandlePostDelete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	err = ph.postUsecase.DeletePost(uint32(pid))
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	w.Header().Set("Entity", fmt.Sprintf("%d", pid))
+	responses.JSON(w, http.StatusNoContent, "")
 }
 
 type postCreateRequest struct {

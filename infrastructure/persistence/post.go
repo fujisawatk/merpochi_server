@@ -108,3 +108,19 @@ func (pp *postPersistence) Update(post *models.Post) (int64, error) {
 	}
 	return 0, rs.Error
 }
+
+// 投稿情報のレコードを1件削除
+func (pp *postPersistence) Delete(pid uint32) error {
+	var rs *gorm.DB
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = pp.db.Model(&models.Post{}).Where("id = ?", pid).Take(&models.Post{}).Delete(&models.Post{})
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return nil
+	}
+	return rs.Error
+}
