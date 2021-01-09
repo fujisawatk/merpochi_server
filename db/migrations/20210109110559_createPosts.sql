@@ -2,7 +2,7 @@
 -- SQL in section 'Up' is executed when this migration is applied
 CREATE TABLE posts (
   id INT(11) PRIMARY KEY AUTO_INCREMENT,
-  text VARCHAR(255) NOT NULL,
+  text VARCHAR(1000) NOT NULL,
   rating INT(11) NOT NULL,
   shop_id INT(11) NOT NULL,
   user_id INT(11) NOT NULL,

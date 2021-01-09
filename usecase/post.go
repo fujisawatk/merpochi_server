@@ -3,6 +3,7 @@ package usecase
 import (
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
+	"merpochi_server/usecase/validations"
 )
 
 // PostUsecase Postに対するUsecaseのインターフェイス
@@ -29,7 +30,12 @@ func (pu *postUsecase) CreatePost(text string, rating, uid, sid uint32) (*models
 		ShopID: sid,
 	}
 
-	err := pu.postRepository.Save(post)
+	err := validations.PostCreateValidate(post)
+	if err != nil {
+		return &models.Post{}, err
+	}
+
+	err = pu.postRepository.Save(post)
 	if err != nil {
 		return &models.Post{}, err
 	}
