@@ -10,7 +10,7 @@ import (
 type CommentUsecase interface {
 	GetComments(uint32) (*[]models.Comment, error)
 	CreateComment(string, uint32, uint32) (*models.Comment, error)
-	// UpdateComment(uint32, string) (int64, error)
+	UpdateComment(uint32, string) (int64, error)
 	// DeleteComment(uint32) error
 }
 
@@ -70,22 +70,22 @@ func (cu *commentUsecase) CreateComment(text string, uid, pid uint32) (*models.C
 	return comment, nil
 }
 
-// func (cu commentUsecase) UpdateComment(cid uint32, text string) (int64, error) {
-// 	comment := models.Comment{
-// 		Text: text,
-// 	}
+func (cu *commentUsecase) UpdateComment(cid uint32, text string) (int64, error) {
+	comment := &models.Comment{
+		Text: text,
+	}
 
-// 	err := validations.CommentValidate(&comment)
-// 	if err != nil {
-// 		return 0, err
-// 	}
+	err := validations.CommentValidate(comment)
+	if err != nil {
+		return 0, err
+	}
 
-// 	rows, err := cu.commentRepository.Update(cid, comment)
-// 	if err != nil {
-// 		return 0, err
-// 	}
-// 	return rows, nil
-// }
+	rows, err := cu.commentRepository.Update(cid, comment)
+	if err != nil {
+		return 0, err
+	}
+	return rows, nil
+}
 
 // func (cu commentUsecase) DeleteComment(cid uint32) error {
 // 	_, err := cu.commentRepository.Delete(cid)
