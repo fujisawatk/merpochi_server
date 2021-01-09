@@ -7,4 +7,5 @@ type PostRepository interface {
 	Save(*models.Post) error
 	FindAll(uint32) (*[]models.Post, error)
 	FindByID(uint32, uint32) (*models.Post, error)
+	Update(*models.Post) (int64, error)
 }

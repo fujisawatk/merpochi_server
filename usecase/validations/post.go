@@ -5,8 +5,8 @@ import (
 	"merpochi_server/domain/models"
 )
 
-// PostCreateValidate 投稿新規登録時のサーバー側バリデーション処理
-func PostCreateValidate(post *models.Post) error {
+// PostValidate 投稿保存、更新時のサーバー側バリデーション処理
+func PostValidate(post *models.Post) error {
 	if post.Text == "" {
 		return errors.New("required text")
 	}
