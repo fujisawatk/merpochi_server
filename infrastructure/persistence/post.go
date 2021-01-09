@@ -3,6 +3,7 @@ package persistence
 import (
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
+	"time"
 
 	"merpochi_server/util/channels"
 
@@ -80,4 +81,30 @@ func (pp *postPersistence) FindByID(sid, pid uint32) (*models.Post, error) {
 		return post, nil
 	}
 	return &models.Post{}, err
+}
+
+// 投稿情報のレコードを1件更新
+func (pp *postPersistence) Update(post *models.Post) (int64, error) {
+	var rs *gorm.DB
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = pp.db.Model(&models.Post{}).Where("id = ?", post.ID).Take(&models.Post{}).UpdateColumns(
+			map[string]interface{}{
+				"text":       post.Text,
+				"rating":     post.Rating,
+				"updated_at": time.Now(),
+			},
+		)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		if rs.Error != nil {
+			return 0, rs.Error
+		}
+		// RowsAffected→更新したレコード数を取得
+		return rs.RowsAffected, nil
+	}
+	return 0, rs.Error
 }

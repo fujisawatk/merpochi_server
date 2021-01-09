@@ -11,6 +11,7 @@ type PostUsecase interface {
 	CreatePost(string, uint32, uint32, uint32) (*models.Post, error)
 	GetPosts(uint32) (*[]models.Post, error)
 	GetPost(uint32, uint32) (*models.Post, error)
+	UpdatePost(uint32, uint32, string) (int64, error)
 }
 
 type postUsecase struct {
@@ -32,7 +33,7 @@ func (pu *postUsecase) CreatePost(text string, rating, uid, sid uint32) (*models
 		ShopID: sid,
 	}
 
-	err := validations.PostCreateValidate(post)
+	err := validations.PostValidate(post)
 	if err != nil {
 		return &models.Post{}, err
 	}
@@ -58,4 +59,23 @@ func (pu *postUsecase) GetPost(sid, pid uint32) (*models.Post, error) {
 		return &models.Post{}, err
 	}
 	return post, nil
+}
+
+func (pu *postUsecase) UpdatePost(pid, rating uint32, text string) (int64, error) {
+	post := &models.Post{
+		ID:     pid,
+		Text:   text,
+		Rating: rating,
+	}
+
+	err := validations.PostValidate(post)
+	if err != nil {
+		return 0, err
+	}
+
+	rows, err := pu.postRepository.Update(post)
+	if err != nil {
+		return 0, err
+	}
+	return rows, nil
 }

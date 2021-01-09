@@ -16,6 +16,7 @@ type PostHandler interface {
 	HandlePostCreate(w http.ResponseWriter, r *http.Request)
 	HandlePostsGet(w http.ResponseWriter, r *http.Request)
 	HandlePostGet(w http.ResponseWriter, r *http.Request)
+	HandlePostUpdate(w http.ResponseWriter, r *http.Request)
 }
 
 type postHandler struct {
@@ -102,8 +103,44 @@ func (ph *postHandler) HandlePostGet(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, post)
 }
 
+// HandlePostUpdate 投稿情報を1件更新
+func (ph *postHandler) HandlePostUpdate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	var requestBody postUpdateRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	rows, err := ph.postUsecase.UpdatePost(uint32(pid), requestBody.Rating, requestBody.Text)
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, rows)
+}
+
 type postCreateRequest struct {
 	Text   string `json:"text"`
 	Rating uint32 `json:"rating"`
 	UserID uint32 `json:"user_id"`
+}
+
+type postUpdateRequest struct {
+	Text   string `json:"text"`
+	Rating uint32 `json:"rating"`
 }
