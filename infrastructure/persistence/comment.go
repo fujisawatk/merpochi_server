@@ -46,6 +46,7 @@ func (cp *commentPersistence) Save(comment *models.Comment) error {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
+
 		err = cp.db.Model(&models.Comment{}).Create(comment).Error
 		if err != nil {
 			ch <- false
