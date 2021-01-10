@@ -8,6 +8,7 @@ import (
 // BookmarkUsecase Bookmarkに対するUsecaseのインターフェイス
 type BookmarkUsecase interface {
 	CreateBookmark(uint32, uint32) (*models.Bookmark, error)
+	DeleteBookmark(uint32, uint32) error
 }
 
 type bookmarkUsecase struct {
@@ -21,13 +22,13 @@ func NewBookmarkUsecase(fr repository.BookmarkRepository) BookmarkUsecase {
 	}
 }
 
-func (fu *bookmarkUsecase) CreateBookmark(sid uint32, uid uint32) (*models.Bookmark, error) {
+func (bu *bookmarkUsecase) CreateBookmark(sid uint32, uid uint32) (*models.Bookmark, error) {
 	bookmark := &models.Bookmark{
 		UserID: uid,
 		ShopID: sid,
 	}
 
-	bookmark, err := fu.bookmarkRepository.Save(bookmark)
+	bookmark, err := bu.bookmarkRepository.Save(bookmark)
 	if err != nil {
 		return &models.Bookmark{}, err
 	}
@@ -40,4 +41,12 @@ func (fu *bookmarkUsecase) CreateBookmark(sid uint32, uid uint32) (*models.Bookm
 	// bookmark.User = bookmarkUser
 
 	return bookmark, nil
+}
+
+func (bu bookmarkUsecase) DeleteBookmark(sid uint32, uid uint32) error {
+	err := bu.bookmarkRepository.Delete(sid, uid)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -20,21 +20,20 @@ func NewBookmarkPersistence(db *gorm.DB) repository.BookmarkRepository {
 }
 
 // Save お気に入り登録
-func (fp *bookmarkPersistence) Save(bookmark *models.Bookmark) (*models.Bookmark, error) {
+func (bp *bookmarkPersistence) Save(bookmark *models.Bookmark) (*models.Bookmark, error) {
 	var err error
-
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
 		// 重複チェック
-		result := fp.db.Model(&models.Bookmark{}).Where("user_id = ? AND shop_id = ?", bookmark.UserID, bookmark.ShopID).Take(&models.Bookmark{})
+		result := bp.db.Model(&models.Bookmark{}).Where("user_id = ? AND shop_id = ?", bookmark.UserID, bookmark.ShopID).Take(&models.Bookmark{})
 		if result.RowsAffected > 0 {
 			err = errors.New("bookmark registered")
 			ch <- false
 			return
 		}
-		err = fp.db.Model(&models.Bookmark{}).Create(&bookmark).Error
+		err = bp.db.Model(&models.Bookmark{}).Create(&bookmark).Error
 		if err != nil {
 			ch <- false
 			return
@@ -45,4 +44,27 @@ func (fp *bookmarkPersistence) Save(bookmark *models.Bookmark) (*models.Bookmark
 		return bookmark, nil
 	}
 	return &models.Bookmark{}, err
+}
+
+// Delete ブックマーク解除
+func (bp *bookmarkPersistence) Delete(sid uint32, uid uint32) error {
+	var rs *gorm.DB
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		// 存在チェック
+		rs = bp.db.Model(&models.Bookmark{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Bookmark{})
+		if rs.Error != nil {
+			ch <- false
+			return
+		}
+		// 削除処理
+		rs = bp.db.Model(&models.Bookmark{}).Where("user_id = ? and shop_id = ?", uid, sid).Delete(&models.Bookmark{})
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return nil
+	}
+	return rs.Error
 }

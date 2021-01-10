@@ -21,6 +21,12 @@ func iniBookmarksRoutes() []Route {
 			Handler:      bookmarkHandler.HandleBookmarkCreate,
 			AuthRequired: true,
 		},
+		{
+			URI:          "/shops/{shopId}/bookmarks",
+			Method:       http.MethodDelete,
+			Handler:      bookmarkHandler.HandleBookmarkDelete,
+			AuthRequired: true,
+		},
 	}
 	return bookmarksRoutes
 }

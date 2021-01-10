@@ -13,6 +13,7 @@ import (
 // BookmarkHandler Bookmarkに対するHandlerのインターフェイス
 type BookmarkHandler interface {
 	HandleBookmarkCreate(w http.ResponseWriter, r *http.Request)
+	HandleBookmarkDelete(w http.ResponseWriter, r *http.Request)
 }
 
 type bookmarkHandler struct {
@@ -44,4 +45,24 @@ func (bh *bookmarkHandler) HandleBookmarkCreate(w http.ResponseWriter, r *http.R
 		return
 	}
 	responses.JSON(w, http.StatusCreated, bookmark)
+}
+
+// HandleBookmarkDelete ブックマークを解除
+func (bh *bookmarkHandler) HandleBookmarkDelete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	uid := ctxval.GetUserID(r)
+
+	err = bh.bookmarkUsecase.DeleteBookmark(uint32(sid), uid)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	responses.JSON(w, http.StatusNoContent, "")
 }
