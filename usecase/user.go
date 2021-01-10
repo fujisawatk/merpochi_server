@@ -13,6 +13,7 @@ type UserUsecase interface {
 	GetUser(uint32) (models.User, error)
 	UpdateUser(uint32, string, string, string) (int64, error)
 	DeleteUser(uint32) error
+	MylistUser(uint32) (*userResponse, error)
 }
 
 type userUsecase struct {
@@ -87,4 +88,27 @@ func (uu userUsecase) DeleteUser(uid uint32) error {
 		return err
 	}
 	return nil
+}
+
+func (uu *userUsecase) MylistUser(uid uint32) (*userResponse, error) {
+	bookmarkedShops, err := uu.userRepository.FindBookmarkedShops(uid)
+	if err != nil {
+		return &userResponse{}, err
+	}
+
+	favoritedShops, err := uu.userRepository.FindFavoritedShops(uid)
+	if err != nil {
+		return &userResponse{}, err
+	}
+
+	res := &userResponse{
+		BookmarkedShops: *(bookmarkedShops),
+		FavoritedShops:  *(favoritedShops),
+	}
+	return res, nil
+}
+
+type userResponse struct {
+	BookmarkedShops []models.Shop `json:"bookmarked_shops"`
+	FavoritedShops  []models.Shop `json:"favorited_shops"`
 }
