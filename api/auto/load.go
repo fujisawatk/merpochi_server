@@ -129,4 +129,11 @@ func TestLoad() {
 			log.Fatal(err)
 		}
 	}
+
+	for _, bookmark := range bookmarks {
+		err = db.Debug().Model(&models.Bookmark{}).Create(&bookmark).Error
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
