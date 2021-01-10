@@ -192,7 +192,7 @@ func TestShop_Search(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    models.Shop
+		want    *models.Shop
 		wantErr bool
 	}{
 		{
@@ -200,7 +200,7 @@ func TestShop_Search(t *testing.T) {
 			args: args{
 				code: "aaaa000",
 			},
-			want: models.Shop{
+			want: &models.Shop{
 				ID:        1,
 				Code:      "aaaa000",
 				Name:      "焼鳥屋",
@@ -221,7 +221,7 @@ func TestShop_Search(t *testing.T) {
 			args: args{
 				code: "eeee555",
 			},
-			want:    models.Shop{},
+			want:    &models.Shop{},
 			wantErr: true,
 		},
 	}
