@@ -23,7 +23,7 @@ func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
 	}
 }
 
-func (su shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, error) {
+func (su *shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, error) {
 	var counts []searchShopsResponse
 
 	// 取得した店舗IDを1件ずつ登録されているか確認
@@ -33,27 +33,18 @@ func (su shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, er
 		// 登録されていない場合
 		if err != nil {
 			res = searchShopsResponse{
-				ID:             0,
-				CommentsCount:  0,
-				FavoritesCount: 0,
+				ID:    0,
+				Count: 0,
 			}
 			counts = append(counts, res)
 		} else {
-			// 登録されている場合
-			commentsCount := su.shopRepository.FindCommentsCount(shop.ID)
-			// 登録後にコメントが削除された場合
-			if err != nil {
-				commentsCount = 0
-			}
+			// 評価が4以上である投稿数を取得
+			postsCount := su.shopRepository.FindPostsCount(shop.ID)
+			// お気に入り（リピートしたいボタン）が押された数を取得
 			favoritesCount := su.shopRepository.FindFavoritesCount(shop.ID)
-			// 登録後にいいねが削除された場合
-			if err != nil {
-				favoritesCount = 0
-			}
 			res = searchShopsResponse{
-				ID:             shop.ID,
-				CommentsCount:  int(commentsCount),
-				FavoritesCount: int(favoritesCount),
+				ID:    shop.ID,
+				Count: int(postsCount) + int(favoritesCount),
 			}
 			counts = append(counts, res)
 		}
@@ -105,9 +96,8 @@ func DelDuplicateShops(shops []models.Shop) []models.Shop {
 }
 
 type searchShopsResponse struct {
-	ID             uint32 `json:"id"`
-	CommentsCount  int    `json:"comments_count"`
-	FavoritesCount int    `json:"favorites_count"`
+	ID    uint32 `json:"id"`
+	Count int    `json:"count"`
 }
 
 type meShopsResponse struct {

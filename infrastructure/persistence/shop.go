@@ -18,15 +18,15 @@ func NewShopPersistence(db *gorm.DB) repository.ShopRepository {
 	return &shopPersistence{db}
 }
 
-// 店舗情報に紐づくコメント数を取得
-func (sp *shopPersistence) FindCommentsCount(sid uint32) uint32 {
+// 評価が4以上である投稿数を取得
+func (sp *shopPersistence) FindPostsCount(pid uint32) uint32 {
 	var count uint32
 
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		sp.db.Model(&models.Comment{}).Where("shop_id = ?", sid).Count(&count)
+		sp.db.Model(&models.Post{}).Where("shop_id = ? AND rating >= ?", pid, 4).Count(&count)
 		ch <- true
 	}(done)
 	if channels.OK(done) {
@@ -74,15 +74,15 @@ func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 	return models.Shop{}, err
 }
 
-func (sp *shopPersistence) Search(code string) (models.Shop, error) {
+func (sp *shopPersistence) Search(code string) (*models.Shop, error) {
 	var err error
 
-	shop := models.Shop{}
+	shop := &models.Shop{}
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = sp.db.Model(&models.Shop{}).Where("code = ?", code).Take(&shop).Error
+		err = sp.db.Model(&models.Shop{}).Where("code = ?", code).Take(shop).Error
 		if err != nil {
 			ch <- false
 			return
@@ -92,7 +92,7 @@ func (sp *shopPersistence) Search(code string) (models.Shop, error) {
 	if channels.OK(done) {
 		return shop, nil
 	}
-	return models.Shop{}, err
+	return &models.Shop{}, err
 }
 
 func (sp *shopPersistence) FindCommentedShops(uid uint32) ([]models.Shop, error) {

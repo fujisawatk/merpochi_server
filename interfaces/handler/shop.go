@@ -29,7 +29,7 @@ func NewShopHandler(us usecase.ShopUsecase) ShopHandler {
 }
 
 // HandleShopsGet 外部APIで取得した店舗が登録されているか検索
-func (sh shopHandler) HandleShopsSearch(w http.ResponseWriter, r *http.Request) {
+func (sh *shopHandler) HandleShopsSearch(w http.ResponseWriter, r *http.Request) {
 	// body形式 → ["XX0000", ...]
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
