@@ -14,6 +14,7 @@ type UserUsecase interface {
 	UpdateUser(uint32, string, string, string) (int64, error)
 	DeleteUser(uint32) error
 	MylistUser(uint32) (*userResponse, error)
+	MeUser(uint32) (*meUserResponse, error)
 }
 
 type userUsecase struct {
@@ -108,7 +109,45 @@ func (uu *userUsecase) MylistUser(uid uint32) (*userResponse, error) {
 	return res, nil
 }
 
+func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
+	myPosts, err := uu.userRepository.FindMyPosts(uid)
+	if err != nil {
+		return &meUserResponse{}, err
+	}
+
+	commentedPosts, err := uu.userRepository.FindCommentedPosts(uid)
+	if err != nil {
+		return &meUserResponse{}, err
+	}
+	uniqPosts := DelDuplicatePosts(commentedPosts)
+
+	res := &meUserResponse{
+		MyPosts:        *(myPosts),
+		CommentedPosts: uniqPosts,
+	}
+	return res, nil
+}
+
+// DelDuplicatePosts 店舗情報重複削除
+func DelDuplicatePosts(posts *[]models.Post) []models.Post {
+	m := make(map[uint32]bool)
+	uniq := []models.Post{}
+
+	for _, post := range *(posts) {
+		if !m[post.ShopID] {
+			m[post.ShopID] = true
+			uniq = append(uniq, post)
+		}
+	}
+	return uniq
+}
+
 type userResponse struct {
 	BookmarkedShops []models.Shop `json:"bookmarked_shops"`
 	FavoritedShops  []models.Shop `json:"favorited_shops"`
+}
+
+type meUserResponse struct {
+	MyPosts        []models.Post `json:"my_posts"`
+	CommentedPosts []models.Post `json:"commented_posts"`
 }

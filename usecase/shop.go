@@ -9,7 +9,6 @@ import (
 type ShopUsecase interface {
 	SearchShops([]string) ([]searchShopsResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
-	MeShops(uint32) (meShopsResponse, error)
 }
 
 type shopUsecase struct {
@@ -23,7 +22,7 @@ func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
 	}
 }
 
-func (su shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, error) {
+func (su *shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, error) {
 	var counts []searchShopsResponse
 
 	// 取得した店舗IDを1件ずつ登録されているか確認
@@ -33,27 +32,18 @@ func (su shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, er
 		// 登録されていない場合
 		if err != nil {
 			res = searchShopsResponse{
-				ID:             0,
-				CommentsCount:  0,
-				FavoritesCount: 0,
+				ID:    0,
+				Count: 0,
 			}
 			counts = append(counts, res)
 		} else {
-			// 登録されている場合
-			commentsCount := su.shopRepository.FindCommentsCount(shop.ID)
-			// 登録後にコメントが削除された場合
-			if err != nil {
-				commentsCount = 0
-			}
+			// 評価が4以上である投稿数を取得
+			postsCount := su.shopRepository.FindPostsCount(shop.ID)
+			// お気に入り（リピートしたいボタン）が押された数を取得
 			favoritesCount := su.shopRepository.FindFavoritesCount(shop.ID)
-			// 登録後にいいねが削除された場合
-			if err != nil {
-				favoritesCount = 0
-			}
 			res = searchShopsResponse{
-				ID:             shop.ID,
-				CommentsCount:  int(commentsCount),
-				FavoritesCount: int(favoritesCount),
+				ID:    shop.ID,
+				Count: int(postsCount) + int(favoritesCount),
 			}
 			counts = append(counts, res)
 		}
@@ -69,48 +59,7 @@ func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
 	return shop, nil
 }
 
-func (su shopUsecase) MeShops(uid uint32) (meShopsResponse, error) {
-	commentedShops, err := su.shopRepository.FindCommentedShops(uid)
-	if err != nil {
-		return meShopsResponse{}, err
-	}
-	commentedShops = DelDuplicateShops(commentedShops)
-
-	favoritedShops, err := su.shopRepository.FindFavoritedShops(uid)
-	if err != nil {
-		return meShopsResponse{}, err
-	}
-	favoritedShops = DelDuplicateShops(favoritedShops)
-
-	res := meShopsResponse{
-		CommentedShops: commentedShops,
-		FavoritedShops: favoritedShops,
-	}
-
-	return res, nil
-}
-
-// DelDuplicateShops 店舗情報重複削除
-func DelDuplicateShops(shops []models.Shop) []models.Shop {
-	m := make(map[string]bool)
-	uniq := []models.Shop{}
-
-	for _, shop := range shops {
-		if !m[shop.Name] {
-			m[shop.Name] = true
-			uniq = append(uniq, shop)
-		}
-	}
-	return uniq
-}
-
 type searchShopsResponse struct {
-	ID             uint32 `json:"id"`
-	CommentsCount  int    `json:"comments_count"`
-	FavoritesCount int    `json:"favorites_count"`
-}
-
-type meShopsResponse struct {
-	CommentedShops []models.Shop `json:"commented_shops"`
-	FavoritedShops []models.Shop `json:"favorited_shops"`
+	ID    uint32 `json:"id"`
+	Count int    `json:"count"`
 }

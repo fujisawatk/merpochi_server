@@ -192,7 +192,7 @@ func TestShop_Search(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    models.Shop
+		want    *models.Shop
 		wantErr bool
 	}{
 		{
@@ -200,7 +200,7 @@ func TestShop_Search(t *testing.T) {
 			args: args{
 				code: "aaaa000",
 			},
-			want: models.Shop{
+			want: &models.Shop{
 				ID:        1,
 				Code:      "aaaa000",
 				Name:      "焼鳥屋",
@@ -221,7 +221,7 @@ func TestShop_Search(t *testing.T) {
 			args: args{
 				code: "eeee555",
 			},
-			want:    models.Shop{},
+			want:    &models.Shop{},
 			wantErr: true,
 		},
 	}
@@ -237,126 +237,6 @@ func TestShop_Search(t *testing.T) {
 			// 返り値が期待しない値の場合
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("shopPersistence.Search() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-	tx.Rollback()
-}
-
-// func TestShop_FindCommentedShops(t *testing.T) {
-// 	type args struct {
-// 		uid uint32
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		args    args
-// 		want    []models.Shop
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "ログインユーザーがコメントした店舗情報を取得出来ること",
-// 			args: args{
-// 				uid: 1,
-// 			},
-// 			want: []models.Shop{
-// 				{
-// 					ID:        1,
-// 					Code:      "aaaa000",
-// 					Name:      "焼鳥屋",
-// 					Category:  "焼鳥",
-// 					Opentime:  "17:00～24:00",
-// 					Budget:    3000,
-// 					Img:       "https://rimage.gnst.jp/rest/img/000000000000/0000.jpg",
-// 					Latitude:  00.000000,
-// 					Longitude: 00.000000,
-// 					URL:       "https://r.gnavi.co.jp/000000000000/?ak=aaaaaaaa",
-// 					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
-// 					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
-// 				},
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "ログインユーザーがコメントした店舗がない場合、空の値を返す",
-// 			args: args{
-// 				uid: 3,
-// 			},
-// 			want:    []models.Shop{},
-// 			wantErr: false,
-// 		},
-// 	}
-// 	tx := db.Begin()
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			sp := NewShopPersistence(tx)
-// 			got, err := sp.FindCommentedShops(tt.args.uid)
-// 			// 予期しないエラーの場合
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("shopPersistence.FindCommentedShops() error = %v, wantErr %v", err, tt.wantErr)
-// 			}
-// 			// 返り値が期待しない値の場合
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("shopPersistence.FindCommentedShops() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// 	tx.Rollback()
-// }
-
-func TestShop_FindFavoritedShops(t *testing.T) {
-	type args struct {
-		uid uint32
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    []models.Shop
-		wantErr bool
-	}{
-		{
-			name: "ログインユーザーがお気に入りした店舗情報を取得出来ること",
-			args: args{
-				uid: 1,
-			},
-			want: []models.Shop{
-				{
-					ID:        1,
-					Code:      "aaaa000",
-					Name:      "焼鳥屋",
-					Category:  "焼鳥",
-					Opentime:  "17:00～24:00",
-					Budget:    3000,
-					Img:       "https://rimage.gnst.jp/rest/img/000000000000/0000.jpg",
-					Latitude:  00.000000,
-					Longitude: 00.000000,
-					URL:       "https://r.gnavi.co.jp/000000000000/?ak=aaaaaaaa",
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "ログインユーザーがお気に入りした店舗がない場合、空の値を返す",
-			args: args{
-				uid: 3,
-			},
-			want:    []models.Shop{},
-			wantErr: false,
-		},
-	}
-	tx := db.Begin()
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sp := NewShopPersistence(tx)
-			got, err := sp.FindFavoritedShops(tt.args.uid)
-			// 予期しないエラーの場合
-			if (err != nil) != tt.wantErr {
-				t.Errorf("shopPersistence.FindFavoritedShops() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			// 返り値が期待しない値の場合
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("shopPersistence.FindFaoviritedShops() = %v, want %v", got, tt.want)
 			}
 		})
 	}
