@@ -39,6 +39,12 @@ func iniUsersRoutes() []Route {
 			Handler:      userHandler.HandleUserDelete,
 			AuthRequired: true,
 		},
+		{
+			URI:          "/users/mylist",
+			Method:       http.MethodPost,
+			Handler:      userHandler.HandleUserMylist,
+			AuthRequired: true,
+		},
 	}
 	return usersRoutes
 }

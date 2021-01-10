@@ -131,3 +131,16 @@ var posts = []models.Post{
 		UserID: 1,
 	},
 }
+
+var bookmarks = []models.Bookmark{
+	{
+		ID:     1,
+		UserID: 1,
+		ShopID: 1,
+	},
+	{
+		ID:     2,
+		UserID: 2,
+		ShopID: 2,
+	},
+}
