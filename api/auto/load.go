@@ -44,6 +44,11 @@ func TestLoad() {
 		log.Fatal(err)
 	}
 
+	err = db.Debug().Delete(&bookmarks).Error
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, user := range users {
 		var hashedPassword []byte
 		hashedPassword, err = security.Hash(user.Password)
@@ -125,6 +130,13 @@ func TestLoad() {
 
 	for _, post := range posts {
 		err = db.Debug().Model(&models.Comment{}).Create(&post).Error
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	for _, bookmark := range bookmarks {
+		err = db.Debug().Model(&models.Bookmark{}).Create(&bookmark).Error
 		if err != nil {
 			log.Fatal(err)
 		}
