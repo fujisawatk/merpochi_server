@@ -44,6 +44,11 @@ func TestLoad() {
 		log.Fatal(err)
 	}
 
+	err = db.Debug().Delete(&bookmarks).Error
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, user := range users {
 		var hashedPassword []byte
 		hashedPassword, err = security.Hash(user.Password)
