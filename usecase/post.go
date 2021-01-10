@@ -9,7 +9,7 @@ import (
 // PostUsecase Postに対するUsecaseのインターフェイス
 type PostUsecase interface {
 	CreatePost(string, uint32, uint32, uint32) (*models.Post, error)
-	GetPosts(uint32) (*[]models.Post, error)
+	GetPosts(uint32) ([]postsResponse, error)
 	GetPost(uint32, uint32) (*models.Post, error)
 	UpdatePost(uint32, uint32, string) (int64, error)
 	DeletePost(uint32) error
@@ -46,12 +46,32 @@ func (pu *postUsecase) CreatePost(text string, rating, uid, sid uint32) (*models
 	return post, nil
 }
 
-func (pu *postUsecase) GetPosts(sid uint32) (*[]models.Post, error) {
+func (pu *postUsecase) GetPosts(sid uint32) ([]postsResponse, error) {
+	var responses []postsResponse
+
 	posts, err := pu.postRepository.FindAll(sid)
 	if err != nil {
-		return &[]models.Post{}, err
+		return []postsResponse{}, err
 	}
-	return posts, nil
+	// 投稿が存在する場合
+	if len(*posts) > 0 {
+		// 投稿のコメント数を取得
+		for i := 0; i < len(*posts); i++ {
+			commentsCount := pu.postRepository.FindCommentsCount((*posts)[i].ID)
+			if err != nil {
+				return []postsResponse{}, err
+			}
+			res := postsResponse{
+				ID:            (*posts)[i].ID,
+				Text:          (*posts)[i].Text,
+				Rating:        (*posts)[i].Rating,
+				UserID:        (*posts)[i].UserID,
+				CommentsCount: commentsCount,
+			}
+			responses = append(responses, res)
+		}
+	}
+	return responses, nil
 }
 
 func (pu *postUsecase) GetPost(sid, pid uint32) (*models.Post, error) {
@@ -87,4 +107,12 @@ func (pu *postUsecase) DeletePost(pid uint32) error {
 		return err
 	}
 	return nil
+}
+
+type postsResponse struct {
+	ID            uint32 `json:"id"`
+	Text          string `json:"text"`
+	Rating        uint32 `json:"rating"`
+	UserID        uint32 `json:"user_id"`
+	CommentsCount uint32 `json:"comments_count"`
 }

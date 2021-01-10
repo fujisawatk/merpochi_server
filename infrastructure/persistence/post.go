@@ -124,3 +124,19 @@ func (pp *postPersistence) Delete(pid uint32) error {
 	}
 	return rs.Error
 }
+
+// 投稿情報に紐づくコメント数を取得
+func (pp *postPersistence) FindCommentsCount(pid uint32) uint32 {
+	var count uint32
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		pp.db.Model(&models.Comment{}).Where("post_id = ?", pid).Count(&count)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return count
+	}
+	return 0
+}
