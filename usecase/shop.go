@@ -9,7 +9,6 @@ import (
 type ShopUsecase interface {
 	SearchShops([]string) ([]searchShopsResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
-	MeShops(uint32) (meShopsResponse, error)
 }
 
 type shopUsecase struct {
@@ -60,47 +59,7 @@ func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
 	return shop, nil
 }
 
-func (su shopUsecase) MeShops(uid uint32) (meShopsResponse, error) {
-	commentedShops, err := su.shopRepository.FindCommentedShops(uid)
-	if err != nil {
-		return meShopsResponse{}, err
-	}
-	commentedShops = DelDuplicateShops(commentedShops)
-
-	favoritedShops, err := su.shopRepository.FindFavoritedShops(uid)
-	if err != nil {
-		return meShopsResponse{}, err
-	}
-	favoritedShops = DelDuplicateShops(favoritedShops)
-
-	res := meShopsResponse{
-		CommentedShops: commentedShops,
-		FavoritedShops: favoritedShops,
-	}
-
-	return res, nil
-}
-
-// DelDuplicateShops 店舗情報重複削除
-func DelDuplicateShops(shops []models.Shop) []models.Shop {
-	m := make(map[string]bool)
-	uniq := []models.Shop{}
-
-	for _, shop := range shops {
-		if !m[shop.Name] {
-			m[shop.Name] = true
-			uniq = append(uniq, shop)
-		}
-	}
-	return uniq
-}
-
 type searchShopsResponse struct {
 	ID    uint32 `json:"id"`
 	Count int    `json:"count"`
-}
-
-type meShopsResponse struct {
-	CommentedShops []models.Shop `json:"commented_shops"`
-	FavoritedShops []models.Shop `json:"favorited_shops"`
 }

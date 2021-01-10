@@ -20,6 +20,7 @@ type UserHandler interface {
 	HandleUserUpdate(w http.ResponseWriter, r *http.Request)
 	HandleUserDelete(w http.ResponseWriter, r *http.Request)
 	HandleUserMylist(w http.ResponseWriter, r *http.Request)
+	HandleUserMe(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -129,6 +130,18 @@ func (uh *userHandler) HandleUserMylist(w http.ResponseWriter, r *http.Request) 
 	uid := ctxval.GetUserID(r)
 
 	lists, err := uh.userUsecase.MylistUser(uid)
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, lists)
+}
+
+// HandleShopsMe ログインユーザーがコメント・お気に入りした店舗情報を取得
+func (uh *userHandler) HandleUserMe(w http.ResponseWriter, r *http.Request) {
+	uid := ctxval.GetUserID(r)
+
+	lists, err := uh.userUsecase.MeUser(uid)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return

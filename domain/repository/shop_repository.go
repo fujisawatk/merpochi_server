@@ -8,6 +8,4 @@ type ShopRepository interface {
 	FindFavoritesCount(uint32) uint32
 	Save(models.Shop) (models.Shop, error)
 	Search(string) (*models.Shop, error)
-	FindCommentedShops(uint32) ([]models.Shop, error)
-	FindFavoritedShops(uint32) ([]models.Shop, error)
 }
