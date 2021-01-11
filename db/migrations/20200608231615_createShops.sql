@@ -6,6 +6,7 @@ CREATE TABLE shops (
   name VARCHAR(255) NOT NULL,
   category VARCHAR(255) NOT NULL,
   opentime VARCHAR(255) NOT NULL,
+  access VARCHAR(255) NOT NULL,
   budget INT(11) NOT NULL,
   img VARCHAR(255) NOT NULL,
   latitude FLOAT NOT NULL,
