@@ -91,7 +91,6 @@ func (sp *shopPersistence) FindBookmarkUser(sid, uid uint32) bool {
 // 店舗情報を保存
 func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 	var err error
-
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
@@ -110,9 +109,8 @@ func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 	return models.Shop{}, err
 }
 
-func (sp *shopPersistence) Search(code string) (*models.Shop, error) {
+func (sp *shopPersistence) FindByCode(code string) (*models.Shop, error) {
 	var err error
-
 	shop := &models.Shop{}
 	done := make(chan bool)
 

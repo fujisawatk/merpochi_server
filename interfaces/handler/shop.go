@@ -13,6 +13,7 @@ import (
 type ShopHandler interface {
 	HandleShopsSearch(w http.ResponseWriter, r *http.Request)
 	HandleShopCreate(w http.ResponseWriter, r *http.Request)
+	HandleShopGet(w http.ResponseWriter, r *http.Request)
 }
 
 type shopHandler struct {
@@ -72,7 +73,32 @@ func (sh shopHandler) HandleShopCreate(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusCreated, shop)
 }
 
+// HandleShopGet 店舗情報を1件取得
+func (sh *shopHandler) HandleShopGet(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	var requestBody shopGetRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+	shop, err := sh.shopUsecase.GetShop(requestBody.Code)
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, shop)
+}
+
 type shopSearchRequest struct {
 	ShopCodes []string `json:"shop_codes"`
 	UserID    uint32   `json:"user_id"`
+}
+
+type shopGetRequest struct {
+	Code string `json:"code"`
 }
