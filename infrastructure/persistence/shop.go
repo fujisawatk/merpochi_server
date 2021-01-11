@@ -52,6 +52,42 @@ func (sp *shopPersistence) FindFavoritesCount(sid uint32) uint32 {
 	return 0
 }
 
+// 指定した店舗のブックマーク数を取得
+func (sp *shopPersistence) FindBookmarksCount(sid uint32) uint32 {
+	var count uint32
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		sp.db.Model(&models.Bookmark{}).Where("shop_id = ?", sid).Count(&count)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return count
+	}
+	return 0
+}
+
+func (sp *shopPersistence) FindBookmarkUser(sid, uid uint32) bool {
+	var rs *gorm.DB
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = sp.db.Model(&models.Bookmark{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Bookmark{})
+		if rs.Error != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return true
+	}
+	return false
+}
+
 // 店舗情報を保存
 func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 	var err error

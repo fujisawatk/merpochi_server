@@ -35,14 +35,14 @@ func (sh *shopHandler) HandleShopsSearch(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var requestBody []string
+	var requestBody shopSearchRequest
 	err = json.Unmarshal(body, &requestBody)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	counts, err := sh.shopUsecase.SearchShops(requestBody)
+	counts, err := sh.shopUsecase.SearchShops(requestBody.ShopCodes, requestBody.UserID)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -70,4 +70,9 @@ func (sh shopHandler) HandleShopCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusCreated, shop)
+}
+
+type shopSearchRequest struct {
+	ShopCodes []string `json:"shop_codes"`
+	UserID    uint32   `json:"user_id"`
 }
