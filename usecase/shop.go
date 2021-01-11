@@ -7,7 +7,7 @@ import (
 
 // ShopUsecase Shopに対するUsecaseのインターフェイス
 type ShopUsecase interface {
-	SearchShops([]string) ([]searchShopsResponse, error)
+	SearchShops([]string, uint32) ([]searchShopsResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
 }
 
@@ -22,7 +22,7 @@ func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
 	}
 }
 
-func (su *shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, error) {
+func (su *shopUsecase) SearchShops(shopCodes []string, uid uint32) ([]searchShopsResponse, error) {
 	var counts []searchShopsResponse
 
 	// 取得した店舗IDを1件ずつ登録されているか確認
@@ -35,6 +35,7 @@ func (su *shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, e
 				ID:             0,
 				RatingCount:    0,
 				BookmarksCount: 0,
+				BookmarkUser:   false,
 			}
 			counts = append(counts, res)
 		} else {
@@ -44,10 +45,13 @@ func (su *shopUsecase) SearchShops(shopCodes []string) ([]searchShopsResponse, e
 			favoritesCount := su.shopRepository.FindFavoritesCount(shop.ID)
 			// ブックマーク数を取得
 			bookmarksCount := su.shopRepository.FindBookmarksCount(shop.ID)
+			// APIを呼び出したユーザーがブックマークしているか確認
+			bookmarkUser := su.shopRepository.FindBookmarkUser(shop.ID, uid)
 			res = searchShopsResponse{
 				ID:             shop.ID,
 				RatingCount:    int(postsCount) + int(favoritesCount),
 				BookmarksCount: int(bookmarksCount),
+				BookmarkUser:   bookmarkUser,
 			}
 			counts = append(counts, res)
 		}
@@ -67,4 +71,5 @@ type searchShopsResponse struct {
 	ID             uint32 `json:"id"`
 	RatingCount    int    `json:"rating_count"`
 	BookmarksCount int    `json:"bookmarks_count"`
+	BookmarkUser   bool   `json:"bookmark_user"`
 }
