@@ -48,11 +48,15 @@ func (su *shopUsecase) SearchShops(shopCodes []string, uid uint32) ([]searchShop
 			bookmarksCount := su.shopRepository.FindBookmarksCount(shop.ID)
 			// APIを呼び出したユーザーがブックマークしているか確認
 			bookmarkUser := su.shopRepository.FindBookmarkUser(shop.ID, uid)
+			// APIを呼び出したユーザーがお気に入りしているか確認
+			favoriteUser := su.shopRepository.FindFavoriteUser(shop.ID, uid)
 			res = searchShopsResponse{
 				ID:             shop.ID,
 				RatingCount:    int(postsCount) + int(favoritesCount),
 				BookmarksCount: int(bookmarksCount),
 				BookmarkUser:   bookmarkUser,
+				FavoritesCount: int(favoritesCount),
+				FavoriteUser:   favoriteUser,
 			}
 			counts = append(counts, res)
 		}
@@ -81,4 +85,6 @@ type searchShopsResponse struct {
 	RatingCount    int    `json:"rating_count"`
 	BookmarksCount int    `json:"bookmarks_count"`
 	BookmarkUser   bool   `json:"bookmark_user"`
+	FavoritesCount int    `json:"favorites_count"`
+	FavoriteUser   bool   `json:"favorite_user"`
 }
