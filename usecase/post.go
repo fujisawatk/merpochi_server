@@ -83,6 +83,14 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsResponse, error) {
 			if err != nil {
 				return []postsResponse{}, err
 			}
+			// 投稿作成or編集時刻設定
+			var time string
+			format1 := "2006/01/02 15:04:05"
+			if (*posts)[i].CreatedAt != (*posts)[i].UpdatedAt {
+				time = "編集済 " + ((*posts)[i].UpdatedAt).Format(format1)
+			} else {
+				time = ((*posts)[i].CreatedAt).Format(format1)
+			}
 
 			res := postsResponse{
 				ID:            (*posts)[i].ID,
@@ -92,6 +100,7 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsResponse, error) {
 				UserNickname:  (*user).Nickname,
 				UserImage:     uri,
 				CommentsCount: commentsCount,
+				Time:          time,
 			}
 			responses = append(responses, res)
 		}
@@ -142,4 +151,5 @@ type postsResponse struct {
 	UserNickname  string `json:"user_nickname"`
 	UserImage     string `json:"user_image"`
 	CommentsCount uint32 `json:"comments_count"`
+	Time          string `json:"time"`
 }
