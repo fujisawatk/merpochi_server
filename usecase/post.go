@@ -4,6 +4,7 @@ import (
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 	"merpochi_server/usecase/validations"
+	"merpochi_server/util/security"
 )
 
 // PostUsecase Postに対するUsecaseのインターフェイス
@@ -16,13 +17,15 @@ type PostUsecase interface {
 }
 
 type postUsecase struct {
-	postRepository repository.PostRepository
+	postRepository  repository.PostRepository
+	imageRepository repository.ImageRepository
 }
 
 // NewPostUsecase Postデータに関するUsecaseを生成
-func NewPostUsecase(pr repository.PostRepository) PostUsecase {
+func NewPostUsecase(pr repository.PostRepository, ir repository.ImageRepository) PostUsecase {
 	return &postUsecase{
-		postRepository: pr,
+		postRepository:  pr,
+		imageRepository: ir,
 	}
 }
 
@@ -55,18 +58,49 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsResponse, error) {
 	}
 	// 投稿が存在する場合
 	if len(*posts) > 0 {
-		// 投稿のコメント数を取得
 		for i := 0; i < len(*posts); i++ {
-			commentsCount := pu.postRepository.FindCommentsCount((*posts)[i].ID)
+			// ユーザー値取得
+			user, err := pu.postRepository.FindByUserID((*posts)[i].UserID)
 			if err != nil {
 				return []postsResponse{}, err
 			}
+			// ユーザー画像取得
+			img, err := pu.imageRepository.FindByID((*posts)[i].UserID)
+			if err != nil {
+				return []postsResponse{}, err
+			}
+			err = pu.imageRepository.DownloadS3(img)
+			if err != nil {
+				return []postsResponse{}, err
+			}
+			uri, err := security.Base64EncodeToString(img.Buf)
+			if err != nil {
+				return []postsResponse{}, err
+			}
+			// コメント数取得
+			commentsCount := pu.postRepository.FindCommentsCount((*posts)[i].ID)
+
+			if err != nil {
+				return []postsResponse{}, err
+			}
+			// 投稿作成or編集時刻設定
+			var time string
+			format1 := "2006/01/02 15:04:05"
+			if (*posts)[i].CreatedAt != (*posts)[i].UpdatedAt {
+				time = "編集済 " + ((*posts)[i].UpdatedAt).Format(format1)
+			} else {
+				time = ((*posts)[i].CreatedAt).Format(format1)
+			}
+
 			res := postsResponse{
 				ID:            (*posts)[i].ID,
 				Text:          (*posts)[i].Text,
 				Rating:        (*posts)[i].Rating,
 				UserID:        (*posts)[i].UserID,
+				UserNickname:  (*user).Nickname,
+				UserImage:     uri,
 				CommentsCount: commentsCount,
+				Time:          time,
 			}
 			responses = append(responses, res)
 		}
@@ -114,5 +148,8 @@ type postsResponse struct {
 	Text          string `json:"text"`
 	Rating        uint32 `json:"rating"`
 	UserID        uint32 `json:"user_id"`
+	UserNickname  string `json:"user_nickname"`
+	UserImage     string `json:"user_image"`
 	CommentsCount uint32 `json:"comments_count"`
+	Time          string `json:"time"`
 }
