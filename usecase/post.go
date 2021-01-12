@@ -10,10 +10,11 @@ import (
 // PostUsecase Postに対するUsecaseのインターフェイス
 type PostUsecase interface {
 	CreatePost(string, uint32, uint32, uint32) (*models.Post, error)
-	GetPosts(uint32) ([]postsResponse, error)
+	GetPosts(uint32) ([]postsGetResponse, error)
 	GetPost(uint32, uint32) (*models.Post, error)
 	UpdatePost(uint32, uint32, string) (int64, error)
 	DeletePost(uint32) error
+	GetOtherData(models.Post) (*models.User, string, string, error)
 }
 
 type postUsecase struct {
@@ -49,56 +50,30 @@ func (pu *postUsecase) CreatePost(text string, rating, uid, sid uint32) (*models
 	return post, nil
 }
 
-func (pu *postUsecase) GetPosts(sid uint32) ([]postsResponse, error) {
-	var responses []postsResponse
+func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
+	var responses []postsGetResponse
 
 	posts, err := pu.postRepository.FindAll(sid)
 	if err != nil {
-		return []postsResponse{}, err
+		return []postsGetResponse{}, err
 	}
 	// 投稿が存在する場合
 	if len(*posts) > 0 {
 		for i := 0; i < len(*posts); i++ {
-			// ユーザー値取得
-			user, err := pu.postRepository.FindByUserID((*posts)[i].UserID)
+			user, img, time, err := pu.GetOtherData((*posts)[i])
 			if err != nil {
-				return []postsResponse{}, err
-			}
-			// ユーザー画像取得
-			img, err := pu.imageRepository.FindByID((*posts)[i].UserID)
-			if err != nil {
-				return []postsResponse{}, err
-			}
-			err = pu.imageRepository.DownloadS3(img)
-			if err != nil {
-				return []postsResponse{}, err
-			}
-			uri, err := security.Base64EncodeToString(img.Buf)
-			if err != nil {
-				return []postsResponse{}, err
+				return []postsGetResponse{}, err
 			}
 			// コメント数取得
 			commentsCount := pu.postRepository.FindCommentsCount((*posts)[i].ID)
 
-			if err != nil {
-				return []postsResponse{}, err
-			}
-			// 投稿作成or編集時刻設定
-			var time string
-			format1 := "2006/01/02 15:04:05"
-			if (*posts)[i].CreatedAt != (*posts)[i].UpdatedAt {
-				time = "編集済 " + ((*posts)[i].UpdatedAt).Format(format1)
-			} else {
-				time = ((*posts)[i].CreatedAt).Format(format1)
-			}
-
-			res := postsResponse{
+			res := postsGetResponse{
 				ID:            (*posts)[i].ID,
 				Text:          (*posts)[i].Text,
 				Rating:        (*posts)[i].Rating,
 				UserID:        (*posts)[i].UserID,
-				UserNickname:  (*user).Nickname,
-				UserImage:     uri,
+				UserNickname:  user.Nickname,
+				UserImage:     img,
 				CommentsCount: commentsCount,
 				Time:          time,
 			}
@@ -143,7 +118,38 @@ func (pu *postUsecase) DeletePost(pid uint32) error {
 	return nil
 }
 
-type postsResponse struct {
+// 投稿情報全件・一件取得機能のメソッド共有化
+func (pu *postUsecase) GetOtherData(post models.Post) (*models.User, string, string, error) {
+	// ユーザー値取得
+	user, err := pu.postRepository.FindByUserID(post.UserID)
+	if err != nil {
+		return &models.User{}, "", "", err
+	}
+	// ユーザー画像取得
+	img, err := pu.imageRepository.FindByID(post.UserID)
+	if err != nil {
+		return &models.User{}, "", "", err
+	}
+	err = pu.imageRepository.DownloadS3(img)
+	if err != nil {
+		return &models.User{}, "", "", err
+	}
+	uri, err := security.Base64EncodeToString(img.Buf)
+	if err != nil {
+		return &models.User{}, "", "", err
+	}
+	// 投稿作成or編集時刻設定
+	var time string
+	format1 := "2006/01/02 15:04:05"
+	if post.CreatedAt != post.UpdatedAt {
+		time = "編集済 " + (post.UpdatedAt).Format(format1)
+	} else {
+		time = (post.CreatedAt).Format(format1)
+	}
+	return user, uri, time, nil
+}
+
+type postsGetResponse struct {
 	ID            uint32 `json:"id"`
 	Text          string `json:"text"`
 	Rating        uint32 `json:"rating"`
