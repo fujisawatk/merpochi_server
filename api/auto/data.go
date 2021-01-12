@@ -1,6 +1,8 @@
 package auto
 
-import "merpochi_server/domain/models"
+import (
+	"merpochi_server/domain/models"
+)
 
 var users = []models.User{
 	{
@@ -112,15 +114,19 @@ var posts = []models.Post{
 		UserID: 1,
 	},
 	{
-		ID:     2,
-		Text:   "また行きたい！！",
+		ID: 2,
+		Text: "有名で、人気のお店(チェーン)ですね。地方では見かけませんが。\n" +
+			"会社の同僚と何度か伺っています。店内はお客さんでいっぱいでも、注文して→スムーズに提供してくれます。\n" +
+			"串のサイズ感はやや大きめで、食べごたえもあり、美味しいと思います。\n" +
+			"串以外も(食べた中で)鳥の酢モノや鳥ご飯が美味しいと思います。",
 		Rating: 4,
 		ShopID: 2,
 		UserID: 2,
 	},
 	{
-		ID:     3,
-		Text:   "まあまあ！！",
+		ID: 3,
+		Text: "昔、名古屋にいた時に遅くまでやっているのと全てがほぼ均一で安かったので夜食代わりによく行っていた鳥貴族。\n" +
+			"鶴見にもあったので軽く二軒目ということで入ってみた。いい意味でも悪い意味でも雰囲気も含め均一だった（笑）",
 		Rating: 3,
 		ShopID: 2,
 		UserID: 1,
