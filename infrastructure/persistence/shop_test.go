@@ -185,7 +185,7 @@ func TestShop_Save(t *testing.T) {
 	tx.Rollback()
 }
 
-func TestShop_Search(t *testing.T) {
+func TestShop_FindByCode(t *testing.T) {
 	type args struct {
 		code string
 	}
@@ -229,7 +229,7 @@ func TestShop_Search(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sp := NewShopPersistence(tx)
-			got, err := sp.Search(tt.args.code)
+			got, err := sp.FindByCode(tt.args.code)
 			// 予期しないエラーの場合
 			if (err != nil) != tt.wantErr {
 				t.Errorf("shopPersistence.Search() error = %v, wantErr %v", err, tt.wantErr)

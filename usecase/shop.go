@@ -9,6 +9,7 @@ import (
 type ShopUsecase interface {
 	SearchShops([]string, uint32) ([]searchShopsResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
+	GetShop(string) (*models.Shop, error)
 }
 
 type shopUsecase struct {
@@ -28,7 +29,7 @@ func (su *shopUsecase) SearchShops(shopCodes []string, uid uint32) ([]searchShop
 	// 取得した店舗IDを1件ずつ登録されているか確認
 	for _, code := range shopCodes {
 		var res searchShopsResponse
-		shop, err := su.shopRepository.Search(code)
+		shop, err := su.shopRepository.FindByCode(code)
 		// 登録されていない場合
 		if err != nil {
 			res = searchShopsResponse{
@@ -47,11 +48,15 @@ func (su *shopUsecase) SearchShops(shopCodes []string, uid uint32) ([]searchShop
 			bookmarksCount := su.shopRepository.FindBookmarksCount(shop.ID)
 			// APIを呼び出したユーザーがブックマークしているか確認
 			bookmarkUser := su.shopRepository.FindBookmarkUser(shop.ID, uid)
+			// APIを呼び出したユーザーがお気に入りしているか確認
+			favoriteUser := su.shopRepository.FindFavoriteUser(shop.ID, uid)
 			res = searchShopsResponse{
 				ID:             shop.ID,
 				RatingCount:    int(postsCount) + int(favoritesCount),
 				BookmarksCount: int(bookmarksCount),
 				BookmarkUser:   bookmarkUser,
+				FavoritesCount: int(favoritesCount),
+				FavoriteUser:   favoriteUser,
 			}
 			counts = append(counts, res)
 		}
@@ -67,9 +72,19 @@ func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
 	return shop, nil
 }
 
+func (su *shopUsecase) GetShop(code string) (*models.Shop, error) {
+	shop, err := su.shopRepository.FindByCode(code)
+	if err != nil {
+		return &models.Shop{}, err
+	}
+	return shop, nil
+}
+
 type searchShopsResponse struct {
 	ID             uint32 `json:"id"`
 	RatingCount    int    `json:"rating_count"`
 	BookmarksCount int    `json:"bookmarks_count"`
 	BookmarkUser   bool   `json:"bookmark_user"`
+	FavoritesCount int    `json:"favorites_count"`
+	FavoriteUser   bool   `json:"favorite_user"`
 }
