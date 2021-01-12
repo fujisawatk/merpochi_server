@@ -125,6 +125,27 @@ func (pp *postPersistence) Delete(pid uint32) error {
 	return rs.Error
 }
 
+// 投稿情報に紐付くユーザー情報を取得
+func (pp *postPersistence) FindByUserID(uid uint32) (*models.User, error) {
+	var err error
+	user := &models.User{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		err = pp.db.Model(&models.User{}).Where("id = ?", uid).First(user).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return user, nil
+	}
+	return &models.User{}, err
+}
+
 // 投稿情報に紐づくコメント数を取得
 func (pp *postPersistence) FindCommentsCount(pid uint32) uint32 {
 	var count uint32

@@ -57,6 +57,10 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsResponse, error) {
 	if len(*posts) > 0 {
 		// 投稿のコメント数を取得
 		for i := 0; i < len(*posts); i++ {
+			user, err := pu.postRepository.FindByUserID((*posts)[i].UserID)
+			if err != nil {
+				return []postsResponse{}, err
+			}
 			commentsCount := pu.postRepository.FindCommentsCount((*posts)[i].ID)
 			if err != nil {
 				return []postsResponse{}, err
@@ -66,6 +70,7 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsResponse, error) {
 				Text:          (*posts)[i].Text,
 				Rating:        (*posts)[i].Rating,
 				UserID:        (*posts)[i].UserID,
+				UserNickname:  (*user).Nickname,
 				CommentsCount: commentsCount,
 			}
 			responses = append(responses, res)
@@ -114,5 +119,6 @@ type postsResponse struct {
 	Text          string `json:"text"`
 	Rating        uint32 `json:"rating"`
 	UserID        uint32 `json:"user_id"`
+	UserNickname  string `json:"user_nickname"`
 	CommentsCount uint32 `json:"comments_count"`
 }
