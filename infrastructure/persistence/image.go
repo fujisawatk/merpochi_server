@@ -60,7 +60,7 @@ func (ip *imagePersistence) Search(uid uint32) error {
 		defer close(ch)
 
 		// ユーザー画像は一意性であるため
-		result := ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ?", uid, 0).Take(&models.Image{})
+		result := ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ? AND post_id = ?", uid, 0, 0).Take(&models.Image{})
 		if result.RowsAffected > 0 {
 			err = errors.New("user image is already registered")
 			ch <- false
@@ -85,7 +85,7 @@ func (ip *imagePersistence) FindByID(uid uint32) (*models.Image, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 
-		err = ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ?", uid, 0).Take(img).Error
+		err = ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ? AND post_id = ?", uid, 0, 0).Take(img).Error
 		if err != nil {
 			ch <- false
 			return
@@ -123,7 +123,7 @@ func (ip *imagePersistence) Update(img *models.Image) (int64, error) {
 }
 
 // Upload ユーザー画像をAmazon S3へアップロード
-func (ip *imagePersistence) UploadS3(img *models.Image) error {
+func (ip *imagePersistence) UploadS3(img *models.Image, bucket string) error {
 	var err error
 
 	done := make(chan bool)
@@ -139,7 +139,7 @@ func (ip *imagePersistence) UploadS3(img *models.Image) error {
 
 		uploader := s3manager.NewUploader(sess)
 		_, err = uploader.Upload(&s3manager.UploadInput{
-			Bucket: aws.String("merpochi-users-image"),
+			Bucket: aws.String(bucket),
 			Key:    aws.String(img.Name),
 			Body:   img.Buf,
 		})
@@ -156,7 +156,7 @@ func (ip *imagePersistence) UploadS3(img *models.Image) error {
 }
 
 // Download ユーザー画像をAmazon S3からダウンロード
-func (ip *imagePersistence) DownloadS3(img *models.Image) error {
+func (ip *imagePersistence) DownloadS3(img *models.Image, bucket string) error {
 	var err error
 	done := make(chan bool)
 	fmt.Println(img.Name)
@@ -178,7 +178,7 @@ func (ip *imagePersistence) DownloadS3(img *models.Image) error {
 		downloader := s3manager.NewDownloader(sess)
 		_, err = downloader.Download(file,
 			&s3.GetObjectInput{
-				Bucket: aws.String("merpochi-users-image"),
+				Bucket: aws.String(bucket),
 				Key:    aws.String(img.Name),
 			})
 		if err != nil {
@@ -199,7 +199,7 @@ func (ip *imagePersistence) DownloadS3(img *models.Image) error {
 }
 
 // DeleteS3 Amazon S3へアップロードしたユーザー画像削除
-func (ip *imagePersistence) DeleteS3(img *models.Image) error {
+func (ip *imagePersistence) DeleteS3(img *models.Image, bucket string) error {
 	var err error
 
 	done := make(chan bool)
@@ -215,7 +215,7 @@ func (ip *imagePersistence) DeleteS3(img *models.Image) error {
 		svc := s3.New(sess)
 		// 指定した画像の削除指示
 		_, err = svc.DeleteObject(&s3.DeleteObjectInput{
-			Bucket: aws.String("merpochi-users-image"),
+			Bucket: aws.String(bucket),
 			Key:    aws.String(img.Name),
 		})
 		if err != nil {
@@ -224,7 +224,7 @@ func (ip *imagePersistence) DeleteS3(img *models.Image) error {
 		}
 		// 画像が正常に削除されたか確認
 		err = svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
-			Bucket: aws.String("merpochi-users-image"),
+			Bucket: aws.String(bucket),
 			Key:    aws.String(img.Name),
 		})
 		if err != nil {

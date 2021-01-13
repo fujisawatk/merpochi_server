@@ -55,12 +55,18 @@ func (ph *postHandler) HandlePostCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	post, err := ph.postUsecase.CreatePost(requestBody.Text, requestBody.Rating, requestBody.UserID, uint32(sid))
+	err = ph.postUsecase.CreatePost(
+		requestBody.Images,
+		requestBody.Text,
+		requestBody.Rating,
+		requestBody.UserID,
+		uint32(sid),
+	)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusCreated, post)
+	responses.JSON(w, http.StatusCreated, "")
 }
 
 // HandlePostsGet 指定した店舗に紐付く投稿情報を全件取得
@@ -156,9 +162,10 @@ func (ph *postHandler) HandlePostDelete(w http.ResponseWriter, r *http.Request) 
 }
 
 type postCreateRequest struct {
-	Text   string `json:"text"`
-	Rating uint32 `json:"rating"`
-	UserID uint32 `json:"user_id"`
+	Text   string   `json:"text"`
+	Rating uint32   `json:"rating"`
+	UserID uint32   `json:"user_id"`
+	Images []string `json:"images"`
 }
 
 type postUpdateRequest struct {

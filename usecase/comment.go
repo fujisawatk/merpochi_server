@@ -144,7 +144,7 @@ func (cu *commentUsecase) GetUserImage(uid uint32) (string, error) {
 		return "", err
 	}
 
-	err = cu.imageRepository.DownloadS3(img)
+	err = cu.imageRepository.DownloadS3(img, "merpochi-users-image")
 	if err != nil {
 		return "", err
 	}
