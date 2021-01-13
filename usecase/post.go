@@ -19,7 +19,7 @@ type PostUsecase interface {
 
 type postUsecase struct {
 	postRepository    repository.PostRepository
-	commentRepository repository.CommentRepository
+	commentRepository repository.CommentRepository // has many
 	imageRepository   repository.ImageRepository
 }
 
