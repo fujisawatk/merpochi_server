@@ -11,8 +11,9 @@ import (
 func iniPostsRoutes() []Route {
 	// 依存関係を注入
 	postPersistence := persistence.NewPostPersistence(database.DB)
+	commentPersistence := persistence.NewCommentPersistence(database.DB)
 	imagePersistence := persistence.NewImagePersistence(database.DB)
-	postUsecase := usecase.NewPostUsecase(postPersistence, imagePersistence)
+	postUsecase := usecase.NewPostUsecase(postPersistence, commentPersistence, imagePersistence)
 	postHandler := handler.NewPostHandler(postUsecase)
 
 	postRoutes := []Route{

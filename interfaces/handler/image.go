@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"encoding/base64"
-	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
 	"net/http"
@@ -63,16 +61,13 @@ func (ih imageHandler) HandleImageGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	img, err := ih.imageUsecase.GetImage(uint32(uid))
+	imgURI, err := ih.imageUsecase.GetImage(uint32(uid))
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	data, _ := ioutil.ReadAll(img.Buf)
-	mine := http.DetectContentType(data)
-	uri := "data:" + mine + ";base64," + base64.StdEncoding.EncodeToString(data)
-	responses.JSON(w, http.StatusOK, uri)
+	responses.JSON(w, http.StatusOK, imgURI)
 }
 
 // HandleUserImageUpdate ユーザー画像を更新
