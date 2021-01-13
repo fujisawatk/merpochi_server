@@ -11,7 +11,15 @@ import (
 func iniCommentsRoutes() []Route {
 	// 依存関係を注入
 	commentPersistence := persistence.NewCommentPersistence(database.DB)
-	commentUsecase := usecase.NewCommentUsecase(commentPersistence)
+	userPersistence := persistence.NewUserPersistence(database.DB)
+	postPersistence := persistence.NewPostPersistence(database.DB)
+	imagePersistence := persistence.NewImagePersistence(database.DB)
+	commentUsecase := usecase.NewCommentUsecase(
+		commentPersistence,
+		userPersistence,
+		postPersistence,
+		imagePersistence,
+	)
 	commentHandler := handler.NewCommentHandler(commentUsecase)
 
 	commentRoutes := []Route{
