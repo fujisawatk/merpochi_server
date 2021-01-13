@@ -60,7 +60,7 @@ func (ip *imagePersistence) Search(uid uint32) error {
 		defer close(ch)
 
 		// ユーザー画像は一意性であるため
-		result := ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ?", uid, 0).Take(&models.Image{})
+		result := ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ? AND post_id = ?", uid, 0, 0).Take(&models.Image{})
 		if result.RowsAffected > 0 {
 			err = errors.New("user image is already registered")
 			ch <- false
@@ -85,7 +85,7 @@ func (ip *imagePersistence) FindByID(uid uint32) (*models.Image, error) {
 	go func(ch chan<- bool) {
 		defer close(ch)
 
-		err = ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ?", uid, 0).Take(img).Error
+		err = ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ? AND post_id = ?", uid, 0, 0).Take(img).Error
 		if err != nil {
 			ch <- false
 			return
