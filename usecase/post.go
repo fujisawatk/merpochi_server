@@ -170,10 +170,16 @@ func (pu *postUsecase) GetPost(sid, pid uint32) (postGetResponse, error) {
 		}
 	}
 
+	imgs, err := pu.GetPostImage((*post).UserID, sid, pid)
+	if err != nil {
+		return postGetResponse{}, err
+	}
+
 	res := postGetResponse{
 		ID:           (*post).ID,
 		Text:         (*post).Text,
 		Rating:       (*post).Rating,
+		Images:       imgs,
 		UserID:       (*post).UserID,
 		UserNickname: postedUser,
 		UserImage:    imgURI,
@@ -251,6 +257,39 @@ func (pu *postUsecase) GetUserImage(uid uint32) (string, error) {
 	return uri, nil
 }
 
+// 投稿画像取得〜base64エンコード文字列生成まで
+func (pu *postUsecase) GetPostImage(uid, sid, pid uint32) ([]imageData, error) {
+	imgs, err := pu.imageRepository.FindAll(uid, sid, pid)
+	if err != nil {
+		return []imageData{}, err
+	}
+	var responses []imageData
+	if len(*imgs) > 0 {
+		for i := 0; i < len(*imgs); i++ {
+			img := &models.Image{
+				Name: (*imgs)[i].Name,
+				Buf:  &bytes.Buffer{},
+			}
+			err = pu.imageRepository.DownloadS3(img, "merpochi-posts-image")
+			if err != nil {
+				return []imageData{}, err
+			}
+			fmt.Println()
+			uri, err := security.Base64EncodeToString((*img).Buf)
+			if err != nil {
+				return []imageData{}, err
+			}
+			res := imageData{
+				ID:  (*imgs)[i].ID,
+				URI: uri,
+			}
+			responses = append(responses, res)
+		}
+	}
+
+	return responses, nil
+}
+
 // ResizePostImage 画像の整形
 func ResizePostImage(i *models.Image, count int) error {
 	img, t, err := image.Decode(i.Buf)
@@ -306,6 +345,7 @@ type postGetResponse struct {
 	ID           uint32        `json:"id"`
 	Text         string        `json:"text"`
 	Rating       uint32        `json:"rating"`
+	Images       []imageData   `json:"images"`
 	UserID       uint32        `json:"user_id"`
 	UserNickname string        `json:"user_nickname"`
 	UserImage    string        `json:"user_image"`
@@ -320,4 +360,9 @@ type commentData struct {
 	UserNickname string `json:"user_nickname"`
 	UserImage    string `json:"user_image"`
 	Time         string `json:"time"`
+}
+
+type imageData struct {
+	ID  uint32 `json:"id"`
+	URI string `json:"uri"`
 }
