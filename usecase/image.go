@@ -54,7 +54,7 @@ func (iu imageUsecase) CreateImage(uid uint32, file multipart.File) (*models.Ima
 		return &models.Image{}, err
 	}
 
-	err = iu.imageRepository.UploadS3(img)
+	err = iu.imageRepository.UploadS3(img, "merpochi-users-image")
 	if err != nil {
 		return &models.Image{}, err
 	}
@@ -73,7 +73,7 @@ func (iu imageUsecase) GetImage(uid uint32) (string, error) {
 		return "", err
 	}
 
-	err = iu.imageRepository.DownloadS3(img)
+	err = iu.imageRepository.DownloadS3(img, "merpochi-users-image")
 	if err != nil {
 		return "", err
 	}
@@ -91,7 +91,7 @@ func (iu imageUsecase) UpdateImage(uid uint32, file multipart.File) (int64, erro
 		return 0, err
 	}
 	// 旧画像の削除処理
-	err = iu.imageRepository.DeleteS3(img)
+	err = iu.imageRepository.DeleteS3(img, "merpochi-users-image")
 	if err != nil {
 		return 0, err
 	}
@@ -106,7 +106,7 @@ func (iu imageUsecase) UpdateImage(uid uint32, file multipart.File) (int64, erro
 		return 0, err
 	}
 
-	err = iu.imageRepository.UploadS3(img)
+	err = iu.imageRepository.UploadS3(img, "merpochi-users-image")
 	if err != nil {
 		return 0, err
 	}

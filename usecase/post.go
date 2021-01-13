@@ -1,16 +1,27 @@
 package usecase
 
 import (
+	"bytes"
+	"encoding/base64"
+	"fmt"
+	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 	"merpochi_server/usecase/validations"
 	"merpochi_server/util/security"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/nfnt/resize"
 )
 
 // PostUsecase Postに対するUsecaseのインターフェイス
 type PostUsecase interface {
-	CreatePost(string, uint32, uint32, uint32) (*models.Post, error)
+	CreatePost([]string, string, uint32, uint32, uint32) error
 	GetPosts(uint32) ([]postsGetResponse, error)
 	GetPost(uint32, uint32) (postGetResponse, error)
 	UpdatePost(uint32, uint32, string) (int64, error)
@@ -20,7 +31,7 @@ type PostUsecase interface {
 type postUsecase struct {
 	postRepository    repository.PostRepository
 	commentRepository repository.CommentRepository // has many
-	imageRepository   repository.ImageRepository
+	imageRepository   repository.ImageRepository   // has many
 }
 
 // NewPostUsecase Postデータに関するUsecaseを生成
@@ -32,24 +43,59 @@ func NewPostUsecase(pr repository.PostRepository, cr repository.CommentRepositor
 	}
 }
 
-func (pu *postUsecase) CreatePost(text string, rating, uid, sid uint32) (*models.Post, error) {
+func (pu *postUsecase) CreatePost(imgs []string, text string, rating, uid, sid uint32) error {
 	post := &models.Post{
 		Text:   text,
 		Rating: rating,
 		UserID: uid,
 		ShopID: sid,
 	}
-
 	err := validations.PostValidate(post)
 	if err != nil {
-		return &models.Post{}, err
+		return err
 	}
 
 	err = pu.postRepository.Save(post)
 	if err != nil {
-		return &models.Post{}, err
+		return err
 	}
-	return post, nil
+	if len(imgs) > 0 {
+		for i := 0; i < len(imgs); i++ {
+			img := &models.Image{
+				UserID: uid,
+				ShopID: sid,
+				PostID: (*post).ID,
+				Buf:    &bytes.Buffer{},
+			}
+			// base64エンコード文字列を最初のコンマまでカット("data:image/png;base64,"部分がデコード時に不要のため )
+			b64data := imgs[i][strings.IndexByte(imgs[i], ',')+1:]
+			// 文字列をデコード
+			data, err := base64.StdEncoding.DecodeString(b64data)
+			if err != nil {
+				return err
+			}
+			// バッファー生成
+			buf := bytes.NewBuffer(data)
+			fmt.Println(buf)
+			_, err = img.Buf.ReadFrom(buf)
+			if err != nil {
+				return err
+			}
+			err = ResizePostImage(img, (i + 1))
+			if err != nil {
+				return err
+			}
+			err = pu.imageRepository.UploadS3(img, "merpochi-posts-image")
+			if err != nil {
+				return err
+			}
+			img, err = pu.imageRepository.Create(img)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
@@ -193,7 +239,7 @@ func (pu *postUsecase) GetUserImage(uid uint32) (string, error) {
 		return "", err
 	}
 
-	err = pu.imageRepository.DownloadS3(img)
+	err = pu.imageRepository.DownloadS3(img, "merpochi-users-image")
 	if err != nil {
 		return "", err
 	}
@@ -203,6 +249,46 @@ func (pu *postUsecase) GetUserImage(uid uint32) (string, error) {
 		return "", err
 	}
 	return uri, nil
+}
+
+// ResizePostImage 画像の整形
+func ResizePostImage(i *models.Image, count int) error {
+	img, t, err := image.Decode(i.Buf)
+	if err != nil {
+		return err
+	}
+
+	m := resize.Resize(300, 0, img, resize.Lanczos3)
+	switch t {
+	case "jpeg":
+		i.Name = "shop-" + strconv.Itoa(int(i.ShopID)) +
+			"-post-" + strconv.Itoa(int(i.PostID)) +
+			"-image-" + strconv.Itoa(count) + ".jpg"
+
+		err = jpeg.Encode(i.Buf, m, nil)
+		if err != nil {
+			return err
+		}
+	case "png":
+		i.Name = "shop-" + strconv.Itoa(int(i.ShopID)) +
+			"-post-" + strconv.Itoa(int(i.PostID)) +
+			"-image-" + strconv.Itoa(count) + ".png"
+
+		err = png.Encode(i.Buf, m)
+		if err != nil {
+			return err
+		}
+	case "gif":
+		i.Name = "shop-" + strconv.Itoa(int(i.ShopID)) +
+			"-post-" + strconv.Itoa(int(i.PostID)) +
+			"-image-" + strconv.Itoa(count) + ".gif"
+
+		err = gif.Encode(i.Buf, m, nil)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type postsGetResponse struct {
