@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
+	"merpochi_server/util/security"
 	"mime/multipart"
 	"strconv"
 
@@ -17,7 +18,7 @@ import (
 // ImageUsecase Imageに対するUsecaseのインターフェイス
 type ImageUsecase interface {
 	CreateImage(uint32, multipart.File) (*models.Image, error)
-	GetImage(uint32) (*models.Image, error)
+	GetImage(uint32) (string, error)
 	UpdateImage(uint32, multipart.File) (int64, error)
 }
 
@@ -66,18 +67,22 @@ func (iu imageUsecase) CreateImage(uid uint32, file multipart.File) (*models.Ima
 	return img, nil
 }
 
-func (iu imageUsecase) GetImage(uid uint32) (*models.Image, error) {
+func (iu imageUsecase) GetImage(uid uint32) (string, error) {
 	img, err := iu.imageRepository.FindByID(uid)
 	if err != nil {
-		return &models.Image{}, err
+		return "", err
 	}
 
 	err = iu.imageRepository.DownloadS3(img)
 	if err != nil {
-		return &models.Image{}, err
+		return "", err
 	}
 
-	return img, nil
+	uri, err := security.Base64EncodeToString(img.Buf)
+	if err != nil {
+		return "", err
+	}
+	return uri, nil
 }
 
 func (iu imageUsecase) UpdateImage(uid uint32, file multipart.File) (int64, error) {
