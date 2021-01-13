@@ -5,6 +5,7 @@ import (
 	"merpochi_server/domain/repository"
 	"merpochi_server/usecase/validations"
 	"merpochi_server/util/security"
+	"time"
 )
 
 // PostUsecase Postに対するUsecaseのインターフェイス
@@ -60,8 +61,9 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
 	}
 	// 投稿が存在する場合
 	if len(*posts) > 0 {
+		// 投稿したユーザー情報を取得
 		for i := 0; i < len(*posts); i++ {
-			user, img, time, err := pu.GetOtherData((*posts)[i])
+			postedUser, imgURI, time, err := pu.GetUserData((*posts)[i].UserID, (*posts)[i].CreatedAt, (*posts)[i].UpdatedAt)
 			if err != nil {
 				return []postsGetResponse{}, err
 			}
@@ -73,8 +75,8 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
 				Text:          (*posts)[i].Text,
 				Rating:        (*posts)[i].Rating,
 				UserID:        (*posts)[i].UserID,
-				UserNickname:  user.Nickname,
-				UserImage:     img,
+				UserNickname:  postedUser,
+				UserImage:     imgURI,
 				CommentsCount: commentsCount,
 				Time:          time,
 			}
@@ -89,55 +91,46 @@ func (pu *postUsecase) GetPost(sid, pid uint32) (postGetResponse, error) {
 	if err != nil {
 		return postGetResponse{}, err
 	}
+	// 投稿したユーザー情報を取得
+	postedUser, imgURI, time, err := pu.GetUserData((*post).UserID, (*post).CreatedAt, (*post).UpdatedAt)
+	if err != nil {
+		return postGetResponse{}, err
+	}
+
 	// 指定の投稿に紐付くコメントを全件取得
 	comments, err := pu.commentRepository.FindAll(pid)
 	if err != nil {
 		return postGetResponse{}, err
 	}
-	var commentsData []commentData
-	if len(*comments) > 0 {
-		// 取得した投稿にコメントしたユーザー情報を取得
-		for i := 0; i < len(*comments); i++ {
-			user, err := pu.commentRepository.FindByUserID((*comments)[i].UserID)
-			if err != nil {
-				return postGetResponse{}, err
-			}
-			// ユーザー画像取得
-			imgURI, err := pu.GetImage((*comments)[i].UserID)
-			if err != nil {
-				return postGetResponse{}, err
-			}
 
-			// 投稿作成or編集時刻設定
-			var time string
-			format1 := "2006/01/02 15:04:05"
-			if (*comments)[i].CreatedAt != (*comments)[i].UpdatedAt {
-				time = "編集済 " + ((*comments)[i].UpdatedAt).Format(format1)
-			} else {
-				time = ((*comments)[i].CreatedAt).Format(format1)
+	var commentsData []commentData
+	// コメントが存在する場合
+	if len(*comments) > 0 {
+		// 投稿にコメントしたユーザー情報を取得
+		for i := 0; i < len(*comments); i++ {
+			commentedUser, imgURI, time, err := pu.GetUserData((*comments)[i].UserID, (*comments)[i].CreatedAt, (*comments)[i].UpdatedAt)
+			if err != nil {
+				return postGetResponse{}, err
 			}
 			data := commentData{
 				ID:           (*comments)[i].ID,
 				Text:         (*comments)[i].Text,
 				UserID:       (*comments)[i].UserID,
-				UserNickname: user.Nickname,
+				UserNickname: commentedUser,
 				UserImage:    imgURI,
 				Time:         time,
 			}
 			commentsData = append(commentsData, data)
 		}
 	}
-	user, img, time, err := pu.GetOtherData((*post))
-	if err != nil {
-		return postGetResponse{}, err
-	}
+
 	res := postGetResponse{
 		ID:           (*post).ID,
 		Text:         (*post).Text,
 		Rating:       (*post).Rating,
 		UserID:       (*post).UserID,
-		UserNickname: user.Nickname,
-		UserImage:    img,
+		UserNickname: postedUser,
+		UserImage:    imgURI,
 		Comments:     commentsData,
 		Time:         time,
 	}
@@ -171,31 +164,30 @@ func (pu *postUsecase) DeletePost(pid uint32) error {
 	return nil
 }
 
-// 投稿情報全件・一件取得機能のメソッド共有化
-func (pu *postUsecase) GetOtherData(post models.Post) (*models.User, string, string, error) {
-	// ユーザー値取得
-	user, err := pu.postRepository.FindByUserID(post.UserID)
+// ユーザー情報取得〜整形まで
+func (pu *postUsecase) GetUserData(uid uint32, createdAt, updatedAt time.Time) (string, string, string, error) {
+	user, err := pu.postRepository.FindByUserID(uid)
 	if err != nil {
-		return &models.User{}, "", "", err
+		return "", "", "", err
 	}
-	// ユーザー画像取得
-	imgURI, err := pu.GetImage(post.UserID)
+
+	imgURI, err := pu.GetUserImage(uid)
 	if err != nil {
-		return &models.User{}, "", "", err
+		return "", "", "", err
 	}
-	// 投稿作成or編集時刻設定
+	// 作成or編集時刻整形
 	var time string
 	format1 := "2006/01/02 15:04:05"
-	if post.CreatedAt != post.UpdatedAt {
-		time = "編集済 " + (post.UpdatedAt).Format(format1)
+	if createdAt != updatedAt {
+		time = "編集済 " + (updatedAt).Format(format1)
 	} else {
-		time = (post.CreatedAt).Format(format1)
+		time = (createdAt).Format(format1)
 	}
-	return user, imgURI, time, nil
+	return user.Nickname, imgURI, time, nil
 }
 
 // ユーザー画像取得〜base64エンコード文字列生成まで
-func (pu *postUsecase) GetImage(uid uint32) (string, error) {
+func (pu *postUsecase) GetUserImage(uid uint32) (string, error) {
 	img, err := pu.imageRepository.FindByID(uid)
 	if err != nil {
 		return "", err
