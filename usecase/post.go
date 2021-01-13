@@ -11,22 +11,23 @@ import (
 type PostUsecase interface {
 	CreatePost(string, uint32, uint32, uint32) (*models.Post, error)
 	GetPosts(uint32) ([]postsGetResponse, error)
-	GetPost(uint32, uint32) (*models.Post, error)
+	GetPost(uint32, uint32) (postGetResponse, error)
 	UpdatePost(uint32, uint32, string) (int64, error)
 	DeletePost(uint32) error
-	GetOtherData(models.Post) (*models.User, string, string, error)
 }
 
 type postUsecase struct {
-	postRepository  repository.PostRepository
-	imageRepository repository.ImageRepository
+	postRepository    repository.PostRepository
+	commentRepository repository.CommentRepository
+	imageRepository   repository.ImageRepository
 }
 
 // NewPostUsecase Postデータに関するUsecaseを生成
-func NewPostUsecase(pr repository.PostRepository, ir repository.ImageRepository) PostUsecase {
+func NewPostUsecase(pr repository.PostRepository, cr repository.CommentRepository, ir repository.ImageRepository) PostUsecase {
 	return &postUsecase{
-		postRepository:  pr,
-		imageRepository: ir,
+		postRepository:    pr,
+		commentRepository: cr,
+		imageRepository:   ir,
 	}
 }
 
@@ -83,12 +84,64 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
 	return responses, nil
 }
 
-func (pu *postUsecase) GetPost(sid, pid uint32) (*models.Post, error) {
+func (pu *postUsecase) GetPost(sid, pid uint32) (postGetResponse, error) {
 	post, err := pu.postRepository.FindByID(sid, pid)
 	if err != nil {
-		return &models.Post{}, err
+		return postGetResponse{}, err
 	}
-	return post, nil
+	// 指定の投稿に紐付くコメントを全件取得
+	comments, err := pu.commentRepository.FindAll(pid)
+	if err != nil {
+		return postGetResponse{}, err
+	}
+	var commentsData []commentData
+	if len(*comments) > 0 {
+		// 取得した投稿にコメントしたユーザー情報を取得
+		for i := 0; i < len(*comments); i++ {
+			user, err := pu.commentRepository.FindByUserID((*comments)[i].UserID)
+			if err != nil {
+				return postGetResponse{}, err
+			}
+			// ユーザー画像取得
+			imgURI, err := pu.GetImage((*comments)[i].UserID)
+			if err != nil {
+				return postGetResponse{}, err
+			}
+
+			// 投稿作成or編集時刻設定
+			var time string
+			format1 := "2006/01/02 15:04:05"
+			if (*comments)[i].CreatedAt != (*comments)[i].UpdatedAt {
+				time = "編集済 " + ((*comments)[i].UpdatedAt).Format(format1)
+			} else {
+				time = ((*comments)[i].CreatedAt).Format(format1)
+			}
+			data := commentData{
+				ID:           (*comments)[i].ID,
+				Text:         (*comments)[i].Text,
+				UserID:       (*comments)[i].UserID,
+				UserNickname: user.Nickname,
+				UserImage:    imgURI,
+				Time:         time,
+			}
+			commentsData = append(commentsData, data)
+		}
+	}
+	user, img, time, err := pu.GetOtherData((*post))
+	if err != nil {
+		return postGetResponse{}, err
+	}
+	res := postGetResponse{
+		ID:           (*post).ID,
+		Text:         (*post).Text,
+		Rating:       (*post).Rating,
+		UserID:       (*post).UserID,
+		UserNickname: user.Nickname,
+		UserImage:    img,
+		Comments:     commentsData,
+		Time:         time,
+	}
+	return res, nil
 }
 
 func (pu *postUsecase) UpdatePost(pid, rating uint32, text string) (int64, error) {
@@ -126,15 +179,7 @@ func (pu *postUsecase) GetOtherData(post models.Post) (*models.User, string, str
 		return &models.User{}, "", "", err
 	}
 	// ユーザー画像取得
-	img, err := pu.imageRepository.FindByID(post.UserID)
-	if err != nil {
-		return &models.User{}, "", "", err
-	}
-	err = pu.imageRepository.DownloadS3(img)
-	if err != nil {
-		return &models.User{}, "", "", err
-	}
-	uri, err := security.Base64EncodeToString(img.Buf)
+	imgURI, err := pu.GetImage(post.UserID)
 	if err != nil {
 		return &models.User{}, "", "", err
 	}
@@ -146,7 +191,26 @@ func (pu *postUsecase) GetOtherData(post models.Post) (*models.User, string, str
 	} else {
 		time = (post.CreatedAt).Format(format1)
 	}
-	return user, uri, time, nil
+	return user, imgURI, time, nil
+}
+
+// ユーザー画像取得〜base64エンコード文字列生成まで
+func (pu *postUsecase) GetImage(uid uint32) (string, error) {
+	img, err := pu.imageRepository.FindByID(uid)
+	if err != nil {
+		return "", err
+	}
+
+	err = pu.imageRepository.DownloadS3(img)
+	if err != nil {
+		return "", err
+	}
+
+	uri, err := security.Base64EncodeToString(img.Buf)
+	if err != nil {
+		return "", err
+	}
+	return uri, nil
 }
 
 type postsGetResponse struct {
@@ -158,4 +222,24 @@ type postsGetResponse struct {
 	UserImage     string `json:"user_image"`
 	CommentsCount uint32 `json:"comments_count"`
 	Time          string `json:"time"`
+}
+
+type postGetResponse struct {
+	ID           uint32        `json:"id"`
+	Text         string        `json:"text"`
+	Rating       uint32        `json:"rating"`
+	UserID       uint32        `json:"user_id"`
+	UserNickname string        `json:"user_nickname"`
+	UserImage    string        `json:"user_image"`
+	Comments     []commentData `json:"comments"`
+	Time         string        `json:"time"`
+}
+
+type commentData struct {
+	ID           uint32 `json:"id"`
+	Text         string `json:"text"`
+	UserID       uint32 `json:"user_id"`
+	UserNickname string `json:"user_nickname"`
+	UserImage    string `json:"user_image"`
+	Time         string `json:"time"`
 }
