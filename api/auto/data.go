@@ -105,6 +105,34 @@ var images = []models.Image{
 		ShopID: 0,
 		PostID: 0,
 	},
+	{
+		ID:     3,
+		Name:   "shop-2-post-2-image-1.jpg",
+		UserID: 2,
+		ShopID: 2,
+		PostID: 2,
+	},
+	{
+		ID:     4,
+		Name:   "shop-2-post-2-image-2.jpg",
+		UserID: 2,
+		ShopID: 2,
+		PostID: 2,
+	},
+	{
+		ID:     5,
+		Name:   "shop-2-post-2-image-3.jpg",
+		UserID: 2,
+		ShopID: 2,
+		PostID: 2,
+	},
+	{
+		ID:     6,
+		Name:   "shop-2-post-2-image-4.jpg",
+		UserID: 2,
+		ShopID: 2,
+		PostID: 2,
+	},
 }
 
 var posts = []models.Post{

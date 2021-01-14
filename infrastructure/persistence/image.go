@@ -122,6 +122,27 @@ func (ip *imagePersistence) Update(img *models.Image) (int64, error) {
 	return 0, rs.Error
 }
 
+func (ip *imagePersistence) FindAll(uid, sid, pid uint32) (*[]models.Image, error) {
+	var err error
+	img := &[]models.Image{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+
+		err = ip.db.Model(&models.Image{}).Where("user_id = ? AND shop_id = ? AND post_id = ?", uid, sid, pid).Find(img).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return img, nil
+	}
+	return &[]models.Image{}, err
+}
+
 // Upload ユーザー画像をAmazon S3へアップロード
 func (ip *imagePersistence) UploadS3(img *models.Image, bucket string) error {
 	var err error
@@ -159,7 +180,6 @@ func (ip *imagePersistence) UploadS3(img *models.Image, bucket string) error {
 func (ip *imagePersistence) DownloadS3(img *models.Image, bucket string) error {
 	var err error
 	done := make(chan bool)
-	fmt.Println(img.Name)
 	go func(ch chan<- bool) {
 		defer close(ch)
 
