@@ -3,7 +3,6 @@ package usecase
 import (
 	"bytes"
 	"encoding/base64"
-	"fmt"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -76,7 +75,6 @@ func (pu *postUsecase) CreatePost(imgs []string, text string, rating, uid, sid u
 			}
 			// バッファー生成
 			buf := bytes.NewBuffer(data)
-			fmt.Println(buf)
 			_, err = img.Buf.ReadFrom(buf)
 			if err != nil {
 				return err
@@ -116,10 +114,16 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
 			// コメント数取得
 			commentsCount := pu.postRepository.FindCommentsCount((*posts)[i].ID)
 
+			imgs, err := pu.GetPostImage((*posts)[i].UserID, sid, (*posts)[i].ID)
+			if err != nil {
+				return []postsGetResponse{}, err
+			}
+
 			res := postsGetResponse{
 				ID:            (*posts)[i].ID,
 				Text:          (*posts)[i].Text,
 				Rating:        (*posts)[i].Rating,
+				Images:        imgs,
 				UserID:        (*posts)[i].UserID,
 				UserNickname:  postedUser,
 				UserImage:     imgURI,
@@ -274,7 +278,7 @@ func (pu *postUsecase) GetPostImage(uid, sid, pid uint32) ([]imageData, error) {
 			if err != nil {
 				return []imageData{}, err
 			}
-			fmt.Println()
+
 			uri, err := security.Base64EncodeToString((*img).Buf)
 			if err != nil {
 				return []imageData{}, err
@@ -286,7 +290,6 @@ func (pu *postUsecase) GetPostImage(uid, sid, pid uint32) ([]imageData, error) {
 			responses = append(responses, res)
 		}
 	}
-
 	return responses, nil
 }
 
@@ -331,14 +334,15 @@ func ResizePostImage(i *models.Image, count int) error {
 }
 
 type postsGetResponse struct {
-	ID            uint32 `json:"id"`
-	Text          string `json:"text"`
-	Rating        uint32 `json:"rating"`
-	UserID        uint32 `json:"user_id"`
-	UserNickname  string `json:"user_nickname"`
-	UserImage     string `json:"user_image"`
-	CommentsCount uint32 `json:"comments_count"`
-	Time          string `json:"time"`
+	ID            uint32      `json:"id"`
+	Text          string      `json:"text"`
+	Rating        uint32      `json:"rating"`
+	Images        []imageData `json:"images"`
+	UserID        uint32      `json:"user_id"`
+	UserNickname  string      `json:"user_nickname"`
+	UserImage     string      `json:"user_image"`
+	CommentsCount uint32      `json:"comments_count"`
+	Time          string      `json:"time"`
 }
 
 type postGetResponse struct {
