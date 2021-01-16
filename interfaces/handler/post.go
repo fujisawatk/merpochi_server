@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"merpochi_server/interfaces/responses"
 	"merpochi_server/usecase"
+	"merpochi_server/util/ctxval"
 	"net/http"
 	"strconv"
 
@@ -48,6 +49,8 @@ func (ph *postHandler) HandlePostCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	uid := ctxval.GetUserID(r)
+
 	var requestBody postCreateRequest
 	err = json.Unmarshal(body, &requestBody)
 	if err != nil {
@@ -59,7 +62,7 @@ func (ph *postHandler) HandlePostCreate(w http.ResponseWriter, r *http.Request) 
 		requestBody.Images,
 		requestBody.Text,
 		requestBody.Rating,
-		requestBody.UserID,
+		uid,
 		uint32(sid),
 	)
 	if err != nil {
