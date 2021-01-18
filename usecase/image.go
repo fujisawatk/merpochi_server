@@ -151,3 +151,8 @@ func ResizeImage(i *models.Image) error {
 	}
 	return nil
 }
+
+type imageData struct {
+	ID  uint32 `json:"id"`
+	URI string `json:"uri"`
+}

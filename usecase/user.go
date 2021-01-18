@@ -15,7 +15,7 @@ type UserUsecase interface {
 	GetUser(uint32) (models.User, error)
 	UpdateUser(uint32, string, string, string) (int64, error)
 	DeleteUser(uint32) error
-	MylistUser(uint32) (*userResponse, error)
+	MylistUser(uint32) (*mylistUserResponse, error)
 	MeUser(uint32) (*meUserResponse, error)
 }
 
@@ -107,18 +107,18 @@ func (uu userUsecase) DeleteUser(uid uint32) error {
 	return nil
 }
 
-func (uu *userUsecase) MylistUser(uid uint32) (*userResponse, error) {
+func (uu *userUsecase) MylistUser(uid uint32) (*mylistUserResponse, error) {
 	bookmarkedShops, err := uu.shopRepository.FindAllByUserIDJoinsBookmark(uid)
 	if err != nil {
-		return &userResponse{}, err
+		return &mylistUserResponse{}, err
 	}
 
 	favoritedShops, err := uu.shopRepository.FindAllByUserIDJoinsFavorite(uid)
 	if err != nil {
-		return &userResponse{}, err
+		return &mylistUserResponse{}, err
 	}
 
-	res := &userResponse{
+	res := &mylistUserResponse{
 		BookmarkedShops: *(bookmarkedShops),
 		FavoritedShops:  *(favoritedShops),
 	}
@@ -293,7 +293,7 @@ func (uu *userUsecase) DelDuplicatePosts(posts []postData) []postData {
 	return uniq
 }
 
-type userResponse struct {
+type mylistUserResponse struct {
 	BookmarkedShops []models.Shop `json:"bookmarked_shops"`
 	FavoritedShops  []models.Shop `json:"favorited_shops"`
 }
@@ -301,16 +301,4 @@ type userResponse struct {
 type meUserResponse struct {
 	MyPosts        []postData `json:"my_posts"`
 	CommentedPosts []postData `json:"commented_posts"`
-}
-
-type postData struct {
-	ID            uint32      `json:"id"`
-	Text          string      `json:"text"`
-	Rating        uint32      `json:"rating"`
-	Images        []imageData `json:"images"`
-	UserID        uint32      `json:"user_id"`
-	UserNickname  string      `json:"user_nickname"`
-	UserImage     string      `json:"user_image"`
-	CommentsCount uint32      `json:"comments_count"`
-	Time          string      `json:"time"`
 }

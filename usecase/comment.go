@@ -174,3 +174,12 @@ type commentResponse struct {
 	UserImage    string `json:"user_image"`
 	Time         string `json:"time"`
 }
+
+type commentData struct {
+	ID           uint32 `json:"id"`
+	Text         string `json:"text"`
+	UserID       uint32 `json:"user_id"`
+	UserNickname string `json:"user_nickname"`
+	UserImage    string `json:"user_image"`
+	Time         string `json:"time"`
+}

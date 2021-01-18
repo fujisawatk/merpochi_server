@@ -21,7 +21,7 @@ import (
 // PostUsecase Postに対するUsecaseのインターフェイス
 type PostUsecase interface {
 	CreatePost([]string, string, uint32, uint32, uint32) error
-	GetPosts(uint32) ([]postsGetResponse, error)
+	GetPosts(uint32) ([]getPostsResponse, error)
 	UpdatePost(uint32, uint32, string) (int64, error)
 	DeletePost(uint32) error
 }
@@ -102,12 +102,12 @@ func (pu *postUsecase) CreatePost(imgs []string, text string, rating, uid, sid u
 	return nil
 }
 
-func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
-	var responses []postsGetResponse
+func (pu *postUsecase) GetPosts(sid uint32) ([]getPostsResponse, error) {
+	var responses []getPostsResponse
 
 	posts, err := pu.postRepository.FindAll(sid)
 	if err != nil {
-		return []postsGetResponse{}, err
+		return []getPostsResponse{}, err
 	}
 	// 投稿が存在する場合
 	if len(*posts) > 0 {
@@ -115,17 +115,17 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
 		for i := 0; i < len(*posts); i++ {
 			postedUser, imgURI, time, err := pu.GetUserData((*posts)[i].UserID, (*posts)[i].CreatedAt, (*posts)[i].UpdatedAt)
 			if err != nil {
-				return []postsGetResponse{}, err
+				return []getPostsResponse{}, err
 			}
 			// コメント数取得
 			commentsCount := pu.commentRepository.CountByPostID((*posts)[i].ID)
 
 			imgs, err := pu.GetPostImage((*posts)[i].UserID, sid, (*posts)[i].ID)
 			if err != nil {
-				return []postsGetResponse{}, err
+				return []getPostsResponse{}, err
 			}
 
-			res := postsGetResponse{
+			res := getPostsResponse{
 				ID:            (*posts)[i].ID,
 				Text:          (*posts)[i].Text,
 				Rating:        (*posts)[i].Rating,
@@ -282,7 +282,7 @@ func ResizePostImage(i *models.Image, count int) error {
 	return nil
 }
 
-type postsGetResponse struct {
+type getPostsResponse struct {
 	ID            uint32      `json:"id"`
 	Text          string      `json:"text"`
 	Rating        uint32      `json:"rating"`
@@ -294,28 +294,14 @@ type postsGetResponse struct {
 	Time          string      `json:"time"`
 }
 
-type postGetResponse struct {
-	ID           uint32        `json:"id"`
-	Text         string        `json:"text"`
-	Rating       uint32        `json:"rating"`
-	Images       []imageData   `json:"images"`
-	UserID       uint32        `json:"user_id"`
-	UserNickname string        `json:"user_nickname"`
-	UserImage    string        `json:"user_image"`
-	Comments     []commentData `json:"comments"`
-	Time         string        `json:"time"`
-}
-
-type commentData struct {
-	ID           uint32 `json:"id"`
-	Text         string `json:"text"`
-	UserID       uint32 `json:"user_id"`
-	UserNickname string `json:"user_nickname"`
-	UserImage    string `json:"user_image"`
-	Time         string `json:"time"`
-}
-
-type imageData struct {
-	ID  uint32 `json:"id"`
-	URI string `json:"uri"`
+type postData struct {
+	ID            uint32      `json:"id"`
+	Text          string      `json:"text"`
+	Rating        uint32      `json:"rating"`
+	Images        []imageData `json:"images"`
+	UserID        uint32      `json:"user_id"`
+	UserNickname  string      `json:"user_nickname"`
+	UserImage     string      `json:"user_image"`
+	CommentsCount uint32      `json:"comments_count"`
+	Time          string      `json:"time"`
 }
