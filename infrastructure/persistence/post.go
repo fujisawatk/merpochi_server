@@ -146,18 +146,51 @@ func (pp *postPersistence) FindByUserID(uid uint32) (*models.User, error) {
 	return &models.User{}, err
 }
 
-// 投稿情報に紐づくコメント数を取得
-func (pp *postPersistence) FindCommentsCount(pid uint32) uint32 {
-	var count uint32
+// 指定のユーザーIDに紐付く投稿情報を取得
+func (pp *postPersistence) FindMyPosts(uid uint32) (*[]models.Post, error) {
+	var err error
+	posts := &[]models.Post{}
+
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		pp.db.Model(&models.Comment{}).Where("post_id = ?", pid).Count(&count)
+		err = pp.db.Model(&models.Post{}).Where("user_id = ?", uid).Find(posts).Error
+		if err != nil {
+			ch <- false
+			return
+		}
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return count
+		return posts, nil
 	}
-	return 0
+	return &[]models.Post{}, err
+}
+
+// ログインユーザーがコメントした投稿情報を取得
+func (pp *postPersistence) FindCommentedPosts(uid uint32) (*[]models.Post, error) {
+	var err error
+	posts := &[]models.Post{}
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		query := pp.db.Table("users").
+			Select("posts.*").
+			Joins("inner join comments on comments.user_id = users.id").
+			Joins("inner join posts on posts.id = comments.post_id").
+			Where("users.id = ?", uid)
+		err = query.Scan(posts).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return posts, nil
+	}
+	return &[]models.Post{}, err
 }

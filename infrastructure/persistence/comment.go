@@ -120,3 +120,19 @@ func (cp *commentPersistence) FindByUserID(uid uint32) (*models.User, error) {
 	}
 	return &models.User{}, err
 }
+
+// 投稿情報に紐づくコメント数を取得
+func (cp *commentPersistence) FindCommentsCount(pid uint32) uint32 {
+	var count uint32
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		cp.db.Model(&models.Comment{}).Where("post_id = ?", pid).Count(&count)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return count
+	}
+	return 0
+}

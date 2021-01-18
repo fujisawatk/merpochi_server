@@ -112,7 +112,7 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
 				return []postsGetResponse{}, err
 			}
 			// コメント数取得
-			commentsCount := pu.postRepository.FindCommentsCount((*posts)[i].ID)
+			commentsCount := pu.commentRepository.FindCommentsCount((*posts)[i].ID)
 
 			imgs, err := pu.GetPostImage((*posts)[i].UserID, sid, (*posts)[i].ID)
 			if err != nil {

@@ -20,21 +20,27 @@ type UserUsecase interface {
 }
 
 type userUsecase struct {
-	userRepository  repository.UserRepository
-	postRepository  repository.PostRepository  // has many
-	imageRepository repository.ImageRepository // has many
+	userRepository    repository.UserRepository
+	shopRepository    repository.ShopRepository
+	postRepository    repository.PostRepository    // has many
+	commentRepository repository.CommentRepository // has many
+	imageRepository   repository.ImageRepository   // has many
 }
 
 // NewUserUsecase Userデータに関するUsecaseを生成
 func NewUserUsecase(
 	ur repository.UserRepository,
+	sr repository.ShopRepository,
 	pr repository.PostRepository,
+	cr repository.CommentRepository,
 	ir repository.ImageRepository,
 ) UserUsecase {
 	return &userUsecase{
-		userRepository:  ur,
-		postRepository:  pr,
-		imageRepository: ir,
+		userRepository:    ur,
+		shopRepository:    sr,
+		postRepository:    pr,
+		commentRepository: cr,
+		imageRepository:   ir,
 	}
 }
 
@@ -102,12 +108,12 @@ func (uu userUsecase) DeleteUser(uid uint32) error {
 }
 
 func (uu *userUsecase) MylistUser(uid uint32) (*userResponse, error) {
-	bookmarkedShops, err := uu.userRepository.FindBookmarkedShops(uid)
+	bookmarkedShops, err := uu.shopRepository.FindBookmarkedShops(uid)
 	if err != nil {
 		return &userResponse{}, err
 	}
 
-	favoritedShops, err := uu.userRepository.FindFavoritedShops(uid)
+	favoritedShops, err := uu.shopRepository.FindFavoritedShops(uid)
 	if err != nil {
 		return &userResponse{}, err
 	}
@@ -122,7 +128,7 @@ func (uu *userUsecase) MylistUser(uid uint32) (*userResponse, error) {
 // ※関数分けたほうがいい
 func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 	// ログインユーザーが投稿したレビュー
-	myPosts, err := uu.userRepository.FindMyPosts(uid)
+	myPosts, err := uu.postRepository.FindMyPosts(uid)
 	if err != nil {
 		return &meUserResponse{}, err
 	}
@@ -135,7 +141,7 @@ func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 				return &meUserResponse{}, err
 			}
 			// コメント数取得
-			commentsCount := uu.postRepository.FindCommentsCount((*myPosts)[i].ID)
+			commentsCount := uu.commentRepository.FindCommentsCount((*myPosts)[i].ID)
 
 			imgs, err := uu.GetPostImage((*myPosts)[i].UserID, (*myPosts)[i].ShopID, (*myPosts)[i].ID)
 			if err != nil {
@@ -157,7 +163,7 @@ func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 		}
 	}
 	// ログインユーザーがコメントしたレビュー
-	commentedPosts, err := uu.userRepository.FindCommentedPosts(uid)
+	commentedPosts, err := uu.postRepository.FindCommentedPosts(uid)
 	if err != nil {
 		return &meUserResponse{}, err
 	}
@@ -170,7 +176,7 @@ func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 				return &meUserResponse{}, err
 			}
 			// コメント数取得
-			commentsCount := uu.postRepository.FindCommentsCount((*commentedPosts)[i].ID)
+			commentsCount := uu.commentRepository.FindCommentsCount((*commentedPosts)[i].ID)
 
 			imgs, err := uu.GetPostImage((*commentedPosts)[i].UserID, (*commentedPosts)[i].ShopID, (*commentedPosts)[i].ID)
 			if err != nil {

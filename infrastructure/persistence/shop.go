@@ -147,3 +147,53 @@ func (sp *shopPersistence) FindByCode(code string) (*models.Shop, error) {
 	}
 	return &models.Shop{}, err
 }
+
+func (sp *shopPersistence) FindBookmarkedShops(uid uint32) (*[]models.Shop, error) {
+	var err error
+	shops := &[]models.Shop{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		query := sp.db.Table("users").
+			Select("shops.*").
+			Joins("inner join bookmarks on bookmarks.user_id = users.id").
+			Joins("inner join shops on shops.id = bookmarks.shop_id").
+			Where("users.id = ?", uid)
+		err = query.Scan(shops).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return shops, nil
+	}
+	return &[]models.Shop{}, err
+}
+
+func (sp *shopPersistence) FindFavoritedShops(uid uint32) (*[]models.Shop, error) {
+	var err error
+	shops := &[]models.Shop{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		query := sp.db.Table("users").
+			Select("shops.*").
+			Joins("inner join favorites on favorites.user_id = users.id").
+			Joins("inner join shops on shops.id = favorites.shop_id").
+			Where("users.id = ?", uid)
+		err = query.Scan(shops).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return shops, nil
+	}
+	return &[]models.Shop{}, err
+}

@@ -9,4 +9,5 @@ type CommentRepository interface {
 	Update(uint32, *models.Comment) (int64, error)
 	Delete(uint32) error
 	FindByUserID(uint32) (*models.User, error)
+	FindCommentsCount(uint32) uint32
 }

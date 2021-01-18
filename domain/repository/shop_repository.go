@@ -11,4 +11,6 @@ type ShopRepository interface {
 	FindBookmarkUser(uint32, uint32) bool
 	Save(models.Shop) (models.Shop, error)
 	FindByCode(string) (*models.Shop, error)
+	FindBookmarkedShops(uint32) (*[]models.Shop, error)
+	FindFavoritedShops(uint32) (*[]models.Shop, error)
 }
