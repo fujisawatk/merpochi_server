@@ -11,9 +11,17 @@ import (
 func iniUsersRoutes() []Route {
 	// 依存関係を注入
 	userPersistence := persistence.NewUserPersistence(database.DB)
+	shopPersistence := persistence.NewShopPersistence(database.DB)
 	postPersistence := persistence.NewPostPersistence(database.DB)
+	commentPersistence := persistence.NewCommentPersistence(database.DB)
 	imagePersistence := persistence.NewImagePersistence(database.DB)
-	userUsecase := usecase.NewUserUsecase(userPersistence, postPersistence, imagePersistence)
+	userUsecase := usecase.NewUserUsecase(
+		userPersistence,
+		shopPersistence,
+		postPersistence,
+		commentPersistence,
+		imagePersistence,
+	)
 	userHandler := handler.NewUserHandler(userUsecase)
 
 	usersRoutes := []Route{

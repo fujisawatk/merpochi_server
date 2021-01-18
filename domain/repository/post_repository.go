@@ -6,9 +6,9 @@ import "merpochi_server/domain/models"
 type PostRepository interface {
 	Save(*models.Post) error
 	FindAll(uint32) (*[]models.Post, error)
-	FindByID(uint32, uint32) (*models.Post, error)
 	Update(*models.Post) (int64, error)
 	Delete(uint32) error
-	FindByUserID(uint32) (*models.User, error)
-	FindCommentsCount(uint32) uint32
+	FindByUserID(uint32) (*[]models.Post, error)
+	FindAllByUserIDJoinsComment(uint32) (*[]models.Post, error)
+	CountByShopID(uint32) uint32
 }

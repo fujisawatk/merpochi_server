@@ -12,7 +12,6 @@ import (
 
 // FavoriteHandler Userに対するHandlerのインターフェイス
 type FavoriteHandler interface {
-	HandleFavoritesGet(w http.ResponseWriter, r *http.Request)
 	HandleFavoriteCreate(w http.ResponseWriter, r *http.Request)
 	HandleFavoriteDelete(w http.ResponseWriter, r *http.Request)
 }
@@ -26,24 +25,6 @@ func NewFavoriteHandler(fu usecase.FavoriteUsecase) FavoriteHandler {
 	return &favoriteHandler{
 		favoriteUsecase: fu,
 	}
-}
-
-// HandleFavoriteGet 指定の店舗に紐付くお気に入り情報を取得
-func (fh favoriteHandler) HandleFavoritesGet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
-
-	favorites, err := fh.favoriteUsecase.GetFavorites(uint32(sid))
-	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
-		return
-	}
-	responses.JSON(w, http.StatusOK, favorites)
 }
 
 // HandleFavoriteCreate お気に入りを登録

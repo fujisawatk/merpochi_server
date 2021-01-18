@@ -17,12 +17,6 @@ func iniFavoritesRoutes() []Route {
 	favoritesRoutes := []Route{
 		{
 			URI:          "/shops/{shopId}/favorites",
-			Method:       http.MethodGet,
-			Handler:      favoriteHandler.HandleFavoritesGet,
-			AuthRequired: false,
-		},
-		{
-			URI:          "/shops/{shopId}/favorites",
 			Method:       http.MethodPost,
 			Handler:      favoriteHandler.HandleFavoriteCreate,
 			AuthRequired: true,

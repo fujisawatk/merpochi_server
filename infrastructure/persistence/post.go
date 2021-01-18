@@ -62,27 +62,6 @@ func (pp *postPersistence) FindAll(sid uint32) (*[]models.Post, error) {
 	return &[]models.Post{}, err
 }
 
-// 投稿情報のレコードを1件取得
-func (pp *postPersistence) FindByID(sid, pid uint32) (*models.Post, error) {
-	var err error
-	post := &models.Post{}
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		err = pp.db.Model(&models.Post{}).Where("shop_id = ? AND id = ?", sid, pid).Take(post).Error
-		if err != nil {
-			ch <- false
-			return
-		}
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return post, nil
-	}
-	return &models.Post{}, err
-}
-
 // 投稿情報のレコードを1件更新
 func (pp *postPersistence) Update(post *models.Post) (int64, error) {
 	var rs *gorm.DB
@@ -125,15 +104,16 @@ func (pp *postPersistence) Delete(pid uint32) error {
 	return rs.Error
 }
 
-// 投稿情報に紐付くユーザー情報を取得
-func (pp *postPersistence) FindByUserID(uid uint32) (*models.User, error) {
+// 指定のユーザーIDに紐付く投稿情報を取得
+func (pp *postPersistence) FindByUserID(uid uint32) (*[]models.Post, error) {
 	var err error
-	user := &models.User{}
+	posts := &[]models.Post{}
+
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		err = pp.db.Model(&models.User{}).Where("id = ?", uid).First(user).Error
+		err = pp.db.Model(&models.Post{}).Where("user_id = ?", uid).Find(posts).Error
 		if err != nil {
 			ch <- false
 			return
@@ -141,19 +121,47 @@ func (pp *postPersistence) FindByUserID(uid uint32) (*models.User, error) {
 		ch <- true
 	}(done)
 	if channels.OK(done) {
-		return user, nil
+		return posts, nil
 	}
-	return &models.User{}, err
+	return &[]models.Post{}, err
 }
 
-// 投稿情報に紐づくコメント数を取得
-func (pp *postPersistence) FindCommentsCount(pid uint32) uint32 {
-	var count uint32
+// ログインユーザーがコメントした投稿情報を取得
+func (pp *postPersistence) FindAllByUserIDJoinsComment(uid uint32) (*[]models.Post, error) {
+	var err error
+	posts := &[]models.Post{}
+
 	done := make(chan bool)
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		pp.db.Model(&models.Comment{}).Where("post_id = ?", pid).Count(&count)
+		query := pp.db.Table("users").
+			Select("posts.*").
+			Joins("inner join comments on comments.user_id = users.id").
+			Joins("inner join posts on posts.id = comments.post_id").
+			Where("users.id = ?", uid)
+		err = query.Scan(posts).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return posts, nil
+	}
+	return &[]models.Post{}, err
+}
+
+// 評価が4以上である投稿数を取得
+func (pp *postPersistence) CountByShopID(pid uint32) uint32 {
+	var count uint32
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		pp.db.Model(&models.Post{}).Where("shop_id = ? AND rating >= ?", pid, 4).Count(&count)
 		ch <- true
 	}(done)
 	if channels.OK(done) {

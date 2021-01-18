@@ -59,7 +59,7 @@ func (iu imageUsecase) CreateImage(uid uint32, file multipart.File) (*models.Ima
 		return &models.Image{}, err
 	}
 
-	img, err = iu.imageRepository.Create(img)
+	img, err = iu.imageRepository.Save(img)
 	if err != nil {
 		return &models.Image{}, err
 	}
@@ -68,7 +68,7 @@ func (iu imageUsecase) CreateImage(uid uint32, file multipart.File) (*models.Ima
 }
 
 func (iu imageUsecase) GetImage(uid uint32) (string, error) {
-	img, err := iu.imageRepository.FindByID(uid)
+	img, err := iu.imageRepository.FindByUserID(uid)
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +86,7 @@ func (iu imageUsecase) GetImage(uid uint32) (string, error) {
 }
 
 func (iu imageUsecase) UpdateImage(uid uint32, file multipart.File) (int64, error) {
-	img, err := iu.imageRepository.FindByID(uid)
+	img, err := iu.imageRepository.FindByUserID(uid)
 	if err != nil {
 		return 0, err
 	}
@@ -150,4 +150,9 @@ func ResizeImage(i *models.Image) error {
 		}
 	}
 	return nil
+}
+
+type imageData struct {
+	ID  uint32 `json:"id"`
+	URI string `json:"uri"`
 }

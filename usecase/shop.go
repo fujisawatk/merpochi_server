@@ -13,13 +13,24 @@ type ShopUsecase interface {
 }
 
 type shopUsecase struct {
-	shopRepository repository.ShopRepository
+	shopRepository     repository.ShopRepository
+	postRepository     repository.PostRepository     // has many
+	favoriteRepository repository.FavoriteRepository // has many
+	bookmarkRepository repository.BookmarkRepository // has many
 }
 
 // NewShopUsecase Shopデータに関するUsecaseを生成
-func NewShopUsecase(sr repository.ShopRepository) ShopUsecase {
+func NewShopUsecase(
+	sr repository.ShopRepository,
+	pr repository.PostRepository,
+	fr repository.FavoriteRepository,
+	br repository.BookmarkRepository,
+) ShopUsecase {
 	return &shopUsecase{
-		shopRepository: sr,
+		shopRepository:     sr,
+		postRepository:     pr,
+		favoriteRepository: fr,
+		bookmarkRepository: br,
 	}
 }
 
@@ -41,15 +52,15 @@ func (su *shopUsecase) SearchShops(shopCodes []string, uid uint32) ([]searchShop
 			counts = append(counts, res)
 		} else {
 			// 評価が4以上である投稿数を取得
-			postsCount := su.shopRepository.FindPostsCount(shop.ID)
-			// お気に入り（リピートしたいボタン）が押された数を取得
-			favoritesCount := su.shopRepository.FindFavoritesCount(shop.ID)
+			postsCount := su.postRepository.CountByShopID(shop.ID)
 			// ブックマーク数を取得
-			bookmarksCount := su.shopRepository.FindBookmarksCount(shop.ID)
+			bookmarksCount := su.bookmarkRepository.CountByShopID(shop.ID)
+			// お気に入り（リピートしたいボタン）が押された数を取得
+			favoritesCount := su.favoriteRepository.CountByShopID(shop.ID)
 			// APIを呼び出したユーザーがブックマークしているか確認
-			bookmarkUser := su.shopRepository.FindBookmarkUser(shop.ID, uid)
+			bookmarkUser := su.bookmarkRepository.SearchUser(shop.ID, uid)
 			// APIを呼び出したユーザーがお気に入りしているか確認
-			favoriteUser := su.shopRepository.FindFavoriteUser(shop.ID, uid)
+			favoriteUser := su.favoriteRepository.SearchUser(shop.ID, uid)
 			res = searchShopsResponse{
 				ID:             shop.ID,
 				RatingCount:    int(postsCount) + int(favoritesCount),

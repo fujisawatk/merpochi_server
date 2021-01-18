@@ -149,7 +149,7 @@ func (cu *commentUsecase) GetUserData(uid uint32, createdAt, updatedAt time.Time
 
 // ユーザー画像取得〜base64エンコード文字列生成まで
 func (cu *commentUsecase) GetUserImage(uid uint32) (string, error) {
-	img, err := cu.imageRepository.FindByID(uid)
+	img, err := cu.imageRepository.FindByUserID(uid)
 	if err != nil {
 		return "", err
 	}
@@ -167,6 +167,15 @@ func (cu *commentUsecase) GetUserImage(uid uint32) (string, error) {
 }
 
 type commentResponse struct {
+	ID           uint32 `json:"id"`
+	Text         string `json:"text"`
+	UserID       uint32 `json:"user_id"`
+	UserNickname string `json:"user_nickname"`
+	UserImage    string `json:"user_image"`
+	Time         string `json:"time"`
+}
+
+type commentData struct {
 	ID           uint32 `json:"id"`
 	Text         string `json:"text"`
 	UserID       uint32 `json:"user_id"`

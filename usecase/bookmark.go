@@ -16,9 +16,9 @@ type bookmarkUsecase struct {
 }
 
 // NewBookmarkUsecase Bookmarkデータに関するUsecaseを生成
-func NewBookmarkUsecase(fr repository.BookmarkRepository) BookmarkUsecase {
+func NewBookmarkUsecase(br repository.BookmarkRepository) BookmarkUsecase {
 	return &bookmarkUsecase{
-		bookmarkRepository: fr,
+		bookmarkRepository: br,
 	}
 }
 
@@ -32,13 +32,6 @@ func (bu *bookmarkUsecase) CreateBookmark(sid uint32, uid uint32) (*models.Bookm
 	if err != nil {
 		return &models.Bookmark{}, err
 	}
-
-	// お気に入りしたユーザー値を取得
-	// bookmarkUser, err := fu.bookmarkRepository.FindBookmarkUser(bookmark.UserID)
-	// if err != nil {
-	// 	return &models.Bookmark{}, err
-	// }
-	// bookmark.User = bookmarkUser
 
 	return bookmark, nil
 }
