@@ -31,12 +31,6 @@ func iniPostsRoutes() []Route {
 		},
 		{
 			URI:          "/shops/{shopId}/posts/{postId}",
-			Method:       http.MethodGet,
-			Handler:      postHandler.HandlePostGet,
-			AuthRequired: false,
-		},
-		{
-			URI:          "/shops/{shopId}/posts/{postId}",
 			Method:       http.MethodPut,
 			Handler:      postHandler.HandlePostUpdate,
 			AuthRequired: true,

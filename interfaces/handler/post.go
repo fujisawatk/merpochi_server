@@ -17,7 +17,6 @@ import (
 type PostHandler interface {
 	HandlePostCreate(w http.ResponseWriter, r *http.Request)
 	HandlePostsGet(w http.ResponseWriter, r *http.Request)
-	HandlePostGet(w http.ResponseWriter, r *http.Request)
 	HandlePostUpdate(w http.ResponseWriter, r *http.Request)
 	HandlePostDelete(w http.ResponseWriter, r *http.Request)
 }
@@ -88,30 +87,6 @@ func (ph *postHandler) HandlePostsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusOK, posts)
-}
-
-// HandlePostGet 投稿情報を1件取得
-func (ph *postHandler) HandlePostGet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
-
-	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
-
-	post, err := ph.postUsecase.GetPost(uint32(sid), uint32(pid))
-	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
-		return
-	}
-	responses.JSON(w, http.StatusOK, post)
 }
 
 // HandlePostUpdate 投稿情報を1件更新

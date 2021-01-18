@@ -22,7 +22,6 @@ import (
 type PostUsecase interface {
 	CreatePost([]string, string, uint32, uint32, uint32) error
 	GetPosts(uint32) ([]postsGetResponse, error)
-	GetPost(uint32, uint32) (postGetResponse, error)
 	UpdatePost(uint32, uint32, string) (int64, error)
 	DeletePost(uint32) error
 }
@@ -134,63 +133,6 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
 		}
 	}
 	return responses, nil
-}
-
-func (pu *postUsecase) GetPost(sid, pid uint32) (postGetResponse, error) {
-	post, err := pu.postRepository.FindByID(sid, pid)
-	if err != nil {
-		return postGetResponse{}, err
-	}
-	// 投稿したユーザー情報を取得
-	postedUser, imgURI, time, err := pu.GetUserData((*post).UserID, (*post).CreatedAt, (*post).UpdatedAt)
-	if err != nil {
-		return postGetResponse{}, err
-	}
-
-	// 指定の投稿に紐付くコメントを全件取得
-	comments, err := pu.commentRepository.FindAll(pid)
-	if err != nil {
-		return postGetResponse{}, err
-	}
-
-	var commentsData []commentData
-	// コメントが存在する場合
-	if len(*comments) > 0 {
-		// 投稿にコメントしたユーザー情報を取得
-		for i := 0; i < len(*comments); i++ {
-			commentedUser, imgURI, time, err := pu.GetUserData((*comments)[i].UserID, (*comments)[i].CreatedAt, (*comments)[i].UpdatedAt)
-			if err != nil {
-				return postGetResponse{}, err
-			}
-			data := commentData{
-				ID:           (*comments)[i].ID,
-				Text:         (*comments)[i].Text,
-				UserID:       (*comments)[i].UserID,
-				UserNickname: commentedUser,
-				UserImage:    imgURI,
-				Time:         time,
-			}
-			commentsData = append(commentsData, data)
-		}
-	}
-
-	imgs, err := pu.GetPostImage((*post).UserID, sid, pid)
-	if err != nil {
-		return postGetResponse{}, err
-	}
-
-	res := postGetResponse{
-		ID:           (*post).ID,
-		Text:         (*post).Text,
-		Rating:       (*post).Rating,
-		Images:       imgs,
-		UserID:       (*post).UserID,
-		UserNickname: postedUser,
-		UserImage:    imgURI,
-		Comments:     commentsData,
-		Time:         time,
-	}
-	return res, nil
 }
 
 func (pu *postUsecase) UpdatePost(pid, rating uint32, text string) (int64, error) {

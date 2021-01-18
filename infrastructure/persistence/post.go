@@ -62,27 +62,6 @@ func (pp *postPersistence) FindAll(sid uint32) (*[]models.Post, error) {
 	return &[]models.Post{}, err
 }
 
-// 投稿情報のレコードを1件取得
-func (pp *postPersistence) FindByID(sid, pid uint32) (*models.Post, error) {
-	var err error
-	post := &models.Post{}
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		err = pp.db.Model(&models.Post{}).Where("shop_id = ? AND id = ?", sid, pid).Take(post).Error
-		if err != nil {
-			ch <- false
-			return
-		}
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return post, nil
-	}
-	return &models.Post{}, err
-}
-
 // 投稿情報のレコードを1件更新
 func (pp *postPersistence) Update(post *models.Post) (int64, error) {
 	var rs *gorm.DB
