@@ -93,7 +93,7 @@ func (pu *postUsecase) CreatePost(imgs []string, text string, rating, uid, sid u
 			if err != nil {
 				return err
 			}
-			img, err = pu.imageRepository.Create(img)
+			img, err = pu.imageRepository.Save(img)
 			if err != nil {
 				return err
 			}

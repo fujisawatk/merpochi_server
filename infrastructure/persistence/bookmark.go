@@ -85,3 +85,23 @@ func (bp *bookmarkPersistence) CountByShopID(sid uint32) uint32 {
 	}
 	return 0
 }
+
+// ブックマークしたユーザーを検索
+func (bp *bookmarkPersistence) SearchUser(sid, uid uint32) bool {
+	var rs *gorm.DB
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = bp.db.Model(&models.Bookmark{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Bookmark{})
+		if rs.Error != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return true
+	}
+	return false
+}

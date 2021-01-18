@@ -100,27 +100,6 @@ func (fp *favoritePersistence) Delete(sid uint32, uid uint32) (int64, error) {
 	return 0, errors.New("favorite not found")
 }
 
-func (fp *favoritePersistence) FindFavoriteUser(uid uint32) (models.User, error) {
-	var err error
-
-	user := models.User{}
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		err = fp.db.Model(&models.User{}).Where("id = ?", uid).Take(&user).Error
-		if err != nil {
-			ch <- false
-			return
-		}
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return user, nil
-	}
-	return models.User{}, err
-}
-
 // 店舗情報に紐づくお気に入り数を取得
 func (fp *favoritePersistence) CountByShopID(sid uint32) uint32 {
 	var count uint32
@@ -136,4 +115,23 @@ func (fp *favoritePersistence) CountByShopID(sid uint32) uint32 {
 		return count
 	}
 	return 0
+}
+
+func (fp *favoritePersistence) SearchUser(sid, uid uint32) bool {
+	var rs *gorm.DB
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = fp.db.Model(&models.Favorite{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Favorite{})
+		if rs.Error != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return true
+	}
+	return false
 }

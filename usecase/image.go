@@ -59,7 +59,7 @@ func (iu imageUsecase) CreateImage(uid uint32, file multipart.File) (*models.Ima
 		return &models.Image{}, err
 	}
 
-	img, err = iu.imageRepository.Create(img)
+	img, err = iu.imageRepository.Save(img)
 	if err != nil {
 		return &models.Image{}, err
 	}

@@ -28,7 +28,7 @@ func NewImagePersistence(db *gorm.DB) repository.ImageRepository {
 	return &imagePersistence{db}
 }
 
-func (ip *imagePersistence) Create(img *models.Image) (*models.Image, error) {
+func (ip *imagePersistence) Save(img *models.Image) (*models.Image, error) {
 	var err error
 
 	done := make(chan bool)

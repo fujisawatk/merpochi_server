@@ -14,12 +14,17 @@ type FavoriteUsecase interface {
 
 type favoriteUsecase struct {
 	favoriteRepository repository.FavoriteRepository
+	userRepository     repository.UserRepository
 }
 
 // NewFavoriteUsecase Favoriteデータに関するUsecaseを生成
-func NewFavoriteUsecase(fr repository.FavoriteRepository) FavoriteUsecase {
+func NewFavoriteUsecase(
+	fr repository.FavoriteRepository,
+	ur repository.UserRepository,
+) FavoriteUsecase {
 	return &favoriteUsecase{
 		favoriteRepository: fr,
+		userRepository:     ur,
 	}
 }
 
@@ -32,7 +37,7 @@ func (fu favoriteUsecase) GetFavorites(sid uint32) ([]models.Favorite, error) {
 	if len(favorites) > 0 {
 		// 取得した店舗のお気に入りに紐付くユーザーを取得
 		for i := 0; i < len(favorites); i++ {
-			favoriteUser, err := fu.favoriteRepository.FindFavoriteUser(favorites[i].UserID)
+			favoriteUser, err := fu.userRepository.FindByID(favorites[i].UserID)
 			if err != nil {
 				return []models.Favorite{}, err
 			}
@@ -54,7 +59,7 @@ func (fu favoriteUsecase) CreateFavorite(sid uint32, uid uint32) (models.Favorit
 	}
 
 	// お気に入りしたユーザー値を取得
-	favoriteUser, err := fu.favoriteRepository.FindFavoriteUser(favorite.UserID)
+	favoriteUser, err := fu.userRepository.FindByID(favorite.UserID)
 	if err != nil {
 		return models.Favorite{}, err
 	}

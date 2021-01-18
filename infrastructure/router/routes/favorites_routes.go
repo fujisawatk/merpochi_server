@@ -11,7 +11,11 @@ import (
 func iniFavoritesRoutes() []Route {
 	// 依存関係を注入
 	favoritePersistence := persistence.NewFavoritePersistence(database.DB)
-	favoriteUsecase := usecase.NewFavoriteUsecase(favoritePersistence)
+	userPersistence := persistence.NewUserPersistence(database.DB)
+	favoriteUsecase := usecase.NewFavoriteUsecase(
+		favoritePersistence,
+		userPersistence,
+	)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteUsecase)
 
 	favoritesRoutes := []Route{

@@ -18,44 +18,6 @@ func NewShopPersistence(db *gorm.DB) repository.ShopRepository {
 	return &shopPersistence{db}
 }
 
-func (sp *shopPersistence) FindFavoriteUser(sid, uid uint32) bool {
-	var rs *gorm.DB
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		rs = sp.db.Model(&models.Favorite{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Favorite{})
-		if rs.Error != nil {
-			ch <- false
-			return
-		}
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return true
-	}
-	return false
-}
-
-func (sp *shopPersistence) FindBookmarkUser(sid, uid uint32) bool {
-	var rs *gorm.DB
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		rs = sp.db.Model(&models.Bookmark{}).Where("user_id = ? AND shop_id = ?", uid, sid).Take(&models.Bookmark{})
-		if rs.Error != nil {
-			ch <- false
-			return
-		}
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return true
-	}
-	return false
-}
-
 // 店舗情報を保存
 func (sp *shopPersistence) Save(shop models.Shop) (models.Shop, error) {
 	var err error
