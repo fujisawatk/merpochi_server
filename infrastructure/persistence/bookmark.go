@@ -68,3 +68,20 @@ func (bp *bookmarkPersistence) Delete(sid uint32, uid uint32) error {
 	}
 	return rs.Error
 }
+
+// 指定した店舗のブックマーク数を取得
+func (bp *bookmarkPersistence) FindBookmarksCount(sid uint32) uint32 {
+	var count uint32
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		bp.db.Model(&models.Bookmark{}).Where("shop_id = ?", sid).Count(&count)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return count
+	}
+	return 0
+}

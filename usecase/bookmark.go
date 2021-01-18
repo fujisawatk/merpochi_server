@@ -16,9 +16,9 @@ type bookmarkUsecase struct {
 }
 
 // NewBookmarkUsecase Bookmarkデータに関するUsecaseを生成
-func NewBookmarkUsecase(fr repository.BookmarkRepository) BookmarkUsecase {
+func NewBookmarkUsecase(br repository.BookmarkRepository) BookmarkUsecase {
 	return &bookmarkUsecase{
-		bookmarkRepository: fr,
+		bookmarkRepository: br,
 	}
 }
 

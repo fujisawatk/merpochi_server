@@ -120,3 +120,20 @@ func (fp *favoritePersistence) FindFavoriteUser(uid uint32) (models.User, error)
 	}
 	return models.User{}, err
 }
+
+// 店舗情報に紐づくお気に入り数を取得
+func (fp *favoritePersistence) FindFavoritesCount(sid uint32) uint32 {
+	var count uint32
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		fp.db.Model(&models.Favorite{}).Where("shop_id = ?", sid).Count(&count)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return count
+	}
+	return 0
+}

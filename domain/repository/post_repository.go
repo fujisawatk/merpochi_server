@@ -12,4 +12,5 @@ type PostRepository interface {
 	FindByUserID(uint32) (*models.User, error)
 	FindMyPosts(uint32) (*[]models.Post, error)
 	FindCommentedPosts(uint32) (*[]models.Post, error)
+	FindPostsCount(uint32) uint32
 }

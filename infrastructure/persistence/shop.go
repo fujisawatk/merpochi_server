@@ -18,57 +18,6 @@ func NewShopPersistence(db *gorm.DB) repository.ShopRepository {
 	return &shopPersistence{db}
 }
 
-// 評価が4以上である投稿数を取得
-func (sp *shopPersistence) FindPostsCount(pid uint32) uint32 {
-	var count uint32
-
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		sp.db.Model(&models.Post{}).Where("shop_id = ? AND rating >= ?", pid, 4).Count(&count)
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return count
-	}
-	return 0
-}
-
-// 店舗情報に紐づくお気に入り数を取得
-func (sp *shopPersistence) FindFavoritesCount(sid uint32) uint32 {
-	var count uint32
-
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		sp.db.Model(&models.Favorite{}).Where("shop_id = ?", sid).Count(&count)
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return count
-	}
-	return 0
-}
-
-// 指定した店舗のブックマーク数を取得
-func (sp *shopPersistence) FindBookmarksCount(sid uint32) uint32 {
-	var count uint32
-
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		sp.db.Model(&models.Bookmark{}).Where("shop_id = ?", sid).Count(&count)
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return count
-	}
-	return 0
-}
-
 func (sp *shopPersistence) FindFavoriteUser(sid, uid uint32) bool {
 	var rs *gorm.DB
 	done := make(chan bool)

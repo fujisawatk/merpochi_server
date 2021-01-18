@@ -194,3 +194,20 @@ func (pp *postPersistence) FindCommentedPosts(uid uint32) (*[]models.Post, error
 	}
 	return &[]models.Post{}, err
 }
+
+// 評価が4以上である投稿数を取得
+func (pp *postPersistence) FindPostsCount(pid uint32) uint32 {
+	var count uint32
+
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		pp.db.Model(&models.Post{}).Where("shop_id = ? AND rating >= ?", pid, 4).Count(&count)
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return count
+	}
+	return 0
+}

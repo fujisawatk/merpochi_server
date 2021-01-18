@@ -11,7 +11,15 @@ import (
 func iniShopsRoutes() []Route {
 	// 依存関係を注入
 	shopPersistence := persistence.NewShopPersistence(database.DB)
-	shopUsecase := usecase.NewShopUsecase(shopPersistence)
+	postPersistence := persistence.NewPostPersistence(database.DB)
+	favoritePersistence := persistence.NewFavoritePersistence(database.DB)
+	bookmarkPersistence := persistence.NewBookmarkPersistence(database.DB)
+	shopUsecase := usecase.NewShopUsecase(
+		shopPersistence,
+		postPersistence,
+		favoritePersistence,
+		bookmarkPersistence,
+	)
 	shopHandler := handler.NewShopHandler(shopUsecase)
 
 	shopsRoutes := []Route{
