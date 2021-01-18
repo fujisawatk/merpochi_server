@@ -6,5 +6,5 @@ import "merpochi_server/domain/models"
 type BookmarkRepository interface {
 	Save(*models.Bookmark) (*models.Bookmark, error)
 	Delete(uint32, uint32) error
-	FindBookmarksCount(uint32) uint32
+	CountByShopID(uint32) uint32
 }

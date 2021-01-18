@@ -28,14 +28,21 @@ type PostUsecase interface {
 
 type postUsecase struct {
 	postRepository    repository.PostRepository
+	userRepository    repository.UserRepository    // belongs to
 	commentRepository repository.CommentRepository // has many
 	imageRepository   repository.ImageRepository   // has many
 }
 
 // NewPostUsecase Postデータに関するUsecaseを生成
-func NewPostUsecase(pr repository.PostRepository, cr repository.CommentRepository, ir repository.ImageRepository) PostUsecase {
+func NewPostUsecase(
+	pr repository.PostRepository,
+	ur repository.UserRepository,
+	cr repository.CommentRepository,
+	ir repository.ImageRepository,
+) PostUsecase {
 	return &postUsecase{
 		postRepository:    pr,
+		userRepository:    ur,
 		commentRepository: cr,
 		imageRepository:   ir,
 	}
@@ -111,7 +118,7 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]postsGetResponse, error) {
 				return []postsGetResponse{}, err
 			}
 			// コメント数取得
-			commentsCount := pu.commentRepository.FindCommentsCount((*posts)[i].ID)
+			commentsCount := pu.commentRepository.CountByPostID((*posts)[i].ID)
 
 			imgs, err := pu.GetPostImage((*posts)[i].UserID, sid, (*posts)[i].ID)
 			if err != nil {
@@ -164,7 +171,7 @@ func (pu *postUsecase) DeletePost(pid uint32) error {
 
 // ユーザー情報取得〜整形まで
 func (pu *postUsecase) GetUserData(uid uint32, createdAt, updatedAt time.Time) (string, string, string, error) {
-	user, err := pu.postRepository.FindByUserID(uid)
+	user, err := pu.userRepository.FindByID(uid)
 	if err != nil {
 		return "", "", "", err
 	}

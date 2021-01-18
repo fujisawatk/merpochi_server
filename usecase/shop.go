@@ -52,11 +52,11 @@ func (su *shopUsecase) SearchShops(shopCodes []string, uid uint32) ([]searchShop
 			counts = append(counts, res)
 		} else {
 			// 評価が4以上である投稿数を取得
-			postsCount := su.postRepository.FindPostsCount(shop.ID)
+			postsCount := su.postRepository.CountByShopID(shop.ID)
 			// お気に入り（リピートしたいボタン）が押された数を取得
-			favoritesCount := su.favoriteRepository.FindFavoritesCount(shop.ID)
+			favoritesCount := su.favoriteRepository.CountByShopID(shop.ID)
 			// ブックマーク数を取得
-			bookmarksCount := su.bookmarkRepository.FindBookmarksCount(shop.ID)
+			bookmarksCount := su.bookmarkRepository.CountByShopID(shop.ID)
 			// APIを呼び出したユーザーがブックマークしているか確認
 			bookmarkUser := su.shopRepository.FindBookmarkUser(shop.ID, uid)
 			// APIを呼び出したユーザーがお気に入りしているか確認

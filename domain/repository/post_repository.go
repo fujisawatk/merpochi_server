@@ -8,8 +8,7 @@ type PostRepository interface {
 	FindAll(uint32) (*[]models.Post, error)
 	Update(*models.Post) (int64, error)
 	Delete(uint32) error
-	FindByUserID(uint32) (*models.User, error)
-	FindMyPosts(uint32) (*[]models.Post, error)
+	FindByUserID(uint32) (*[]models.Post, error)
 	FindCommentedPosts(uint32) (*[]models.Post, error)
-	FindPostsCount(uint32) uint32
+	CountByShopID(uint32) uint32
 }

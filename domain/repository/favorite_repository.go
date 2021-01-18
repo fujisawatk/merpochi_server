@@ -8,5 +8,5 @@ type FavoriteRepository interface {
 	Save(models.Favorite) (models.Favorite, error)
 	Delete(uint32, uint32) (int64, error)
 	FindFavoriteUser(uint32) (models.User, error)
-	FindFavoritesCount(uint32) uint32
+	CountByShopID(uint32) uint32
 }

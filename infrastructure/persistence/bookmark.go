@@ -70,7 +70,7 @@ func (bp *bookmarkPersistence) Delete(sid uint32, uid uint32) error {
 }
 
 // 指定した店舗のブックマーク数を取得
-func (bp *bookmarkPersistence) FindBookmarksCount(sid uint32) uint32 {
+func (bp *bookmarkPersistence) CountByShopID(sid uint32) uint32 {
 	var count uint32
 
 	done := make(chan bool)

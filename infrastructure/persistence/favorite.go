@@ -122,7 +122,7 @@ func (fp *favoritePersistence) FindFavoriteUser(uid uint32) (models.User, error)
 }
 
 // 店舗情報に紐づくお気に入り数を取得
-func (fp *favoritePersistence) FindFavoritesCount(sid uint32) uint32 {
+func (fp *favoritePersistence) CountByShopID(sid uint32) uint32 {
 	var count uint32
 
 	done := make(chan bool)

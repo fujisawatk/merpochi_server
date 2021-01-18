@@ -128,7 +128,7 @@ func (uu *userUsecase) MylistUser(uid uint32) (*userResponse, error) {
 // ※関数分けたほうがいい
 func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 	// ログインユーザーが投稿したレビュー
-	myPosts, err := uu.postRepository.FindMyPosts(uid)
+	myPosts, err := uu.postRepository.FindByUserID(uid)
 	if err != nil {
 		return &meUserResponse{}, err
 	}
@@ -141,7 +141,7 @@ func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 				return &meUserResponse{}, err
 			}
 			// コメント数取得
-			commentsCount := uu.commentRepository.FindCommentsCount((*myPosts)[i].ID)
+			commentsCount := uu.commentRepository.CountByPostID((*myPosts)[i].ID)
 
 			imgs, err := uu.GetPostImage((*myPosts)[i].UserID, (*myPosts)[i].ShopID, (*myPosts)[i].ID)
 			if err != nil {
@@ -176,7 +176,7 @@ func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 				return &meUserResponse{}, err
 			}
 			// コメント数取得
-			commentsCount := uu.commentRepository.FindCommentsCount((*commentedPosts)[i].ID)
+			commentsCount := uu.commentRepository.CountByPostID((*commentedPosts)[i].ID)
 
 			imgs, err := uu.GetPostImage((*commentedPosts)[i].UserID, (*commentedPosts)[i].ShopID, (*commentedPosts)[i].ID)
 			if err != nil {
@@ -208,7 +208,7 @@ func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 
 // ユーザー情報取得〜整形まで
 func (uu *userUsecase) GetUserData(uid uint32, createdAt, updatedAt time.Time) (string, string, string, error) {
-	user, err := uu.postRepository.FindByUserID(uid)
+	user, err := uu.userRepository.FindByID(uid)
 	if err != nil {
 		return "", "", "", err
 	}
