@@ -8,6 +8,5 @@ type CommentRepository interface {
 	Save(*models.Comment) error
 	Update(uint32, *models.Comment) (int64, error)
 	Delete(uint32) error
-	FindByUserID(uint32) (*models.User, error)
 	CountByPostID(uint32) uint32
 }
