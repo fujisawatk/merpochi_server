@@ -10,8 +10,8 @@ import (
 
 // CommentUsecase Commentに対するUsecaseのインターフェイス
 type CommentUsecase interface {
-	GetComments(uint32) (*[]models.Comment, error)
-	CreateComment(string, uint32, uint32) (createCommentResponse, error)
+	GetComments(uint32) ([]commentResponse, error)
+	CreateComment(string, uint32, uint32) (commentResponse, error)
 	UpdateComment(uint32, string) (int64, error)
 	DeleteComment(uint32) error
 }
@@ -38,26 +38,36 @@ func NewCommentUsecase(
 	}
 }
 
-func (cu *commentUsecase) GetComments(pid uint32) (*[]models.Comment, error) {
+func (cu *commentUsecase) GetComments(pid uint32) ([]commentResponse, error) {
 	comments, err := cu.commentRepository.FindAll(pid)
 	if err != nil {
-		return &[]models.Comment{}, err
+		return []commentResponse{}, err
 	}
+
+	var responses []commentResponse
 	// コメントが存在する場合
 	if len(*comments) > 0 {
 		// 取得した投稿にコメントしたユーザー情報を取得
 		for i := 0; i < len(*comments); i++ {
-			user, err := cu.commentRepository.FindByUserID((*comments)[i].UserID)
+			commentedUser, imgURI, time, err := cu.GetUserData((*comments)[i].UserID, (*comments)[i].CreatedAt, (*comments)[i].UpdatedAt)
 			if err != nil {
-				return &[]models.Comment{}, err
+				return []commentResponse{}, err
 			}
-			(*comments)[i].User = *user
+			res := commentResponse{
+				ID:           (*comments)[i].ID,
+				Text:         (*comments)[i].Text,
+				UserID:       (*comments)[i].UserID,
+				UserNickname: commentedUser,
+				UserImage:    imgURI,
+				Time:         time,
+			}
+			responses = append(responses, res)
 		}
 	}
-	return comments, nil
+	return responses, nil
 }
 
-func (cu *commentUsecase) CreateComment(text string, uid, pid uint32) (createCommentResponse, error) {
+func (cu *commentUsecase) CreateComment(text string, uid, pid uint32) (commentResponse, error) {
 	comment := &models.Comment{
 		Text:   text,
 		UserID: uid,
@@ -66,19 +76,19 @@ func (cu *commentUsecase) CreateComment(text string, uid, pid uint32) (createCom
 
 	err := validations.CommentValidate(comment)
 	if err != nil {
-		return createCommentResponse{}, err
+		return commentResponse{}, err
 	}
 
 	err = cu.commentRepository.Save(comment)
 	if err != nil {
-		return createCommentResponse{}, err
+		return commentResponse{}, err
 	}
 
 	commentedUser, imgURI, time, err := cu.GetUserData((*comment).UserID, (*comment).CreatedAt, (*comment).UpdatedAt)
 	if err != nil {
-		return createCommentResponse{}, err
+		return commentResponse{}, err
 	}
-	res := createCommentResponse{
+	res := commentResponse{
 		ID:           (*comment).ID,
 		Text:         (*comment).Text,
 		UserID:       (*comment).UserID,
@@ -156,7 +166,7 @@ func (cu *commentUsecase) GetUserImage(uid uint32) (string, error) {
 	return uri, nil
 }
 
-type createCommentResponse struct {
+type commentResponse struct {
 	ID           uint32 `json:"id"`
 	Text         string `json:"text"`
 	UserID       uint32 `json:"user_id"`
