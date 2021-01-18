@@ -108,12 +108,12 @@ func (uu userUsecase) DeleteUser(uid uint32) error {
 }
 
 func (uu *userUsecase) MylistUser(uid uint32) (*userResponse, error) {
-	bookmarkedShops, err := uu.shopRepository.FindBookmarkedShops(uid)
+	bookmarkedShops, err := uu.shopRepository.FindAllByUserIDJoinsBookmark(uid)
 	if err != nil {
 		return &userResponse{}, err
 	}
 
-	favoritedShops, err := uu.shopRepository.FindFavoritedShops(uid)
+	favoritedShops, err := uu.shopRepository.FindAllByUserIDJoinsFavorite(uid)
 	if err != nil {
 		return &userResponse{}, err
 	}
@@ -163,7 +163,7 @@ func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
 		}
 	}
 	// ログインユーザーがコメントしたレビュー
-	commentedPosts, err := uu.postRepository.FindCommentedPosts(uid)
+	commentedPosts, err := uu.postRepository.FindAllByUserIDJoinsComment(uid)
 	if err != nil {
 		return &meUserResponse{}, err
 	}

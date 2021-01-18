@@ -9,6 +9,6 @@ type PostRepository interface {
 	Update(*models.Post) (int64, error)
 	Delete(uint32) error
 	FindByUserID(uint32) (*[]models.Post, error)
-	FindCommentedPosts(uint32) (*[]models.Post, error)
+	FindAllByUserIDJoinsComment(uint32) (*[]models.Post, error)
 	CountByShopID(uint32) uint32
 }

@@ -52,7 +52,7 @@ func (ap *authPersistence) SignIn(email, password string) (models.User, string, 
 	return models.User{}, "", err
 }
 
-func (ap *authPersistence) FindCurrentUser(uid uint32) (models.User, string, error) {
+func (ap *authPersistence) FindByID(uid uint32) (models.User, string, error) {
 	user := models.User{}
 	var err error
 

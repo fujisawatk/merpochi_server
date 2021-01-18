@@ -65,7 +65,7 @@ func (au authUsecase) VerifyUser(authToken string) (authResponse, error) {
 	claims, _ := token.Claims.(jwt.MapClaims)
 	uid := claims["user_id"].(float64)
 
-	user, rToken, err := au.authRepository.FindCurrentUser(uint32(uid))
+	user, rToken, err := au.authRepository.FindByID(uint32(uid))
 	if err != nil {
 		return authResponse{}, err
 	}

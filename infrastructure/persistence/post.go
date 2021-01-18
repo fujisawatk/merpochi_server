@@ -127,7 +127,7 @@ func (pp *postPersistence) FindByUserID(uid uint32) (*[]models.Post, error) {
 }
 
 // ログインユーザーがコメントした投稿情報を取得
-func (pp *postPersistence) FindCommentedPosts(uid uint32) (*[]models.Post, error) {
+func (pp *postPersistence) FindAllByUserIDJoinsComment(uid uint32) (*[]models.Post, error) {
 	var err error
 	posts := &[]models.Post{}
 

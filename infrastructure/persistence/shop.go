@@ -97,7 +97,7 @@ func (sp *shopPersistence) FindByCode(code string) (*models.Shop, error) {
 	return &models.Shop{}, err
 }
 
-func (sp *shopPersistence) FindBookmarkedShops(uid uint32) (*[]models.Shop, error) {
+func (sp *shopPersistence) FindAllByUserIDJoinsBookmark(uid uint32) (*[]models.Shop, error) {
 	var err error
 	shops := &[]models.Shop{}
 	done := make(chan bool)
@@ -122,7 +122,7 @@ func (sp *shopPersistence) FindBookmarkedShops(uid uint32) (*[]models.Shop, erro
 	return &[]models.Shop{}, err
 }
 
-func (sp *shopPersistence) FindFavoritedShops(uid uint32) (*[]models.Shop, error) {
+func (sp *shopPersistence) FindAllByUserIDJoinsFavorite(uid uint32) (*[]models.Shop, error) {
 	var err error
 	shops := &[]models.Shop{}
 	done := make(chan bool)
