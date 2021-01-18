@@ -1,10 +1,12 @@
 package usecase
 
 import (
+	"bytes"
 	"merpochi_server/domain/models"
 	"merpochi_server/domain/repository"
 	"merpochi_server/usecase/validations"
 	"merpochi_server/util/security"
+	"time"
 )
 
 // UserUsecase Userに対するUsecaseのインターフェイス
@@ -18,13 +20,21 @@ type UserUsecase interface {
 }
 
 type userUsecase struct {
-	userRepository repository.UserRepository
+	userRepository  repository.UserRepository
+	postRepository  repository.PostRepository  // has many
+	imageRepository repository.ImageRepository // has many
 }
 
 // NewUserUsecase Userデータに関するUsecaseを生成
-func NewUserUsecase(ur repository.UserRepository) UserUsecase {
+func NewUserUsecase(
+	ur repository.UserRepository,
+	pr repository.PostRepository,
+	ir repository.ImageRepository,
+) UserUsecase {
 	return &userUsecase{
-		userRepository: ur,
+		userRepository:  ur,
+		postRepository:  pr,
+		imageRepository: ir,
 	}
 }
 
@@ -109,33 +119,168 @@ func (uu *userUsecase) MylistUser(uid uint32) (*userResponse, error) {
 	return res, nil
 }
 
+// ※関数分けたほうがいい
 func (uu *userUsecase) MeUser(uid uint32) (*meUserResponse, error) {
+	// ログインユーザーが投稿したレビュー
 	myPosts, err := uu.userRepository.FindMyPosts(uid)
 	if err != nil {
 		return &meUserResponse{}, err
 	}
+	var myPostsData []postData
+	if len(*myPosts) > 0 {
+		// 投稿したユーザー情報を取得
+		for i := 0; i < len(*myPosts); i++ {
+			postedUser, imgURI, time, err := uu.GetUserData((*myPosts)[i].UserID, (*myPosts)[i].CreatedAt, (*myPosts)[i].UpdatedAt)
+			if err != nil {
+				return &meUserResponse{}, err
+			}
+			// コメント数取得
+			commentsCount := uu.postRepository.FindCommentsCount((*myPosts)[i].ID)
 
+			imgs, err := uu.GetPostImage((*myPosts)[i].UserID, (*myPosts)[i].ShopID, (*myPosts)[i].ID)
+			if err != nil {
+				return &meUserResponse{}, err
+			}
+
+			res := postData{
+				ID:            (*myPosts)[i].ID,
+				Text:          (*myPosts)[i].Text,
+				Rating:        (*myPosts)[i].Rating,
+				Images:        imgs,
+				UserID:        (*myPosts)[i].UserID,
+				UserNickname:  postedUser,
+				UserImage:     imgURI,
+				CommentsCount: commentsCount,
+				Time:          time,
+			}
+			myPostsData = append(myPostsData, res)
+		}
+	}
+	// ログインユーザーがコメントしたレビュー
 	commentedPosts, err := uu.userRepository.FindCommentedPosts(uid)
 	if err != nil {
 		return &meUserResponse{}, err
 	}
-	uniqPosts := DelDuplicatePosts(commentedPosts)
+	var commentedPostsData []postData
+	if len(*commentedPosts) > 0 {
+		// 投稿したユーザー情報を取得
+		for i := 0; i < len(*commentedPosts); i++ {
+			postedUser, imgURI, time, err := uu.GetUserData((*commentedPosts)[i].UserID, (*commentedPosts)[i].CreatedAt, (*commentedPosts)[i].UpdatedAt)
+			if err != nil {
+				return &meUserResponse{}, err
+			}
+			// コメント数取得
+			commentsCount := uu.postRepository.FindCommentsCount((*commentedPosts)[i].ID)
+
+			imgs, err := uu.GetPostImage((*commentedPosts)[i].UserID, (*commentedPosts)[i].ShopID, (*commentedPosts)[i].ID)
+			if err != nil {
+				return &meUserResponse{}, err
+			}
+
+			res := postData{
+				ID:            (*commentedPosts)[i].ID,
+				Text:          (*commentedPosts)[i].Text,
+				Rating:        (*commentedPosts)[i].Rating,
+				Images:        imgs,
+				UserID:        (*commentedPosts)[i].UserID,
+				UserNickname:  postedUser,
+				UserImage:     imgURI,
+				CommentsCount: commentsCount,
+				Time:          time,
+			}
+			commentedPostsData = append(commentedPostsData, res)
+		}
+	}
+	uniqPosts := uu.DelDuplicatePosts(commentedPostsData)
 
 	res := &meUserResponse{
-		MyPosts:        *(myPosts),
+		MyPosts:        myPostsData,
 		CommentedPosts: uniqPosts,
 	}
 	return res, nil
 }
 
-// DelDuplicatePosts 店舗情報重複削除
-func DelDuplicatePosts(posts *[]models.Post) []models.Post {
-	m := make(map[uint32]bool)
-	uniq := []models.Post{}
+// ユーザー情報取得〜整形まで
+func (uu *userUsecase) GetUserData(uid uint32, createdAt, updatedAt time.Time) (string, string, string, error) {
+	user, err := uu.postRepository.FindByUserID(uid)
+	if err != nil {
+		return "", "", "", err
+	}
 
-	for _, post := range *(posts) {
-		if !m[post.ShopID] {
-			m[post.ShopID] = true
+	imgURI, err := uu.GetUserImage(uid)
+	if err != nil {
+		return "", "", "", err
+	}
+	// 作成or編集時刻整形
+	var time string
+	format1 := "2006/01/02 15:04:05"
+	if createdAt != updatedAt {
+		time = "編集済 " + (updatedAt).Format(format1)
+	} else {
+		time = (createdAt).Format(format1)
+	}
+	return user.Nickname, imgURI, time, nil
+}
+
+// ユーザー画像取得〜base64エンコード文字列生成まで
+func (uu *userUsecase) GetUserImage(uid uint32) (string, error) {
+	img, err := uu.imageRepository.FindByID(uid)
+	if err != nil {
+		return "", err
+	}
+
+	err = uu.imageRepository.DownloadS3(img, "merpochi-users-image")
+	if err != nil {
+		return "", err
+	}
+
+	uri, err := security.Base64EncodeToString(img.Buf)
+	if err != nil {
+		return "", err
+	}
+	return uri, nil
+}
+
+// 投稿画像取得〜base64エンコード文字列生成まで
+func (uu *userUsecase) GetPostImage(uid, sid, pid uint32) ([]imageData, error) {
+	imgs, err := uu.imageRepository.FindAll(uid, sid, pid)
+	if err != nil {
+		return []imageData{}, err
+	}
+	var responses []imageData
+	if len(*imgs) > 0 {
+		for i := 0; i < len(*imgs); i++ {
+			img := &models.Image{
+				Name: (*imgs)[i].Name,
+				Buf:  &bytes.Buffer{},
+			}
+			err = uu.imageRepository.DownloadS3(img, "merpochi-posts-image")
+			if err != nil {
+				return []imageData{}, err
+			}
+
+			uri, err := security.Base64EncodeToString((*img).Buf)
+			if err != nil {
+				return []imageData{}, err
+			}
+			res := imageData{
+				ID:  (*imgs)[i].ID,
+				URI: uri,
+			}
+			responses = append(responses, res)
+		}
+	}
+	return responses, nil
+}
+
+// DelDuplicatePosts 投稿情報重複削除
+func (uu *userUsecase) DelDuplicatePosts(posts []postData) []postData {
+	m := make(map[uint32]bool)
+	uniq := []postData{}
+
+	for _, post := range posts {
+		if !m[post.ID] {
+			m[post.ID] = true
 			uniq = append(uniq, post)
 		}
 	}
@@ -148,6 +293,18 @@ type userResponse struct {
 }
 
 type meUserResponse struct {
-	MyPosts        []models.Post `json:"my_posts"`
-	CommentedPosts []models.Post `json:"commented_posts"`
+	MyPosts        []postData `json:"my_posts"`
+	CommentedPosts []postData `json:"commented_posts"`
+}
+
+type postData struct {
+	ID            uint32      `json:"id"`
+	Text          string      `json:"text"`
+	Rating        uint32      `json:"rating"`
+	Images        []imageData `json:"images"`
+	UserID        uint32      `json:"user_id"`
+	UserNickname  string      `json:"user_nickname"`
+	UserImage     string      `json:"user_image"`
+	CommentsCount uint32      `json:"comments_count"`
+	Time          string      `json:"time"`
 }
