@@ -98,6 +98,28 @@ func (ip *imagePersistence) FindByUserID(uid uint32) (*models.Image, error) {
 	return &models.Image{}, err
 }
 
+// 指定の投稿に紐付く画像情報を全件取得
+func (ip *imagePersistence) FindAllByPostID(pid uint32) (*[]models.Image, error) {
+	var err error
+	imgs := &[]models.Image{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+
+		err = ip.db.Model(&models.Image{}).Where("post_id = ?", pid).Find(imgs).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return imgs, nil
+	}
+	return &[]models.Image{}, err
+}
+
 func (ip *imagePersistence) Update(img *models.Image) (int64, error) {
 	var rs *gorm.DB
 	done := make(chan bool)
@@ -267,4 +289,20 @@ func SetCredentialsForAWS() (*session.Session, error) {
 		Region:      aws.String("ap-northeast-1")},
 	)
 	return sess, err
+}
+
+// 指定した投稿情報のレコードを1件削除
+func (ip *imagePersistence) DeleteByPostID(pid uint32) error {
+	var rs *gorm.DB
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rs = ip.db.Model(&models.Post{}).Where("id = ?", pid).Take(&models.Post{}).Delete(&models.Post{})
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return nil
+	}
+	return rs.Error
 }
