@@ -8,7 +8,7 @@ import (
 type ImageRepository interface {
 	Create(*models.Image) (*models.Image, error)
 	Search(uint32) error
-	FindByID(uint32) (*models.Image, error)
+	FindByUserID(uint32) (*models.Image, error)
 	Update(*models.Image) (int64, error)
 	FindAll(uint32, uint32, uint32) (*[]models.Image, error)
 	UploadS3(*models.Image, string) error

@@ -68,7 +68,7 @@ func (iu imageUsecase) CreateImage(uid uint32, file multipart.File) (*models.Ima
 }
 
 func (iu imageUsecase) GetImage(uid uint32) (string, error) {
-	img, err := iu.imageRepository.FindByID(uid)
+	img, err := iu.imageRepository.FindByUserID(uid)
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +86,7 @@ func (iu imageUsecase) GetImage(uid uint32) (string, error) {
 }
 
 func (iu imageUsecase) UpdateImage(uid uint32, file multipart.File) (int64, error) {
-	img, err := iu.imageRepository.FindByID(uid)
+	img, err := iu.imageRepository.FindByUserID(uid)
 	if err != nil {
 		return 0, err
 	}

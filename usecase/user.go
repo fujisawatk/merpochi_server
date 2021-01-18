@@ -230,7 +230,7 @@ func (uu *userUsecase) GetUserData(uid uint32, createdAt, updatedAt time.Time) (
 
 // ユーザー画像取得〜base64エンコード文字列生成まで
 func (uu *userUsecase) GetUserImage(uid uint32) (string, error) {
-	img, err := uu.imageRepository.FindByID(uid)
+	img, err := uu.imageRepository.FindByUserID(uid)
 	if err != nil {
 		return "", err
 	}

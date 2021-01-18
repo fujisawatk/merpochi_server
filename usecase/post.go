@@ -193,7 +193,7 @@ func (pu *postUsecase) GetUserData(uid uint32, createdAt, updatedAt time.Time) (
 
 // ユーザー画像取得〜base64エンコード文字列生成まで
 func (pu *postUsecase) GetUserImage(uid uint32) (string, error) {
-	img, err := pu.imageRepository.FindByID(uid)
+	img, err := pu.imageRepository.FindByUserID(uid)
 	if err != nil {
 		return "", err
 	}

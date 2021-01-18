@@ -74,8 +74,8 @@ func (ip *imagePersistence) Search(uid uint32) error {
 	return err
 }
 
-// FindByID 指定ユーザーの画像情報を取得
-func (ip *imagePersistence) FindByID(uid uint32) (*models.Image, error) {
+// 指定ユーザーの画像情報を取得
+func (ip *imagePersistence) FindByUserID(uid uint32) (*models.Image, error) {
 	var err error
 	img := &models.Image{
 		Buf: &bytes.Buffer{},
