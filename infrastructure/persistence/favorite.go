@@ -19,32 +19,6 @@ func NewFavoritePersistence(db *gorm.DB) repository.FavoriteRepository {
 	return &favoritePersistence{db}
 }
 
-// 指定した店舗のいいね情報を取得
-func (fp *favoritePersistence) FindAll(sid uint32) ([]models.Favorite, error) {
-	var err error
-	var favorites []models.Favorite
-
-	done := make(chan bool)
-
-	go func(ch chan<- bool) {
-		defer close(ch)
-		query := fp.db.Table("shops").
-			Select("favorites.*").
-			Joins("inner join favorites on favorites.shop_id = shops.id").
-			Where("shops.id = ?", sid)
-		err = query.Scan(&favorites).Error
-		if err != nil {
-			ch <- false
-			return
-		}
-		ch <- true
-	}(done)
-	if channels.OK(done) {
-		return favorites, nil
-	}
-	return []models.Favorite{}, err
-}
-
 // Save お気に入り登録
 func (fp *favoritePersistence) Save(favorite models.Favorite) (models.Favorite, error) {
 	var err error

@@ -33,13 +33,6 @@ func (bu *bookmarkUsecase) CreateBookmark(sid uint32, uid uint32) (*models.Bookm
 		return &models.Bookmark{}, err
 	}
 
-	// お気に入りしたユーザー値を取得
-	// bookmarkUser, err := fu.bookmarkRepository.FindBookmarkUser(bookmark.UserID)
-	// if err != nil {
-	// 	return &models.Bookmark{}, err
-	// }
-	// bookmark.User = bookmarkUser
-
 	return bookmark, nil
 }
 
