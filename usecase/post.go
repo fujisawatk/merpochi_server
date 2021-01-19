@@ -219,7 +219,28 @@ func (pu *postUsecase) UpdatePost(reImgs []string, text string, rating, uid, sid
 }
 
 func (pu *postUsecase) DeletePost(pid uint32) error {
-	err := pu.postRepository.Delete(pid)
+	// 投稿画像削除
+	imgs, err := pu.imageRepository.FindAllByPostID(pid)
+	if err != nil {
+		return err
+	}
+	if len(*imgs) > 0 {
+		for _, i := range *imgs {
+			tmp := &models.Image{
+				Name: i.Name,
+			}
+			err = pu.imageRepository.DeleteS3(tmp, "merpochi-posts-image")
+			if err != nil {
+				return err
+			}
+			err = pu.imageRepository.DeleteByPostID(pid)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	err = pu.postRepository.Delete(pid)
 	if err != nil {
 		return err
 	}
