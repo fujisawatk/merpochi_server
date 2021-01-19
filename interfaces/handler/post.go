@@ -93,11 +93,19 @@ func (ph *postHandler) HandlePostsGet(w http.ResponseWriter, r *http.Request) {
 func (ph *postHandler) HandlePostUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
+	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
 	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
+
+	uid := ctxval.GetUserID(r)
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -112,12 +120,19 @@ func (ph *postHandler) HandlePostUpdate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	rows, err := ph.postUsecase.UpdatePost(uint32(pid), requestBody.Rating, requestBody.Text)
+	err = ph.postUsecase.UpdatePost(
+		requestBody.Images,
+		requestBody.Text,
+		requestBody.Rating,
+		uid,
+		uint32(sid),
+		uint32(pid),
+	)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, rows)
+	responses.JSON(w, http.StatusOK, "")
 }
 
 // HandlePostDelete 投稿情報を1件削除
@@ -147,6 +162,7 @@ type postCreateRequest struct {
 }
 
 type postUpdateRequest struct {
-	Text   string `json:"text"`
-	Rating uint32 `json:"rating"`
+	Text   string   `json:"text"`
+	Rating uint32   `json:"rating"`
+	Images []string `json:"images"`
 }

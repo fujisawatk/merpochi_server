@@ -22,7 +22,7 @@ import (
 type PostUsecase interface {
 	CreatePost([]string, string, uint32, uint32, uint32) error
 	GetPosts(uint32) ([]getPostsResponse, error)
-	UpdatePost(uint32, uint32, string) (int64, error)
+	UpdatePost([]string, string, uint32, uint32, uint32, uint32) error
 	DeletePost(uint32) error
 }
 
@@ -142,7 +142,7 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]getPostsResponse, error) {
 	return responses, nil
 }
 
-func (pu *postUsecase) UpdatePost(pid, rating uint32, text string) (int64, error) {
+func (pu *postUsecase) UpdatePost(reImgs []string, text string, rating, uid, sid, pid uint32) error {
 	post := &models.Post{
 		ID:     pid,
 		Text:   text,
@@ -151,14 +151,71 @@ func (pu *postUsecase) UpdatePost(pid, rating uint32, text string) (int64, error
 
 	err := validations.PostValidate(post)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	rows, err := pu.postRepository.Update(post)
+	_, err = pu.postRepository.Update(post)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return rows, nil
+
+	imgs, err := pu.imageRepository.FindAllByPostID(pid)
+	if err != nil {
+		return err
+	}
+	if len(*imgs) > 0 {
+		// 旧画像の削除処理
+		for _, i := range *imgs {
+			tmp := &models.Image{
+				Name: i.Name,
+			}
+			err = pu.imageRepository.DeleteS3(tmp, "merpochi-posts-image")
+			if err != nil {
+				return err
+			}
+			err = pu.imageRepository.DeleteByPostID(pid)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(reImgs) > 0 {
+		for i := 0; i < len(reImgs); i++ {
+			img := &models.Image{
+				UserID: uid,
+				ShopID: sid,
+				PostID: (*post).ID,
+				Buf:    &bytes.Buffer{},
+			}
+			// base64エンコード文字列を最初のコンマまでカット("data:image/png;base64,"部分がデコード時に不要のため )
+			b64data := reImgs[i][strings.IndexByte(reImgs[i], ',')+1:]
+			// 文字列をデコード
+			data, err := base64.StdEncoding.DecodeString(b64data)
+			if err != nil {
+				return err
+			}
+			// バッファー生成
+			buf := bytes.NewBuffer(data)
+			_, err = img.Buf.ReadFrom(buf)
+			if err != nil {
+				return err
+			}
+			err = ResizePostImage(img, (i + 1))
+			if err != nil {
+				return err
+			}
+			err = pu.imageRepository.UploadS3(img, "merpochi-posts-image")
+			if err != nil {
+				return err
+			}
+			_, err = pu.imageRepository.Save(img)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (pu *postUsecase) DeletePost(pid uint32) error {
