@@ -22,7 +22,7 @@ import (
 type PostUsecase interface {
 	CreatePost([]string, string, uint32, uint32, uint32) error
 	GetPosts(uint32) ([]getPostsResponse, error)
-	UpdatePost([]string, string, uint32, uint32) error
+	UpdatePost([]string, string, uint32, uint32, uint32, uint32) error
 	DeletePost(uint32) error
 }
 
@@ -142,7 +142,7 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]getPostsResponse, error) {
 	return responses, nil
 }
 
-func (pu *postUsecase) UpdatePost(reImgs []string, text string, rating, pid uint32) error {
+func (pu *postUsecase) UpdatePost(reImgs []string, text string, rating, uid, sid, pid uint32) error {
 	post := &models.Post{
 		ID:     pid,
 		Text:   text,
@@ -183,6 +183,8 @@ func (pu *postUsecase) UpdatePost(reImgs []string, text string, rating, pid uint
 	if len(reImgs) > 0 {
 		for i := 0; i < len(reImgs); i++ {
 			img := &models.Image{
+				UserID: uid,
+				ShopID: sid,
 				PostID: (*post).ID,
 				Buf:    &bytes.Buffer{},
 			}

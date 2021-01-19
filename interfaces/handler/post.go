@@ -93,11 +93,19 @@ func (ph *postHandler) HandlePostsGet(w http.ResponseWriter, r *http.Request) {
 func (ph *postHandler) HandlePostUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
+	sid, err := strconv.ParseUint(vars["shopId"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
 	pid, err := strconv.ParseUint(vars["postId"], 10, 32)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
+
+	uid := ctxval.GetUserID(r)
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -116,6 +124,8 @@ func (ph *postHandler) HandlePostUpdate(w http.ResponseWriter, r *http.Request) 
 		requestBody.Images,
 		requestBody.Text,
 		requestBody.Rating,
+		uid,
+		uint32(sid),
 		uint32(pid),
 	)
 	if err != nil {
