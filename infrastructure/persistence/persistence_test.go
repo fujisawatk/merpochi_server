@@ -109,12 +109,12 @@ func initTestDatabase() {
 		}
 	}
 
-	for _, comment := range comments {
-		err = db.Model(&models.Comment{}).Create(&comment).Error
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	// for _, comment := range comments {
+	// 	err = db.Model(&models.Comment{}).Create(&comment).Error
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// }
 
 	for _, station := range stations {
 		err = db.Model(&models.Station{}).Create(&station).Error
