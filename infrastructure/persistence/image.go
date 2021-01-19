@@ -298,7 +298,7 @@ func (ip *imagePersistence) DeleteByPostID(pid uint32) error {
 
 	go func(ch chan<- bool) {
 		defer close(ch)
-		rs = ip.db.Model(&models.Post{}).Where("id = ?", pid).Take(&models.Post{}).Delete(&models.Post{})
+		rs = ip.db.Model(&models.Image{}).Where("post_id = ?", pid).Take(&models.Image{}).Delete(&models.Image{})
 		ch <- true
 	}(done)
 	if channels.OK(done) {
