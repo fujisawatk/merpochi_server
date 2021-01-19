@@ -64,41 +64,12 @@ func (pu *postUsecase) CreatePost(imgs []string, text string, rating, uid, sid u
 	if err != nil {
 		return err
 	}
-	if len(imgs) > 0 {
-		for i := 0; i < len(imgs); i++ {
-			img := &models.Image{
-				UserID: uid,
-				ShopID: sid,
-				PostID: (*post).ID,
-				Buf:    &bytes.Buffer{},
-			}
-			// base64エンコード文字列を最初のコンマまでカット("data:image/png;base64,"部分がデコード時に不要のため )
-			b64data := imgs[i][strings.IndexByte(imgs[i], ',')+1:]
-			// 文字列をデコード
-			data, err := base64.StdEncoding.DecodeString(b64data)
-			if err != nil {
-				return err
-			}
-			// バッファー生成
-			buf := bytes.NewBuffer(data)
-			_, err = img.Buf.ReadFrom(buf)
-			if err != nil {
-				return err
-			}
-			err = ResizePostImage(img, (i + 1))
-			if err != nil {
-				return err
-			}
-			err = pu.imageRepository.UploadS3(img, "merpochi-posts-image")
-			if err != nil {
-				return err
-			}
-			img, err = pu.imageRepository.Save(img)
-			if err != nil {
-				return err
-			}
-		}
+	// 投稿画像登録
+	err = pu.CreatePostImages(imgs, uid, sid, (*post).ID)
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
 
@@ -120,7 +91,7 @@ func (pu *postUsecase) GetPosts(sid uint32) ([]getPostsResponse, error) {
 			// コメント数取得
 			commentsCount := pu.commentRepository.CountByPostID((*posts)[i].ID)
 
-			imgs, err := pu.GetPostImage((*posts)[i].UserID, sid, (*posts)[i].ID)
+			imgs, err := pu.GetPostImages((*posts)[i].UserID, sid, (*posts)[i].ID)
 			if err != nil {
 				return []getPostsResponse{}, err
 			}
@@ -159,67 +130,27 @@ func (pu *postUsecase) UpdatePost(reImgs []string, text string, rating, uid, sid
 		return err
 	}
 
-	imgs, err := pu.imageRepository.FindAllByPostID(pid)
+	// 旧画像削除
+	err = pu.DeletePostImages(pid)
 	if err != nil {
 		return err
 	}
-	if len(*imgs) > 0 {
-		// 旧画像の削除処理
-		for _, i := range *imgs {
-			tmp := &models.Image{
-				Name: i.Name,
-			}
-			err = pu.imageRepository.DeleteS3(tmp, "merpochi-posts-image")
-			if err != nil {
-				return err
-			}
-			err = pu.imageRepository.DeleteByPostID(pid)
-			if err != nil {
-				return err
-			}
-		}
-	}
 
-	if len(reImgs) > 0 {
-		for i := 0; i < len(reImgs); i++ {
-			img := &models.Image{
-				UserID: uid,
-				ShopID: sid,
-				PostID: (*post).ID,
-				Buf:    &bytes.Buffer{},
-			}
-			// base64エンコード文字列を最初のコンマまでカット("data:image/png;base64,"部分がデコード時に不要のため )
-			b64data := reImgs[i][strings.IndexByte(reImgs[i], ',')+1:]
-			// 文字列をデコード
-			data, err := base64.StdEncoding.DecodeString(b64data)
-			if err != nil {
-				return err
-			}
-			// バッファー生成
-			buf := bytes.NewBuffer(data)
-			_, err = img.Buf.ReadFrom(buf)
-			if err != nil {
-				return err
-			}
-			err = ResizePostImage(img, (i + 1))
-			if err != nil {
-				return err
-			}
-			err = pu.imageRepository.UploadS3(img, "merpochi-posts-image")
-			if err != nil {
-				return err
-			}
-			_, err = pu.imageRepository.Save(img)
-			if err != nil {
-				return err
-			}
-		}
+	// 投稿画像再登録
+	err = pu.CreatePostImages(reImgs, uid, sid, pid)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
 func (pu *postUsecase) DeletePost(pid uint32) error {
-	err := pu.postRepository.Delete(pid)
+	// 投稿画像削除
+	err := pu.DeletePostImages(pid)
+	if err != nil {
+		return err
+	}
+	err = pu.postRepository.Delete(pid)
 	if err != nil {
 		return err
 	}
@@ -268,7 +199,7 @@ func (pu *postUsecase) GetUserImage(uid uint32) (string, error) {
 }
 
 // 投稿画像取得〜base64エンコード文字列生成まで
-func (pu *postUsecase) GetPostImage(uid, sid, pid uint32) ([]imageData, error) {
+func (pu *postUsecase) GetPostImages(uid, sid, pid uint32) ([]imageData, error) {
 	imgs, err := pu.imageRepository.FindAll(uid, sid, pid)
 	if err != nil {
 		return []imageData{}, err
@@ -297,6 +228,70 @@ func (pu *postUsecase) GetPostImage(uid, sid, pid uint32) ([]imageData, error) {
 		}
 	}
 	return responses, nil
+}
+
+// 投稿画像登録
+func (pu *postUsecase) CreatePostImages(imgs []string, uid, sid, pid uint32) error {
+	if len(imgs) > 0 {
+		for i := 0; i < len(imgs); i++ {
+			img := &models.Image{
+				UserID: uid,
+				ShopID: sid,
+				PostID: pid,
+				Buf:    &bytes.Buffer{},
+			}
+			// base64エンコード文字列を最初のコンマまでカット("data:image/png;base64,"部分がデコード時に不要のため )
+			b64data := imgs[i][strings.IndexByte(imgs[i], ',')+1:]
+			// 文字列をデコード
+			data, err := base64.StdEncoding.DecodeString(b64data)
+			if err != nil {
+				return err
+			}
+			// バッファー生成
+			buf := bytes.NewBuffer(data)
+			_, err = img.Buf.ReadFrom(buf)
+			if err != nil {
+				return err
+			}
+			err = ResizePostImage(img, (i + 1))
+			if err != nil {
+				return err
+			}
+			err = pu.imageRepository.UploadS3(img, "merpochi-posts-image")
+			if err != nil {
+				return err
+			}
+			img, err = pu.imageRepository.Save(img)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// 投稿画像削除
+func (pu *postUsecase) DeletePostImages(pid uint32) error {
+	imgs, err := pu.imageRepository.FindAllByPostID(pid)
+	if err != nil {
+		return err
+	}
+	if len(*imgs) > 0 {
+		for _, i := range *imgs {
+			tmp := &models.Image{
+				Name: i.Name,
+			}
+			err = pu.imageRepository.DeleteS3(tmp, "merpochi-posts-image")
+			if err != nil {
+				return err
+			}
+			err = pu.imageRepository.DeleteByPostID(pid)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // ResizePostImage 画像の整形
