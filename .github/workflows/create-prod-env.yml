@@ -1,8 +1,8 @@
 name: Create Production Environment 
 
 on:
-#   schedule:
-#     - cron: '0 1 * * MON-FRI'
+  schedule:
+    - cron: '0 1 * * MON-FRI'
 
   workflow_dispatch:
 
