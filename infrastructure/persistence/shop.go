@@ -59,6 +59,31 @@ func (sp *shopPersistence) FindByCode(code string) (*models.Shop, error) {
 	return &models.Shop{}, err
 }
 
+// 指定した投稿に紐付く店舗情報を取得
+func (sp *shopPersistence) FindByPostID(pid uint32) (*models.Shop, error) {
+	var err error
+	shop := &models.Shop{}
+	done := make(chan bool)
+
+	go func(ch chan<- bool) {
+		defer close(ch)
+		query := sp.db.Table("posts").
+			Select("shops.*").
+			Joins("inner join shops on shops.id = posts.shop_id").
+			Where("posts.id = ?", pid)
+		err = query.Scan(shop).Error
+		if err != nil {
+			ch <- false
+			return
+		}
+		ch <- true
+	}(done)
+	if channels.OK(done) {
+		return shop, nil
+	}
+	return &models.Shop{}, err
+}
+
 func (sp *shopPersistence) FindAllByUserIDJoinsBookmark(uid uint32) (*[]models.Shop, error) {
 	var err error
 	shops := &[]models.Shop{}

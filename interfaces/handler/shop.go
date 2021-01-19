@@ -14,6 +14,7 @@ type ShopHandler interface {
 	HandleShopsSearch(w http.ResponseWriter, r *http.Request)
 	HandleShopCreate(w http.ResponseWriter, r *http.Request)
 	HandleShopGet(w http.ResponseWriter, r *http.Request)
+	HandleShopGetPosted(w http.ResponseWriter, r *http.Request)
 }
 
 type shopHandler struct {
@@ -94,6 +95,27 @@ func (sh *shopHandler) HandleShopGet(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, shop)
 }
 
+// HandleShopGet 店舗情報を1件取得
+func (sh *shopHandler) HandleShopGetPosted(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	var requestBody shopPostedRequest
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+	shop, err := sh.shopUsecase.GetPostedShop(requestBody.PostID)
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, shop)
+}
+
 type shopSearchRequest struct {
 	ShopCodes []string `json:"shop_codes"`
 	UserID    uint32   `json:"user_id"`
@@ -101,4 +123,8 @@ type shopSearchRequest struct {
 
 type shopGetRequest struct {
 	Code string `json:"code"`
+}
+
+type shopPostedRequest struct {
+	PostID uint32 `json:"post_id"`
 }

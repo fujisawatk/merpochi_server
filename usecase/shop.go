@@ -10,6 +10,7 @@ type ShopUsecase interface {
 	SearchShops([]string, uint32) ([]searchShopsResponse, error)
 	CreateShop(models.Shop) (models.Shop, error)
 	GetShop(string) (*models.Shop, error)
+	GetPostedShop(uint32) (*models.Shop, error)
 }
 
 type shopUsecase struct {
@@ -85,6 +86,14 @@ func (su shopUsecase) CreateShop(req models.Shop) (models.Shop, error) {
 
 func (su *shopUsecase) GetShop(code string) (*models.Shop, error) {
 	shop, err := su.shopRepository.FindByCode(code)
+	if err != nil {
+		return &models.Shop{}, err
+	}
+	return shop, nil
+}
+
+func (su *shopUsecase) GetPostedShop(pid uint32) (*models.Shop, error) {
+	shop, err := su.shopRepository.FindByPostID(pid)
 	if err != nil {
 		return &models.Shop{}, err
 	}
