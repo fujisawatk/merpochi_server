@@ -83,6 +83,13 @@ func TestLoad() {
 		// }
 	}
 
+	for _, post := range posts {
+		err = db.Debug().Model(&models.Comment{}).Create(&post).Error
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	for _, comment := range comments {
 		err = db.Debug().Model(&models.Comment{}).Create(&comment).Error
 		if err != nil {
@@ -123,13 +130,6 @@ func TestLoad() {
 
 	for _, image := range images {
 		err = db.Debug().Model(&models.Image{}).Create(&image).Error
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	for _, post := range posts {
-		err = db.Debug().Model(&models.Comment{}).Create(&post).Error
 		if err != nil {
 			log.Fatal(err)
 		}
