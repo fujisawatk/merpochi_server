@@ -1,6 +1,14 @@
 # 簡単グルメレビューアプリ 〜merpochi〜
 
+
+
 ## 本アプリについて
+
+本リポジトリはバックエンドです。フロントエンドのリポジトリは下記参照。
+
+[簡単グルメレビューアプリ 〜merpochi〜 フロントエンド](https://github.com/fujisawatk/merpochi-client)
+
+
 本アプリは、ネイティブアプリです。配信方法はExpo.ioのpublish配信なので、使用するにはExpo.ioのクライアントアプリ導入が必要になります。
 
 iOS : [‎Expo Client on the App Store](https://apps.apple.com/app/apple-store/id982107779)
