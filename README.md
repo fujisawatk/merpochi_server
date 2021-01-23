@@ -118,23 +118,6 @@ Android : [Expo - Google Play のアプリ](https://play.google.com/store/apps/d
 コンテナ環境でAPI開発を行ったので、コンテナ運用・管理に優れているFargateを利用しましたが、コストがかなりかかってしまうことが難点でした。Github Actionsのインフラ構築をスケジュール実行で行うことにより、維持コストをかなり削減することができました。
 
 ## 参考資料
-- **現在地付近の店舗を自動検索（ジャンル検索含む）**
->
-[![Image from Gyazo](https://i.gyazo.com/fadbc8072eb34a918b521d3a17699e14.gif)](https://gyazo.com/fadbc8072eb34a918b521d3a17699e14)
->
-- **簡単レビュー機能**
->
-[![Image from Gyazo](https://i.gyazo.com/9e40ab02ebbc49266ba8bd4e023914f6.gif)](https://gyazo.com/9e40ab02ebbc49266ba8bd4e023914f6)
->
-- **詳細レビュー編集**
->
-[![Image from Gyazo](https://i.gyazo.com/13c29aa8a97c6e9a853768a4aacf9a35.gif)](https://gyazo.com/13c29aa8a97c6e9a853768a4aacf9a35)
->
-- **マイリスト(いきたいお店、行ったお店)機能**
->
-
-[![Image from Gyazo](https://i.gyazo.com/dbcf75c5c753a5676f9e2d59759f5409.gif)](https://gyazo.com/dbcf75c5c753a5676f9e2d59759f5409)
->
 - **アーキテクチャ**
 >
 [![Image from Gyazo](https://i.gyazo.com/705d00dd164c997bd487ca9cffbe646a.png)](https://gyazo.com/705d00dd164c997bd487ca9cffbe646a)
